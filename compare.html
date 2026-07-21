@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Müqayisə – Essen Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f5f5f5; min-height: 100vh; color: #111; }
+
+    /* ── Nav (cart.html ilə eyni) ── */
+    .top-nav {
+      background: #e8222e; padding: 0 24px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.9); text-decoration: none;
+      font-size: 17px; font-weight: 500; transition: color 0.15s;
+    }
+    .nav-back:hover { color: #fff; }
+    .nav-logo {
+      height: 44px; width: 140px; object-fit: contain;
+      filter: brightness(0) invert(1);
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .nav-cart-btn {
+      position: relative; background: rgba(255,255,255,0.15);
+      border: none; border-radius: 10px; width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .nav-cart-btn:hover { background: rgba(255,255,255,0.25); }
+    .cart-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: #fff; color: #e8222e; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #e8222e;
+    }
+
+    /* ── Layout ── */
+    .main-wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px 40px; }
+    .page-head {
+      padding: 28px 0 20px; display: flex; align-items: center;
+      justify-content: space-between; gap: 14px; flex-wrap: wrap;
+    }
+    .page-head-left { display: flex; align-items: center; gap: 10px; }
+    .page-head h1 { font-size: 22px; font-weight: 700; color: #111; }
+    .count-pill {
+      background: #e8222e; color: #fff;
+      font-size: 12px; font-weight: 500;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    /* ── Category select ── */
+    .cat-select-wrap { position: relative; }
+    .cat-select-wrap select {
+      appearance: none; -webkit-appearance: none;
+      font-family: 'Poppins', sans-serif;
+      background: #fff; border: 1.5px solid #e5e7eb;
+      border-radius: 10px; padding: 10px 38px 10px 16px;
+      font-size: 13px; font-weight: 500; color: #111;
+      min-width: 200px; cursor: pointer; transition: border-color 0.15s;
+    }
+    .cat-select-wrap select:hover { border-color: #e8222e; }
+    .cat-select-wrap i {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 11px; color: #9ca3af; pointer-events: none;
+    }
+
+    /* ── Toolbar (Səbət səhifəsindəki select-toolbar ilə eyni dil) ── */
+    .toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    }
+    .added-count { font-size: 13px; font-weight: 500; color: #374151; }
+    .clear-all-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: #fff5f5; border: 1.5px solid #fecaca;
+      border-radius: 10px; padding: 8px 14px;
+      cursor: pointer; color: #e8222e;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.15s;
+    }
+    .clear-all-btn:hover { background: #e8222e; color: #fff; border-color: #e8222e; }
+
+    .filter-pills { display: flex; gap: 8px; }
+    .filter-pill {
+      padding: 8px 16px; border-radius: 10px;
+      border: 1.5px solid #e5e7eb; background: #fff;
+      font-size: 13px; font-weight: 500; color: #6b7280;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: all 0.15s;
+    }
+    .filter-pill:hover { border-color: #e8222e; color: #e8222e; }
+    .filter-pill.active { background: #e8222e; border-color: #e8222e; color: #fff; }
+
+    /* ── Compare grid ── */
+    .compare-shell {
+      background: #fff; border-radius: 16px; border: 1.5px solid #f0f0f0;
+      overflow-x: auto;
+    }
+    .compare-grid { display: grid; align-items: stretch; }
+
+    .compare-head-spacer {
+      min-height: 340px;
+      border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fff;
+    }
+    .label-row {
+      font-size: 13px; font-weight: 600; color: #374151;
+      padding: 16px 18px; min-height: 58px;
+      border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex; align-items: center; background: #fff;
+    }
+
+    .prod-head {
+      min-height: 340px; width: 330px; border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f0f0f0; padding: 20px 18px;
+      position: relative;
+      transition: background 0.15s;
+    }
+    .prod-head:hover { background: #fffaf9; }
+
+    .remove-btn {
+      position: absolute; top: 14px; right: 14px;
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1.5px solid #fecaca; background: #fff5f5;
+      cursor: pointer; color: #e8222e; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .remove-btn:hover { background: #e8222e; color: #fff; border-color: #e8222e; }
+
+    .prod-name {
+      font-size: 13px; font-weight: 500; color: #1f2937; line-height: 1.4;
+      padding-right: 38px; min-height: 36px; margin-bottom: 12px;
+    }
+    .prod-img-wrap {
+      width: 170px; height: 170px; max-width: 100%; background: #f5f5f5;
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; margin: 0 auto 14px;
+    }
+    .prod-img-wrap img { width: 100%; height: 100%; object-fit: contain; padding: 12px; }
+
+    .price-row.value-row { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+    .price-now { font-size: 18px; font-weight: 700; color: #e8222e; }
+    .price-old { font-size: 13px; color: #9ca3af; text-decoration: line-through; }
+
+    .val-row {
+      font-size: 13px; color: #374151; padding: 16px 18px;
+      min-height: 58px; border-right: 1px solid #f0f0f0;
+      border-bottom: 1px solid #f3f4f6;
+      display: flex; align-items: center;
+    }
+    .val-row.diff { background: #fff5f5; }
+
+    /* ── Add-product column ── */
+    .add-col {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 300px;
+    }
+    .add-circle-btn {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #fff0f0; border: none; color: #e8222e;
+      font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .add-circle-btn:hover { background: #e8222e; color: #fff; }
+
+    /* ── Search overlay ── */
+    .search-overlay {
+      position: fixed; inset: 0; background: rgba(17,17,17,0.5);
+      display: none; align-items: flex-start; justify-content: center;
+      padding-top: 10vh; z-index: 50;
+    }
+    .search-overlay.open { display: flex; }
+    .search-box {
+      background: #fff; border-radius: 16px; width: 100%; max-width: 480px;
+      padding: 20px; max-height: 68vh; display: flex; flex-direction: column;
+    }
+    .search-box-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .search-box-head h3 { font-size: 15px; font-weight: 600; }
+    .search-close { background: none; border: none; color: #9ca3af; font-size: 16px; cursor: pointer; }
+    .search-box input {
+      width: 100%; padding: 12px 14px; border: 1.5px solid #e5e7eb;
+      border-radius: 10px; font-size: 13px; margin-bottom: 12px;
+      font-family: 'Poppins', sans-serif;
+    }
+    .search-box input:focus { outline: none; border-color: #e8222e; }
+    .search-list { overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+    .search-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;
+    }
+    .search-item:hover { background: #fff5f5; }
+    .search-item .p { color: #e8222e; font-weight: 600; font-size: 12px; }
+
+    /* ── Empty state (cart.html ilə eyni dil) ── */
+    .empty-state {
+      background: #fff; border-radius: 20px; border: 1px solid #f0f0f0;
+      padding: 60px 20px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .empty-icon {
+      width: 72px; height: 72px; background: #fff0f0;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; color: #e8222e; margin: 0 auto 8px;
+    }
+    .empty-state h2 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: #9ca3af; margin-bottom: 6px; }
+    .empty-btn {
+      padding: 11px 28px; background: #e8222e; color: #fff;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      text-decoration: none; display: inline-block; transition: background 0.15s;
+      margin-top: 8px;
+    }
+    .empty-btn:hover { background: #c0000a; }
+
+    @media (max-width: 800px) {
+      .compare-grid { overflow-x: auto; }
+      .toolbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="index.html" class="nav-back">
+    <i class="fa-solid fa-arrow-left" style="font-size:20px;"></i>
+    Alış-verişə davam et
+  </a>
+  <button class="nav-cart-btn" onclick="window.location.href='cart.html'">
+    <i class="fa-solid fa-cart-shopping" style="font-size:17px;"></i>
+    <span id="nav-cart-count" class="cart-badge" style="display:none;">0</span>
+  </button>
+</nav>
+
+<div class="main-wrap">
+  <div class="page-head">
+    <div class="page-head-left">
+      <h1>Müqayisə</h1>
+      <span class="count-pill" id="countPill" style="display:none;"></span>
+    </div>
+    <div class="cat-select-wrap">
+      <select id="categorySelect"></select>
+      <i class="fa-solid fa-chevron-down"></i>
+    </div>
+  </div>
+
+  <div id="toolbarWrap"></div>
+  <div class="compare-shell">
+    <div id="compareGrid" class="compare-grid"></div>
+  </div>
+</div>
+
+<div class="search-overlay" id="searchOverlay">
+  <div class="search-box">
+    <div class="search-box-head">
+      <h3>Məhsul əlavə et</h3>
+      <button class="search-close" onclick="closeSearch()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <input type="text" id="searchInput" placeholder="Məhsul axtar...">
+    <div class="search-list" id="searchList"></div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+const MAX_PRODUCTS = 4; // backend-dəki limitlə uyğun
+
+// Bu 4 alt-kateqoriya müqayisə səhifəsində TEK bir qrup ("Hava emalı") kimi göstərilir.
+const AIR_TREATMENT_GROUP_LABEL = 'Hava emalı';
+const LAPTOP_GROUP_LABEL = 'Notbuklar';
+const SMARTPHONE_GROUP_LABEL = 'Smartfonlar';
+const AIR_TREATMENT_SUBCATEGORIES = [
+  'hava nəmləndirici',
+  'hava təmizləyici',
+  'hava təravətləndirici'
+];
+function isAirTreatmentSubcategory(subcategory) {
+  const s = (subcategory || '').trim().toLocaleLowerCase('az');
+  return AIR_TREATMENT_SUBCATEGORIES.includes(s) || s.startsWith('iqlim kompleksi');
+}
+function isLaptopSubcategory(subcategory) {
+  const s = (subcategory || '').trim().toLocaleLowerCase('az');
+  return s === 'notbuklar' || s === 'oyun notbukları';
+}
+function isSmartphoneSubcategory(subcategory) {
+  const s = (subcategory || '').trim().toLocaleLowerCase('az');
+  return s === 'smartfonlar' || s === 'apple smartfonları';
+}
+// Məhsulun həqiqi subcategory-sini müqayisə səhifəsində göstəriləcək "qrup açarına" çevirir.
+function groupKeyForSubcategory(subcategory) {
+  if (isAirTreatmentSubcategory(subcategory)) return AIR_TREATMENT_GROUP_LABEL;
+  if (isLaptopSubcategory(subcategory)) return LAPTOP_GROUP_LABEL;
+  if (isSmartphoneSubcategory(subcategory)) return SMARTPHONE_GROUP_LABEL;
+  return subcategory ? subcategory.trim() : subcategory;
+}
+
+let state = {
+  allCompares: [],      // backend-dən gələn bütün siyahı (bütün kateqoriyalar)
+  subcategoryKey: null,  // seçilmiş qrup açarı (adi alt-kateqoriya və ya "Hava emalı")
+  filter: 'all',        // 'all' | 'similar' | 'diff'
+};
+
+const els = {
+  categorySelect: document.getElementById('categorySelect'),
+  toolbarWrap: document.getElementById('toolbarWrap'),
+  compareGrid: document.getElementById('compareGrid'),
+  countPill: document.getElementById('countPill'),
+};
+
+function getToken() { return localStorage.getItem('token'); }
+
+function init() {
+  const token = getToken();
+  if (!token) {
+    // login tələb olunur — istəsəniz burda modalı da aça bilərsiniz
+    renderLoggedOut();
+    return;
+  }
+  updateCartBadge();
+  loadCompare();
+}
+
+async function loadCompare() {
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/compare`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Server xətası: ' + res.status);
+    state.allCompares = await res.json();
+    const subcategories = getAvailableSubcategories();
+    if (!subcategories.includes(state.subcategoryKey)) {
+      state.subcategoryKey = subcategories[0] || null;
+    }
+  } catch (err) {
+    state.allCompares = [];
+    console.error(err);
+  }
+  render();
+}
+
+function getFilteredProducts() {
+  if (!state.subcategoryKey) return [];
+  return state.allCompares
+    .map(c => c.product)
+    .filter(p => groupKeyForSubcategory(p?.subcategory) === state.subcategoryKey);
+}
+
+function getAvailableSubcategories() {
+  const set = new Set(
+    state.allCompares
+      .map(c => groupKeyForSubcategory(c.product?.subcategory?.trim()))
+      .filter(Boolean)
+  );
+  return Array.from(set);
+}
+
+// Backend-dəki real sahələrdən spec cədvəli qurur
+function buildSpecFields(products) {
+  const fieldSet = new Set();
+  products.forEach(p => {
+    if (p.brand) fieldSet.add('Brend');
+    Object.entries(p.specs || {}).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') fieldSet.add(key);
+    });
+  });
+
+  const smartphoneOrder = [
+    'SKU', 'Brend', 'Rəng', 'Çəki', 'İstehsal ili', 'Komplektasiya',
+    'Əməliyyat sisteminin versiyası', 'Ekran', 'Əsas kamera', 'Ön kamera',
+    'Əməliyyat sistemi', 'Nüvə sayı', 'Barmaq izi oxuyucusu', 'NFC',
+    'Prosessorun növü', 'Displey növü', 'Simsiz enerji', 'İnfraqırmızı port',
+    'Üz tanıma', 'Sürətli enerji yığma', 'Qorunma dərəcəsi',
+    'Prosessorun adı', 'Ölçülər', 'Giroskop', 'Video formatı',
+    'Bluetooth versiyası', 'Avtofokus əsas kamera',
+    'Video icazəsi və kadr tezliyi', 'Enerji toplama növü',
+    'Qulaqlıq interfeysi', 'Batareya növü', 'Akselerometr',
+    'Enerji yığma gücü', 'Seriya', 'Zəmanət', 'Korpusun materialı',
+    'Görüntü imkanı', 'SIM-kart sayı', 'SIM-kart növü',
+    'Yaddaş kartı dəstəyi', 'Operativ yaddaş', 'Daxili yaddaş',
+    'Şəbəkə standartı', 'İşıq sensoru', 'Yaxınlaşdırma sensoru',
+    'Optik sabitləşmə', 'Video asta çəkiliş', 'Akkumulyatorun tutumu'
+  ];
+  const airConditionerOrder = [
+    'SKU', 'Brend', 'Növ', 'Rəng', 'Enerji istifadə sinfi', 'Komplektasiya',
+    'İstehsalçı ölkə', 'Xüsusiyyətlər', 'Zəmanət', 'Taymer', 'Wi-Fi',
+    'Əsas rejimlər', 'Soyutma rejiminin gücü', 'İsitmə rejiminin gücü',
+    'Daxili blokun ölçüləri (H×E×D)', 'Xarici blokun ölçüləri (H×E×D)',
+    'Səs səviyyəsi (daxili blok)', 'Freon növü', 'Səmərəlilik',
+    'Səs səviyyəsi (xarici blok)', 'Xarici blokun çəkisi',
+    'Daxili blokun çəkisi', 'Mühərrik növü',
+    'Tövsiyə olunan otaq sahəsi', 'Quraşdırma növü'
+  ];
+  const fanOrder = [
+    'SKU', 'Brend', 'Növ', 'Hündürlük', 'İdarəetmə növü', 'Güc', 'Rəng',
+    'Ölçülər (H × E × D)', 'Naqilin uzunluğu', 'Sürət sayı',
+    'İstehsalçı ölkə', 'Tənzimləmə', 'Xüsusiyyətlər', 'Zəmanət',
+    'Avtomatik sönmə', 'Pərin diametri',
+    'Həddindən artıq qızmaya qarşı qorunma'
+  ];
+  const airTreatmentOrder = [
+    'SKU', 'Brend', 'Növ', 'Güc', 'Displey', 'Rəng', 'Enerji istehlakı',
+    'Çəki', 'Su çəninin həcmi', 'Xidmət olunan sahə', 'Məhsuldarlıq', 'Rejim sayı',
+    'Ölçülər (H × E × D)', 'Xüsusiyyətlər', 'Zəmanət', 'Su istehlakı',
+    'İndikatorlar', 'Taymer', 'Əlavə funksiyalar',
+    'Filterin mövcud olması', 'Uzaqdan idarəedici', 'Su sərfiyyatı'
+  ];
+  const childHumidifierOrder = [
+    'SKU', 'Brend', 'Çəki', 'Xüsusiyyətlər', 'Ölçülər',
+    'Zəmanət', 'Məhsul növü'
+  ];
+  const gameConsoleOrder = [
+    'SKU', 'Brend', 'Növ', 'Rəng', 'Çəki', 'Xüsusiyyətlər', 'Ölçülər',
+    'Seriya', 'Zəmanət', 'İnterfeys', 'Bluetooth', 'Qidalanma növü',
+    'Wi-Fi', 'Prosessor', 'Qrafik prosessor', 'AV Port', 'Optik disk növü',
+    'Səs formatları', 'Görüntü imkanı', 'Operativ yaddaş',
+    'Daxili yaddaş', 'Çıxış görüntü imkanı',
+    'Akkumulyatorla işləmə müddəti', 'Video yaddaş'
+  ];
+  const laptopOrder = [
+    'SKU', 'Brend', 'Display', 'Rəng', 'Əməliyyat sistemi', 'Zəmanət',
+    'Wi-Fi', 'Model', 'Prosessor', 'Ekranın diaqonalı', 'Sensorlu ekran',
+    'Videokartın növü', '360 dərəcə fırlanma', 'Klaviaturanın dili',
+    'Kateqoriya', 'Veb-kamera', 'Ölçülər (E × D × H)', 'Videokart',
+    'Akkumulyatorun tutumu', 'Girişlər', 'Operativ yaddaş', 'Daxili yaddaş'
+  ];
+  const twsHeadphoneOrder = [
+    'SKU', 'Brend', 'Rəng', 'Qulaqlığın növü', 'Mikrofon', 'Çəki',
+    'Komplektasiya', 'Xüsusiyyətlər', 'Akkumulyatorun tutumu', 'Zəmanət',
+    'Enerji yığma müddəti', 'Musiqi dinləmə müddəti', 'Part nömrə',
+    'Danışıq müddəti', 'Maksimal işləmə müddəti', 'Qoşulma növü'
+  ];
+  const wiredHeadphoneOrder = [
+    'SKU', 'Brend', 'Rəng', 'Naqilin uzunluğu', 'Qulaqlığın növü',
+    'Port növü', 'Müqavimət', 'Çəki', 'Komplektasiya', 'Xüsusiyyətlər',
+    'Zəmanət', 'Part nömrə', 'Qoşulma növü'
+  ];
+  const bluetoothHeadphoneOrder = [
+    'SKU', 'Brend', 'Rəng', 'Naqilin uzunluğu', 'Qulaqlığın növü',
+    'Mikrofon', 'Port növü', 'Müqavimət', 'Komplektasiya', 'Xüsusiyyətlər',
+    'Akkumulyatorun tutumu', 'Zəmanət', 'Enerji yığma müddəti', 'Part nömrə',
+    'Maksimal işləmə müddəti', 'Qoşulma növü'
+  ];
+  const tabletOrder = [
+    'SKU', 'Brend', 'Rəng', 'Ölçülər (H × E × D)', 'Komplektasiya', 'Ekran',
+    'Əsas kamera', 'Ön kamera', 'Əməliyyat sistemi', 'Nüvə sayı', 'SIM kartın növü',
+    'Displey növü', 'Üz tanıma', 'Sürətli enerji yığma', 'Qorunma dərəcəsi',
+    'Barometr', 'Giroskop', 'Bluetooth versiyası', 'Akselerometr', 'Enerji yığma gücü',
+    'Seriya', 'Zəmanət', 'Avtofokus', 'Wi-Fi', 'Korpusun materialı', 'Simsiz rabitə',
+    'Prosessor', 'Ekran görüntüsü', 'Prosessorun tezliyi', 'Əməliyyat sisteminin versiyası',
+    'Video keyfiyyəti', 'Barmaq izi oxuyucu', 'Naviqasiya sistemi', 'SIM kartın sayı',
+    'Qrafik prosessor', 'Kadr tezliyi (maksimum)', 'Girişlər', 'Yaddaş kartı dəstəyi',
+    'Operativ yaddaş', 'Daxili yaddaş', 'Şəbəkə', 'İşıq sensoru',
+    'Yaxınlaşdırma sensoru', 'Optik sabitləşmə', 'Qulaqlıq üçün giriş',
+    'Buraxılış ili', 'Fləş', 'Videonun asta çəkilişi', 'Akkumulyatorun tutumu'
+  ];
+  const subcategory = products[0]?.subcategory?.trim().toLowerCase();
+  const isAirTreatment = isAirTreatmentSubcategory(subcategory);
+  const preferredOrder = isLaptopSubcategory(subcategory)
+    ? laptopOrder
+    : subcategory === 'tws simsiz qulaqlıqlar'
+    ? twsHeadphoneOrder
+    : subcategory === 'simli qulaqlıqlar'
+    ? wiredHeadphoneOrder
+    : subcategory === 'bluetooth simsiz qulaqlıqlar'
+    ? bluetoothHeadphoneOrder
+    : subcategory === 'planşetlər' || subcategory === 'apple planşetləri'
+    ? tabletOrder
+    : subcategory === 'oyun konsolları'
+    ? gameConsoleOrder
+    : subcategory === 'uşaq üçün hava nəmləndiriciləri'
+    ? childHumidifierOrder
+    : isAirTreatment
+    ? airTreatmentOrder
+    : subcategory === 'kondisionerlər'
+    ? airConditionerOrder
+    : subcategory === 'ventilyatorlar'
+      ? fanOrder
+      : smartphoneOrder;
+
+  // Kateqoriya şablonundakı bütün sətirləri göstər; dəyər yoxdursa "—" yazılacaq.
+  preferredOrder.forEach(field => {
+    if (field !== 'Brend' || products.some(product => product.brand)) {
+      fieldSet.add(field);
+    }
+  });
+
+  const sortedFields = Array.from(fieldSet).sort((a, b) => {
+    const aIndex = preferredOrder.indexOf(a);
+    const bIndex = preferredOrder.indexOf(b);
+    return (aIndex < 0 ? 999 : aIndex) - (bIndex < 0 ? 999 : bIndex);
+  });
+
+  // Bütün kateqoriyalarda ilk texniki sətirlər həmişə SKU və Brend olsun.
+  const fixedFirstFields = ['SKU', 'Brend'].filter(field => fieldSet.has(field));
+  return fixedFirstFields.concat(
+    sortedFields.filter(field => !fixedFirstFields.includes(field))
+  );
+}
+
+function specValue(product, field) {
+  if (field === 'Brend') return product.brand || '—';
+  return product.specs && product.specs[field] !== undefined
+    ? product.specs[field]
+    : '—';
+}
+
+async function removeProduct(productId) {
+  const token = getToken();
+  try {
+    await fetch(`${API}/compare/${productId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    localStorage.setItem('essenCompareChanged', String(Date.now()));
+  } catch (err) { console.error(err); }
+  loadCompare();
+}
+
+async function clearAll() {
+  const token = getToken();
+  try {
+    // state.subcategoryKey indi real subcategory olmaya bilər (məs. "Hava emalı" qrupu),
+    // ona görə hazırkı qrupda görünən məhsulların həqiqi subcategory-lərini tapıb hər birini ayrıca təmizləyirik.
+    const realSubcategories = Array.from(new Set(
+      getFilteredProducts().map(p => p.subcategory).filter(Boolean)
+    ));
+
+    if (realSubcategories.length) {
+      await Promise.all(realSubcategories.map(sub =>
+        fetch(`${API}/compare?subcategory=${encodeURIComponent(sub)}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+      ));
+    } else {
+      await fetch(`${API}/compare`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    }
+    localStorage.setItem('essenCompareChanged', String(Date.now()));
+  } catch (err) { console.error(err); }
+  loadCompare();
+}
+
+function setFilter(f) {
+  state.filter = f;
+  render();
+}
+
+function setSubcategory(key) {
+  state.subcategoryKey = key;
+  render();
+}
+
+function render() {
+  const products = getFilteredProducts();
+  const subcategories = getAvailableSubcategories();
+
+  // Yalnız müqayisəyə əlavə olunmuş məhsulların qruplarını göstər
+  els.categorySelect.innerHTML = subcategories.length
+    ? subcategories.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')
+    : '<option value="">Alt kateqoriya yoxdur</option>';
+  els.categorySelect.value = state.subcategoryKey || '';
+  els.categorySelect.disabled = subcategories.length === 0;
+  els.categorySelect.onchange = () => setSubcategory(els.categorySelect.value);
+
+  els.countPill.style.display = products.length ? 'inline-block' : 'none';
+  els.countPill.textContent = products.length + ' məhsul';
+
+  els.toolbarWrap.innerHTML = `
+    <div class="toolbar">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <span class="added-count">Əlavə olunub: ${products.length}</span>
+        <button class="clear-all-btn" onclick="clearAll()"><i class="fa-solid fa-trash-can"></i> Hamısını sil</button>
+      </div>
+      <div class="filter-pills">
+        <button class="filter-pill ${state.filter==='all'?'active':''}" onclick="setFilter('all')">Hamısı</button>
+        <button class="filter-pill ${state.filter==='similar'?'active':''}" onclick="setFilter('similar')">Oxşarlıqlar</button>
+        <button class="filter-pill ${state.filter==='diff'?'active':''}" onclick="setFilter('diff')">Fərqlər</button>
+      </div>
+    </div>`;
+
+  if (products.length === 0) {
+    els.compareGrid.style.gridTemplateColumns = '1fr';
+    els.compareGrid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+      <h2>Müqayisə siyahısı boşdur</h2>
+      <p>Kataloqdan məhsul yanındakı tərəzi düyməsinə klikləyərək müqayisəyə əlavə edin</p>
+      <a href="index.html" class="empty-btn">Alış-verişə davam et</a>
+    </div>`;
+    return;
+  }
+
+  const specFields = buildSpecFields(products);
+  const visibleFields = specFields.filter(field => {
+    if (state.filter === 'all') return true;
+    const values = products.map(p => specValue(p, field));
+    const allSame = values.every(v => v === values[0]);
+    return state.filter === 'similar' ? allSame : !allSame;
+  });
+
+  els.compareGrid.style.gridTemplateColumns = `180px repeat(${products.length}, 330px)`;
+
+  let html = `<div class="compare-head-spacer" aria-hidden="true"></div>`;
+
+  products.forEach(p => {
+    html += `<div class="prod-head">
+      <button class="remove-btn" title="Müqayisədən sil" onclick="removeProduct(${p.id})"><i class="fa-solid fa-xmark"></i></button>
+      <div class="prod-name">${escapeHtml(p.name)}</div>
+      <div class="prod-img-wrap">
+        <img src="${p.image ? 'http://localhost:3000' + p.image : 'https://placehold.co/220x220?text=Şəkil+yoxdur'}" alt="${escapeHtml(p.name)}">
+      </div>
+      <div class="value-row" style="margin-bottom:0;padding:18px 0 0;border-top:none;">
+        <div class="price-row value-row">
+          <span class="price-now">${formatPrice(p.price)}</span>
+          ${p.oldPrice ? `<span class="price-old">${formatPrice(p.oldPrice)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  visibleFields.forEach(field => {
+    const values = products.map(product => specValue(product, field));
+    const isDiff = !values.every(value => value === values[0]);
+    html += `<div class="label-row">${escapeHtml(field)}</div>`;
+    products.forEach((product, index) => {
+      html += `<div class="val-row ${isDiff && state.filter === 'diff' ? 'diff' : ''}">${escapeHtml(String(values[index]))}</div>`;
+    });
+  });
+
+  els.compareGrid.innerHTML = html;
+}
+
+function renderLoggedOut() {
+  els.compareGrid.style.gridTemplateColumns = '1fr';
+  els.compareGrid.innerHTML = `<div class="empty-state">
+    <div class="empty-icon"><i class="fa-solid fa-user-lock"></i></div>
+    <h2>Daxil olun</h2>
+    <p>Müqayisə siyahınızı görmək üçün hesabınıza daxil olun</p>
+    <a href="index.html" class="empty-btn">Girişə keç</a>
+  </div>`;
+}
+
+async function updateCartBadge() {
+  let count = 0;
+  const token = getToken();
+  try {
+    if (token) {
+      const response = await fetch(`${API}/cart`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const cart = await response.json();
+        count = cart.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
+      }
+    } else {
+      const cart = JSON.parse(localStorage.getItem('essenCart')) || [];
+      count = cart.reduce((sum, item) => sum + Number(item.qty || 1), 0);
+    }
+    const el = document.getElementById('nav-cart-count');
+    el.textContent = count;
+    el.style.display = count > 0 ? 'flex' : 'none';
+  } catch {}
+}
+
+function formatPrice(price) {
+  const n = Number(price);
+  if (isNaN(n)) return '—';
+  return n.toFixed(2) + ' ₼';
+}
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+window.addEventListener('storage', event => {
+  if (event.key === 'essenCartChanged' || event.key === 'essenCart') updateCartBadge();
+});
+window.addEventListener('focus', updateCartBadge);
+window.addEventListener('pageshow', updateCartBadge);
+init();
+</script>
+</body>
+</html>

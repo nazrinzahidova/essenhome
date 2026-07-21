@@ -1,0 +1,575 @@
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Səbət – Essen Home</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f5f5f5; min-height: 100vh; color: #111; }
+
+    /* ── Nav ── */
+    .top-nav {
+      background: #e8222e; padding: 0 24px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative;
+    }
+    .nav-back {
+      display: flex; align-items: center; gap: 8px;
+      color: rgba(255,255,255,0.9); text-decoration: none;
+      font-size: 17px; font-weight: 500; transition: color 0.15s;
+    }
+    .nav-back:hover { color: #fff; }
+    .nav-logo {
+      height: 44px; width: 140px; object-fit: contain;
+      filter: brightness(0) invert(1);
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+    .nav-cart-btn {
+      position: relative; background: rgba(255,255,255,0.15);
+      border: none; border-radius: 10px; width: 42px; height: 42px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; cursor: pointer; transition: background 0.15s;
+    }
+    .nav-cart-btn:hover { background: rgba(255,255,255,0.25); }
+    .cart-badge {
+      position: absolute; top: -5px; right: -5px;
+      background: #fff; color: #e8222e; font-size: 10px; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 1.5px solid #e8222e;
+    }
+
+    /* ── Layout ── */
+    .main-wrap { max-width: 1000px; margin: 0 auto; padding: 0 16px 40px; }
+    .page-head { padding: 28px 0 20px; display: flex; align-items: center; gap: 10px; }
+    .page-head h1 { font-size: 22px; font-weight: 700; color: #111; }
+    .count-pill {
+      background: #e8222e; color: #fff;
+      font-size: 12px; font-weight: 500;
+      padding: 3px 10px; border-radius: 20px;
+    }
+    .cart-layout { display: flex; gap: 16px; align-items: flex-start; }
+    .cart-items-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+    /* ── Selection toolbar ── */
+    .select-toolbar {
+      display: flex; align-items: center; gap: 10px;
+      flex-wrap: wrap;
+    }
+    .select-all-wrap {
+      display: flex; align-items: center; gap: 8px;
+      background: #fff; border: 1.5px solid #e5e7eb;
+      border-radius: 10px; padding: 8px 14px;
+      cursor: pointer; transition: border-color 0.15s;
+      user-select: none;
+    }
+    .select-all-wrap:hover { border-color: #e8222e; }
+    .master-checkbox {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 2px solid #d1d5db; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; flex-shrink: 0; position: relative;
+    }
+    .master-checkbox.checked { background: #e8222e; border-color: #e8222e; }
+    .master-checkbox.checked::after {
+      content: ''; display: block;
+      width: 5px; height: 9px;
+      border: 2px solid #fff; border-top: none; border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+    .master-checkbox.indeterminate { border-color: #e8222e; }
+    .master-checkbox.indeterminate::after {
+      content: ''; width: 10px; height: 2px;
+      background: #e8222e; border-radius: 2px;
+    }
+    .select-all-label { font-size: 13px; font-weight: 500; color: #374151; }
+
+    .delete-selected-btn {
+      display: flex; align-items: center; gap: 7px;
+      background: #fff5f5; border: 1.5px solid #fecaca;
+      border-radius: 10px; padding: 8px 14px;
+      cursor: pointer; color: #e8222e;
+      font-size: 13px; font-weight: 500;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.15s;
+      opacity: 0.4; pointer-events: none;
+    }
+    .delete-selected-btn.active { opacity: 1; pointer-events: auto; }
+    .delete-selected-btn.active:hover {
+      background: #e8222e; color: #fff; border-color: #e8222e;
+    }
+    .sel-count-badge {
+      font-size: 11px; background: #e8222e; color: #fff;
+      padding: 2px 8px; border-radius: 20px;
+      display: none;
+    }
+    .sel-count-badge.visible { display: inline-block; }
+
+    /* ── Cart item ── */
+    .cart-item {
+      background: #fff; border-radius: 16px;
+      padding: 14px 16px; display: flex; gap: 14px; align-items: center;
+      border: 1.5px solid #f0f0f0; transition: box-shadow 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+    .cart-item:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+    .cart-item.selected { border-color: #e8222e; background: #fff8f8; }
+
+    .item-checkbox {
+      width: 22px; height: 22px; border-radius: 7px;
+      border: 2px solid #d1d5db; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all 0.15s; position: relative;
+    }
+    .cart-item.selected .item-checkbox { background: #e8222e; border-color: #e8222e; }
+    .cart-item.selected .item-checkbox::after {
+      content: ''; display: block;
+      width: 5px; height: 10px;
+      border: 2px solid #fff; border-top: none; border-left: none;
+      transform: rotate(45deg) translate(-1px, -1px);
+    }
+
+    .item-img {
+      width: 76px; height: 76px; min-width: 76px;
+      border-radius: 10px; background: #f5f5f5;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .item-img img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
+    .item-img i { font-size: 24px; color: #ddd; }
+
+    .item-info { flex: 1; }
+    .item-name { font-size: 13px; font-weight: 500; color: #1f2937; line-height: 1.4; margin-bottom: 4px; }
+    .item-unit { font-size: 11px; color: #9ca3af; margin-bottom: 8px; }
+    .item-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .item-price { font-size: 16px; font-weight: 700; color: #e8222e; }
+
+    .qty-wrap { display: flex; align-items: center; gap: 6px; }
+    .qty-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      border: 1.5px solid #e5e7eb; background: #f9fafb;
+      cursor: pointer; font-size: 16px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      color: #374151; transition: all 0.15s; line-height: 1;
+    }
+    .qty-btn:hover { background: #e8222e; color: #fff; border-color: #e8222e; }
+    .qty-num { font-size: 14px; font-weight: 600; color: #111; min-width: 20px; text-align: center; }
+    .delete-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1.5px solid #fecaca; background: #fff5f5;
+      cursor: pointer; color: #e8222e; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; margin-left: 4px;
+    }
+    .delete-btn:hover { background: #e8222e; color: #fff; border-color: #e8222e; }
+
+    /* ── Summary card ── */
+    .summary-card {
+      width: 300px; min-width: 280px;
+      background: #fff; border-radius: 16px;
+      border: 1px solid #f0f0f0;
+      padding: 22px; position: sticky; top: 20px;
+    }
+    .summary-title { font-size: 15px; font-weight: 600; color: #111; margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; font-size: 13px; color: #6b7280; margin-bottom: 10px; }
+    .summary-divider { border: none; border-top: 1px solid #f3f4f6; margin: 8px 0 12px; }
+    .summary-row.total { font-size: 15px; font-weight: 700; color: #111; }
+    .summary-row.total span:last-child { color: #e8222e; font-size: 18px; }
+    .free-ship {
+      font-size: 11px; color: #16a34a; background: #f0fdf4;
+      border-radius: 8px; padding: 8px 12px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .threshold-note {
+      font-size: 11px; color: #6b7280; background: #f9fafb;
+      border-radius: 8px; padding: 8px 12px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .checkout-btn {
+      width: 100%; padding: 13px; background: #e8222e; color: #fff;
+      border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .checkout-btn:hover { background: #c0000a; }
+    .secure-note {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin-top: 10px; font-size: 11px; color: #9ca3af;
+    }
+    .secure-note i { color: #16a34a; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      background: #fff; border-radius: 20px; border: 1px solid #f0f0f0;
+      padding: 60px 20px; text-align: center;
+      flex-direction: column; align-items: center; gap: 14px;
+    }
+    .empty-icon {
+      width: 72px; height: 72px; background: #fff0f0;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 28px; color: #e8222e; margin: 0 auto 8px;
+    }
+    .empty-state h2 { font-size: 18px; font-weight: 600; color: #111; margin-bottom: 6px; }
+    .empty-state p { font-size: 13px; color: #9ca3af; margin-bottom: 16px; }
+    .empty-btn {
+      padding: 11px 28px; background: #e8222e; color: #fff;
+      border: none; border-radius: 10px; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: 'Poppins', sans-serif;
+      text-decoration: none; display: inline-block; transition: background 0.15s;
+    }
+    .empty-btn:hover { background: #c0000a; }
+
+    @media (max-width: 700px) {
+      .cart-layout { flex-direction: column; }
+      .summary-card { width: 100%; min-width: unset; position: static; }
+      .top-nav { padding: 0 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="top-nav">
+  <a href="index.html" class="nav-back">
+    <i class="fa-solid fa-arrow-left" style="font-size:20px;"></i>
+    Alış-verişə davam et
+  </a>
+  
+  <button class="nav-cart-btn" onclick="window.location.href='cart.html'">
+    <i class="fa-solid fa-cart-shopping" style="font-size:17px;"></i>
+    <span id="nav-cart-count" class="cart-badge" style="display:none;">0</span>
+  </button>
+</nav>
+
+<div class="main-wrap">
+  <div class="page-head">
+    <h1>Səbətim</h1>
+    <span class="count-pill" id="count-pill" style="display:none;"></span>
+  </div>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="empty-state" style="display:none;">
+    <div class="empty-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+    <h2>Səbətiniz boşdur</h2>
+    <p>Bəyəndiyiniz məhsulları səbətə əlavə edin</p>
+    <a href="index.html" class="empty-btn">Alış-verişə başla</a>
+  </div>
+
+  <!-- Cart layout -->
+  <div class="cart-layout" id="cart-layout" style="display:none;">
+    <div class="cart-items-col">
+
+      <!-- Selection toolbar -->
+      <div class="select-toolbar">
+        <div class="select-all-wrap" onclick="toggleSelectAll()">
+          <div class="master-checkbox" id="masterCheck"></div>
+          <span class="select-all-label">Hamısını seç</span>
+        </div>
+        <button class="delete-selected-btn" id="deleteSelectedBtn" onclick="deleteSelected()">
+          <i class="fa-solid fa-trash-can"></i>
+          Seçiləni sil
+          <span class="sel-count-badge" id="selCountBadge">0</span>
+        </button>
+      </div>
+
+      <!-- Items -->
+      <div id="cart-items"></div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-card">
+      <div class="summary-title">Sifariş xülasəsi</div>
+      <div class="summary-row"><span>Məhsulların cəmi</span><span id="subtotal">0 ₼</span></div>
+      <div class="summary-row"><span>Çatdırılma</span><span id="delivery-cost">—</span></div>
+      <hr class="summary-divider">
+      <div class="summary-row total"><span>Ümumi</span><span id="total">0 ₼</span></div>
+      <div id="free-note" class="free-ship" style="display:none;">
+        <i class="fa-solid fa-truck"></i> Pulsuz çatdırılma!
+      </div>
+      <div id="threshold-note" class="threshold-note" style="display:none;">
+        <i class="fa-solid fa-circle-info" style="color:#e8222e;"></i>
+        199.99 ₼-dən yuxarı sifarişlərə pulsuz çatdırılma
+      </div>
+      <button class="checkout-btn">
+        <i class="fa-solid fa-lock" style="font-size:13px;"></i>
+        Sifarişi tamamla
+      </button>
+      <div class="secure-note">
+        <i class="fa-solid fa-shield-halved"></i> Təhlükəsiz ödəmə
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:3000/api';
+  const FREE_THRESHOLD = 199.99;
+
+  // In-memory selected state (keyed by product id)
+  let selectedIds = new Set();
+
+  function getToken() { return localStorage.getItem('token'); }
+
+  function getLocalCart() {
+    try { return JSON.parse(localStorage.getItem('essenCart')) || []; } catch { return []; }
+  }
+
+  function notifyCartChanged() {
+    try { localStorage.setItem('essenCartChanged', String(Date.now())); } catch {}
+  }
+
+  function updateBadge(count) {
+    const el = document.getElementById('nav-cart-count');
+    if (!el) return;
+    el.textContent = count;
+    el.style.display = count > 0 ? 'flex' : 'none';
+  }
+
+  async function fetchCart() {
+    const token = getToken();
+    if (token) {
+      try {
+        const res = await fetch(`${API}/cart`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        return data.map(item => ({
+          cartItemId: item.id,
+          id: item.product.id,
+          name: item.product.name,
+          price: parseFloat(item.product.price),
+          qty: item.quantity,
+          image: item.product.image
+        }));
+      } catch { return []; }
+    } else {
+      return getLocalCart();
+    }
+  }
+
+  async function changeQty(cartItemId, productId, delta, currentQty, e) {
+    e.stopPropagation();
+    const token = getToken();
+    const newQty = Math.max(1, currentQty + delta);
+    if (token) {
+      try {
+        await fetch(`${API}/cart/${cartItemId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ quantity: newQty })
+        });
+      } catch { alert('Xəta!'); return; }
+    } else {
+      const cart = getLocalCart();
+      const item = cart.find(i => i.id === productId);
+      if (item) item.qty = newQty;
+      localStorage.setItem('essenCart', JSON.stringify(cart));
+    }
+    notifyCartChanged();
+    renderCart();
+  }
+
+  async function removeItem(cartItemId, productId, e) {
+    e.stopPropagation();
+    const token = getToken();
+    if (token) {
+      try {
+        await fetch(`${API}/cart/${cartItemId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+      } catch { alert('Xəta!'); return; }
+    } else {
+      const cart = getLocalCart().filter(i => i.id !== productId);
+      localStorage.setItem('essenCart', JSON.stringify(cart));
+    }
+    selectedIds.delete(productId);
+    notifyCartChanged();
+    renderCart();
+  }
+
+  function toggleItemSelect(productId) {
+    if (selectedIds.has(productId)) {
+      selectedIds.delete(productId);
+    } else {
+      selectedIds.add(productId);
+    }
+    updateToolbar();
+    // Re-render just the visual state of items without full fetch
+    document.querySelectorAll('.cart-item').forEach(el => {
+      const id = parseInt(el.dataset.id);
+      el.classList.toggle('selected', selectedIds.has(id));
+    });
+  }
+
+  async function toggleSelectAll() {
+    const cart = await fetchCart();
+    const allSelected = cart.every(i => selectedIds.has(i.id));
+    if (allSelected) {
+      selectedIds.clear();
+    } else {
+      cart.forEach(i => selectedIds.add(i.id));
+    }
+    updateToolbar();
+    document.querySelectorAll('.cart-item').forEach(el => {
+      const id = parseInt(el.dataset.id);
+      el.classList.toggle('selected', selectedIds.has(id));
+    });
+    updateMasterCheckbox(cart);
+  }
+
+  async function deleteSelected() {
+    if (selectedIds.size === 0) return;
+    const token = getToken();
+
+    if (token) {
+      const cart = await fetchCart();
+      const toDelete = cart.filter(i => selectedIds.has(i.id));
+      for (const item of toDelete) {
+        try {
+          await fetch(`${API}/cart/${item.cartItemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } catch { alert('Xəta!'); return; }
+      }
+    } else {
+      const cart = getLocalCart().filter(i => !selectedIds.has(i.id));
+      localStorage.setItem('essenCart', JSON.stringify(cart));
+    }
+    selectedIds.clear();
+    notifyCartChanged();
+    renderCart();
+  }
+
+  function updateMasterCheckbox(cart) {
+    const masterCheck = document.getElementById('masterCheck');
+    if (!masterCheck || cart.length === 0) return;
+    const allSel = cart.every(i => selectedIds.has(i.id));
+    const someSel = cart.some(i => selectedIds.has(i.id));
+    masterCheck.className = 'master-checkbox' +
+      (allSel ? ' checked' : someSel ? ' indeterminate' : '');
+  }
+
+  function updateToolbar() {
+    const count = selectedIds.size;
+    const btn = document.getElementById('deleteSelectedBtn');
+    const badge = document.getElementById('selCountBadge');
+    if (!btn) return;
+    btn.classList.toggle('active', count > 0);
+    badge.classList.toggle('visible', count > 0);
+    badge.textContent = count;
+  }
+
+  async function renderCart() {
+    const cart = await fetchCart();
+
+    const emptyEl = document.getElementById('empty-state');
+    const layoutEl = document.getElementById('cart-layout');
+    const itemsEl = document.getElementById('cart-items');
+    const pill = document.getElementById('count-pill');
+
+    const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+    updateBadge(totalQty);
+
+    if (cart.length === 0) {
+      emptyEl.style.display = 'flex';
+      layoutEl.style.display = 'none';
+      pill.style.display = 'none';
+      return;
+    }
+
+    // Remove stale selected ids that no longer exist in cart
+    const cartIds = new Set(cart.map(i => i.id));
+    selectedIds.forEach(id => { if (!cartIds.has(id)) selectedIds.delete(id); });
+
+    emptyEl.style.display = 'none';
+    layoutEl.style.display = 'flex';
+    pill.style.display = 'inline-block';
+    pill.textContent = cart.length + ' məhsul';
+
+    itemsEl.innerHTML = '';
+    const col = document.createElement('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.gap = '10px';
+
+    cart.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'cart-item' + (selectedIds.has(item.id) ? ' selected' : '');
+      el.dataset.id = item.id;
+      el.onclick = () => toggleItemSelect(item.id);
+
+      el.innerHTML = `
+        <div class="item-checkbox"></div>
+        <div class="item-img">
+          ${item.image
+            ? `<img src="http://localhost:3000${item.image}" alt="${item.name}" />`
+            : `<i class="fa-solid fa-box"></i>`
+          }
+        </div>
+        <div class="item-info">
+          <p class="item-name">${item.name}</p>
+          <p class="item-unit">
+  ${item.price.toFixed(2)} ₼ × ${item.qty}
+  ${item.color ? `<span style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;">
+    <span style="width:12px;height:12px;border-radius:50%;display:inline-block;background:${resolveColor(item.color)};border:1px solid #e5e7eb;"></span>
+    ${item.color}
+  </span>` : ''}
+</p>
+          <div class="item-bottom">
+            <span class="item-price">${(item.price * item.qty).toFixed(2)} ₼</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <div class="qty-wrap">
+                <button class="qty-btn" onclick="changeQty(${item.cartItemId}, ${item.id}, -1, ${item.qty}, event)">−</button>
+                <span class="qty-num">${item.qty}</span>
+                <button class="qty-btn" onclick="changeQty(${item.cartItemId}, ${item.id}, 1, ${item.qty}, event)">+</button>
+              </div>
+              <button class="delete-btn" onclick="removeItem(${item.cartItemId}, ${item.id}, event)">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </div>
+        </div>`;
+
+      col.appendChild(el);
+    });
+
+    itemsEl.appendChild(col);
+    updateMasterCheckbox(cart);
+    updateToolbar();
+    updateSummary(cart);
+  }
+
+  function updateSummary(cart) {
+    const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const isFree = subtotal >= FREE_THRESHOLD;
+    const delivery = isFree ? 0 : 4.99;
+    const total = subtotal + delivery;
+
+    document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ₼';
+    document.getElementById('total').textContent = total.toFixed(2) + ' ₼';
+    const costEl = document.getElementById('delivery-cost');
+
+    if (isFree) {
+      costEl.textContent = 'Pulsuz'; costEl.style.color = '#16a34a';
+      document.getElementById('free-note').style.display = 'flex';
+      document.getElementById('threshold-note').style.display = 'none';
+    } else {
+      costEl.textContent = '4.99 ₼'; costEl.style.color = '#6b7280';
+      document.getElementById('free-note').style.display = 'none';
+      document.getElementById('threshold-note').style.display = 'flex';
+    }
+  }
+
+  renderCart();
+</script>
+</body>
+</html>
