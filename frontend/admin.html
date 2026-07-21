@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+  :root{
+    --ink:#1b1d22;
+    --paper:#f6f5f2;
+    --line:#dfdcd4;
+    --accent:#b3552f;
+    --accent-soft:#f0e2da;
+    --ok:#3a6b4f;
+    --danger:#a23b32;
+    --muted:#7a766e;
+    --font-display:'Iowan Old Style','Georgia',serif;
+    --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --font-mono:'SF Mono','Consolas',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- LOGIN ---------- */
+  #loginScreen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .login-card{
+    width:100%;
+    max-width:360px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:40px 32px;
+  }
+  .login-card h1{
+    font-family:var(--font-display);
+    font-size:28px;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .login-card p.sub{
+    margin:0 0 28px;
+    color:var(--muted);
+    font-size:14px;
+  }
+  label{
+    display:block;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input,select,textarea{
+    width:100%;
+    font-family:var(--font-body);
+    font-size:15px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{
+    outline:2px solid var(--accent);
+    outline-offset:1px;
+    border-color:var(--accent);
+  }
+  .field{margin-bottom:16px;}
+  button{
+    font-family:var(--font-body);
+    cursor:pointer;
+    border:none;
+  }
+  .btn-primary{
+    width:100%;
+    background:var(--ink);
+    color:#fff;
+    padding:12px;
+    border-radius:3px;
+    font-size:15px;
+    font-weight:600;
+  }
+  .btn-primary:hover{background:#000;}
+  .error-msg{
+    color:var(--danger);
+    font-size:13px;
+    margin-top:12px;
+    display:none;
+  }
+
+  /* ---------- APP SHELL ---------- */
+  #app{display:none;}
+  header.topbar{
+    background:#fff;
+    border-bottom:1px solid var(--line);
+    padding:18px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  header.topbar h1{
+    font-family:var(--font-display);
+    font-size:22px;
+    margin:0;
+  }
+  .topbar-right{display:flex;align-items:center;gap:16px;}
+  .who{font-size:13px;color:var(--muted);}
+  .btn-ghost{
+    background:transparent;
+    border:1px solid var(--line);
+    padding:7px 14px;
+    border-radius:3px;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .btn-ghost:hover{border-color:var(--ink);}
+
+  main{
+    max-width:1100px;
+    margin:0 auto;
+    padding:32px;
+  }
+
+  .panel-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:20px;
+  }
+  .panel-header h2{
+    font-family:var(--font-display);
+    font-size:20px;
+    margin:0;
+  }
+  .count{color:var(--muted);font-size:13px;}
+
+  .btn-accent{
+    background:var(--accent);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:3px;
+    font-size:14px;
+    font-weight:600;
+  }
+  .btn-accent:hover{background: red;}
+
+  /* ---------- BULK ACTIONS BAR ---------- */
+  .bulk-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .select-all-pill{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:30px;
+    padding:9px 18px;
+    font-size:14px;
+    cursor:pointer;
+    user-select:none;
+  }
+  .select-all-pill input[type="checkbox"]{
+    width:18px;
+    height:18px;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+  .btn-danger-outline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:#fff;
+    border:1px solid var(--line);
+    color:var(--danger);
+    border-radius:30px;
+    padding:9px 18px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+  }
+  .btn-danger-outline:hover{border-color:var(--danger);}
+  .btn-danger-outline:disabled{
+    opacity:.45;
+    cursor:not-allowed;
+  }
+  .btn-danger-outline .sel-count{
+    background:var(--danger);
+    color:#fff;
+    border-radius:50%;
+    min-width:20px;
+    height:20px;
+    font-size:12px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 5px;
+  }
+  .row-check, .head-check{
+    width:17px;
+    height:17px;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+  tr.row-selected td{
+    background:var(--accent-soft);
+  }
+
+  /* table */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border:1px solid var(--line);
+  }
+  th{
+    text-align:left;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--muted);
+    padding:10px 14px;
+    border-bottom:1px solid var(--line);
+    background:#fbfaf8;
+  }
+  td{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+    vertical-align:middle;
+  }
+  tr:last-child td{border-bottom:none;}
+  .prod-thumb{
+    width:42px;height:42px;
+    border-radius:3px;
+    object-fit:cover;
+    background:var(--accent-soft);
+    display:block;
+  }
+  .stock-tag{
+    display:inline-block;
+    padding:2px 8px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:600;
+  }
+  .stock-ok{background:#e3ede6;color:var(--ok);}
+  .stock-low{background:#f6e9d8;color:#92611c;}
+  .stock-out{background:#f3e0dd;color:var(--danger);}
+  .row-actions{display:flex;gap:8px;}
+  .icon-btn{
+    background:transparent;
+    border:1px solid var(--line);
+    width:30px;height:30px;
+    border-radius:3px;
+    font-size:14px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .icon-btn:hover{border-color:var(--ink);}
+  .icon-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+  .cat-tag{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .cat-tag b{
+    color:var(--ink);
+    font-weight:600;
+  }
+
+  .empty-state{
+    text-align:center;
+    padding:60px 20px;
+    color:var(--muted);
+  }
+
+  /* ---------- MODAL / FORM ---------- */
+  .overlay{
+    display:none;
+    position:fixed;inset:0;
+    background:rgba(20,18,15,.45);
+    align-items:flex-start;
+    justify-content:center;
+    padding:40px 20px;
+    overflow-y:auto;
+    z-index:50;
+  }
+  .modal{
+    background:#fff;
+    width:100%;
+    max-width:860px;
+    border-radius:5px;
+    border:1px solid var(--line);
+  }
+  .modal-head{
+    padding:22px 28px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .modal-head h3{
+    font-family:var(--font-display);
+    font-size:19px;
+    margin:0;
+  }
+  .modal-close{
+    background:transparent;
+    font-size:20px;
+    color:var(--muted);
+    line-height:1;
+    padding:4px;
+  }
+  .modal-body{
+    padding:24px 28px;
+  }
+  .grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .specs-panel{
+    display:none;
+    margin:22px 0 6px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+  }
+  .specs-panel.visible{display:block;}
+  .specs-panel-head{margin-bottom:18px;}
+  .specs-panel-head h4{font-size:17px;margin:0 0 5px;}
+  .specs-panel-head p{font-size:12px;color:var(--muted);margin:0;}
+  .spec-group{
+    padding:16px;
+    margin-bottom:14px;
+    border:1px solid var(--line);
+    border-radius:5px;
+    background:#fbfaf8;
+  }
+  .spec-group h5{font-size:13px;margin:0 0 13px;}
+  .spec-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px 14px;
+  }
+  .spec-grid .field{margin:0;}
+  .modal-foot{
+    padding:18px 28px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  .hint{font-size:12px;color:var(--muted);margin-top:4px;}
+  .file-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .file-preview{
+    width:56px;height:56px;
+    border-radius:4px;
+    border:1px dashed var(--line);
+    object-fit:cover;
+    background:var(--paper);
+  }
+  .toast{
+    position:fixed;
+    bottom:24px;right:24px;
+    background:var(--ink);
+    color:#fff;
+    padding:12px 18px;
+    border-radius:4px;
+    font-size:14px;
+    display:none;
+    z-index:100;
+  }
+  .toast.show{display:block;}
+
+  /* ---------- COLOR PICKER ---------- */
+  .color-picker{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    padding:4px 0 2px;
+  }
+  .color-swatch{
+    width:34px;
+    height:34px;
+    border-radius:50%;
+    border:2px solid var(--line);
+    cursor:pointer;
+    position:relative;
+    padding:0;
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .color-swatch:hover{transform:scale(1.08);}
+  .color-swatch.selected{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-soft);
+  }
+  .color-swatch.selected::after{
+    content:"✓";
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:14px;
+    font-weight:700;
+    text-shadow:0 0 2px rgba(0,0,0,.6);
+  }
+  .color-swatch[data-white="1"]{border-color:#cfcabf;}
+  .color-swatch[data-white="1"].selected{border-color:var(--accent);}
+  .editable-color{position:relative;display:inline-flex;}
+  .editable-color .color-swatch{cursor:default;}
+  .editable-color .remove-color{
+    position:absolute;right:-5px;top:-7px;width:18px;height:18px;border:0;border-radius:50%;
+    background:var(--danger);color:#fff;font-size:14px;line-height:18px;padding:0;cursor:pointer;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+  }
+  .custom-color-row{display:grid;grid-template-columns:1fr 120px 48px auto;gap:8px;margin-top:12px;}
+  .custom-color-row input[type="color"]{width:48px;height:42px;padding:3px;cursor:pointer;}
+  .selected-colors{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .selected-color-chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:6px 8px;background:#fff;font-size:12px;}
+  .selected-color-chip .preview{width:18px;height:18px;border-radius:50%;border:1px solid #cfcfcf;}
+  .selected-color-chip button{border:0;background:transparent;color:var(--danger);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;}
+  @media(max-width:620px){.custom-color-row{grid-template-columns:1fr 92px 48px}.custom-color-row .btn-primary{grid-column:1/-1;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h1>Admin Panel</h1>
+    <p class="sub">Mağazanı idarə etmək üçün daxil olun.</p>
+    <form id="loginForm">
+      <div class="field">
+        <label for="loginEmail">Email</label>
+        <input id="loginEmail" type="email" required autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="loginPassword">Şifrə</label>
+        <input id="loginPassword" type="password" required autocomplete="current-password">
+      </div>
+      <button class="btn-primary" type="submit">Daxil ol</button>
+      <p class="error-msg" id="loginError"></p>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="topbar">
+    <h1>Mağaza idarəetməsi</h1>
+    <div class="topbar-right">
+      <span class="who" id="whoami"></span>
+      <button class="btn-ghost" id="logoutBtn">Çıxış</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="panel-header">
+      <div>
+        <h2>Məhsullar</h2>
+        <span class="count" id="prodCount"></span>
+      </div>
+      <button class="btn-accent" id="newProductBtn">+ Məhsul əlavə et</button>
+    </div>
+
+    <div class="bulk-bar">
+      <label class="select-all-pill">
+        <input type="checkbox" id="selectAllCheckbox">
+        Hamısını seç
+      </label>
+      <button class="btn-danger-outline" id="deleteSelectedBtn" disabled>
+        🗑 Seçiləni sil <span class="sel-count" id="selCount" style="display:none;">0</span>
+      </button>
+    </div>
+
+    <table id="prodTable">
+      <thead>
+        <tr>
+          <th><input type="checkbox" class="head-check" id="headCheckbox"></th>
+          <th></th>
+          <th>Ad</th>
+          <th>Brend</th>
+          <th>Kateqoriya</th>
+          <th>Qiymət</th>
+          <th>Stok</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="prodTbody"></tbody>
+    </table>
+    <div class="empty-state" id="emptyState" style="display:none;">Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.</div>
+  </main>
+</div>
+
+<!-- MODAL: Add/Edit product -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Yeni məhsul</h3>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <form id="productForm">
+      <div class="modal-body">
+        <input type="hidden" id="productId">
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="f_name">Ad (AZ)</label>
+            <input id="f_name" required>
+          </div>
+          <div class="field">
+            <label for="f_nameRu">Ad (RU)</label>
+            <input id="f_nameRu" required>
+          </div>
+        </div>
+
+        <input type="hidden" id="f_description">
+        <input type="hidden" id="f_descRu">
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="f_price">Qiymət (₼)</label>
+            <input id="f_price" type="number" step="0.01" min="0" required>
+          </div>
+          <div class="field">
+            <label for="f_oldPrice">Köhnə qiymət (istəyə bağlı)</label>
+            <input id="f_oldPrice" type="number" step="0.01" min="0">
+          </div>
+        </div>
+
+        <!-- KATEQORİYA: əsas + alt-kateqoriya (kaskad seçim) -->
+        <div class="grid-2">
+          <div class="field">
+            <label for="f_category">Əsas kateqoriya</label>
+            <select id="f_category" required>
+              <option value="">Seçin...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f_subcategory">Alt-kateqoriya</label>
+            <select id="f_subcategory" required disabled>
+              <option value="">Əvvəlcə əsas kateqoriya seçin</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f_brand">Brend (istəyə bağlı)</label>
+          <select id="f_brand">
+            <option value="">Brendsiz</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="f_stock">Stok</label>
+          <input id="f_stock" type="number" min="0" required>
+        </div>
+
+        <section class="specs-panel" id="categorySpecsPanel">
+          <div class="specs-panel-head">
+            <h4 id="categorySpecsTitle">Məhsul xüsusiyyətləri</h4>
+            <p>Doldurulan göstəricilər müqayisə cədvəlində avtomatik görünəcək.</p>
+          </div>
+          <div id="categorySpecsFields"></div>
+        </section>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="f_discount">Endirim (istəyə bağlı)</label>
+            <input id="f_discount" placeholder="məs: -15%">
+          </div>
+          <div class="field">
+            <label for="f_installment">Taksit (istəyə bağlı)</label>
+            <input id="f_installment" placeholder="məs: 6 ay">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Rənglər (istəyə bağlı)</label>
+          <div class="color-picker" id="colorPicker"></div>
+          <div class="custom-color-row">
+            <input id="customColorName" placeholder="Rəng adı, məsələn Titanium">
+            <input id="customColorHex" value="#8A8178" maxlength="7" placeholder="#8A8178">
+            <input id="customColorVisual" type="color" value="#8a8178" title="Rəngi vizual seçin">
+            <button type="button" class="btn-primary" id="addCustomColorBtn">Rəng əlavə et</button>
+          </div>
+          <p class="hint">Əlavə etdiyiniz rəng yuxarıdakı hissədə görünəcək. Silmək üçün dairənin üzərindəki × düyməsinə basın.</p>
+          <input type="hidden" id="f_colors">
+        </div>
+
+        <div class="field">
+          <label>Əlavə kateqoriyalar</label>
+          <div id="additionalPlacements"></div>
+          <button type="button" class="btn-secondary" id="addPlacementBtn">+ Kateqoriya əlavə et</button>
+          <small style="display:block;margin-top:7px;color:var(--muted);">
+            Eyni məhsulu kopyalamadan başqa bölmələrdə də göstərir.
+          </small>
+        </div>
+
+        <div class="field">
+          <label for="f_image">Şəkil</label>
+          <div class="file-row">
+            <img id="filePreview" class="file-preview" style="display:none;">
+            <input id="f_image" type="file" accept="image/*">
+          </div>
+          <p class="hint" id="imageHint"></p>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn-ghost" id="cancelBtn">İmtina</button>
+        <button type="submit" class="btn-accent" id="saveBtn">Yadda saxla</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="admin-categories.js?v=20260705-1"></script>
+<script src="protective-case-specs.js?v=20260715-1"></script>
+<script src="smartwatch-specs.js?v=20260715-1"></script>
+<script src="smartphone-specs.js?v=20260705-1"></script>
+<script src="headphone-specs.js?v=20260714-1"></script>
+<script src="tablet-specs.js?v=20260714-1"></script>
+<script src="climate-specs.js?v=20260705-6"></script>
+<script src="gaming-specs.js?v=20260713-game-disc-1"></script>
+<script src="tv-specs.js?v=20260709-1"></script>
+<script src="admin.js?v=20260713-game-disc-1"></script>
+</body>
+</html>

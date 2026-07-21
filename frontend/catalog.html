@@ -1,0 +1,1148 @@
+﻿<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kataloq — Essen Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #ffffff; color: #202124; font-family: 'Poppins', sans-serif; }
+    .category-link.active { background: #fff0f0; color: #e8222e; font-weight: 600; }
+    .subcategory-link.active { color: #fff; background: #e8222e; border-color: #e8222e; }
+    .product-card { min-height: 430px; transition: transform .18s ease, box-shadow .18s ease; }
+    .product-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,.08); }
+    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    #categoryList {
+      scrollbar-width: none;
+      padding-right: 15px;
+    }
+    #categoryList::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+    .category-scroll-track {
+      position: absolute;
+      top: 76px;
+      right: 7px;
+      bottom: 12px;
+      width: 7px;
+      background: #f1f2f4;
+      border-radius: 999px;
+    }
+    .category-scroll-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-height: 42px;
+      background: #e8222e;
+      border-radius: 999px;
+      cursor: default;
+      touch-action: none;
+    }
+    .category-scroll-thumb:active {
+      cursor: default;
+    }
+    .catalog-search-results {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      z-index: 80;
+      max-height: 420px;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, .16);
+    }
+    .catalog-header-row { display: grid; grid-template-columns: 1fr minmax(280px, 640px) 1fr; align-items: center; gap: 16px; }
+    .catalog-layout.with-filters { grid-template-columns: 300px minmax(0, 1fr); align-items: start; }
+    .filter-panel {
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      background: #fff;
+      overflow-x: hidden;
+      overflow-y: auto;
+      max-height: calc(100vh - 112px);
+      scrollbar-width: thin;
+      scrollbar-color: #b8b8b8 transparent;
+    }
+    .filter-panel::-webkit-scrollbar { width: 6px; }
+    .filter-panel::-webkit-scrollbar-track { background: transparent; }
+    .filter-panel::-webkit-scrollbar-thumb { background: #b8b8b8; border-radius: 999px; }
+    .filter-section { border-bottom: 1px solid #e5e7eb; padding: 18px 20px; }
+    .filter-section:last-child { border-bottom: 0; }
+    .filter-title { width: 100%; display: flex; align-items: center; justify-content: space-between; font-weight: 600; }
+    .filter-title svg { transition: transform .2s ease; }
+    .filter-section.collapsed .filter-title svg { transform: rotate(180deg); }
+    .filter-section.collapsed .filter-content { display: none; }
+    .filter-option { display: flex; align-items: flex-start; gap: 10px; margin-top: 11px; color: #525252; cursor: pointer; font-size: 14px; }
+    .filter-option input { width: 19px; height: 19px; margin-top: 1px; accent-color: #e8222e; flex: 0 0 auto; }
+    .filter-count { color: #b7b7b7; }
+    .filter-search { width: 100%; height: 40px; margin-top: 14px; border: 1px solid #e1e1e1; border-radius: 11px; padding: 0 12px; outline: none; }
+    .filter-search:focus, .price-input:focus { border-color: #e8222e; }
+    .filter-options.is-limited .filter-option:nth-of-type(n+8) { display: none; }
+    .filter-options.show-all .filter-option { display: flex !important; }
+    .show-filter-options { margin-top: 13px; color: #ff1744; font-size: 14px; font-weight: 500; }
+    .price-row { display: grid; grid-template-columns: 1fr 14px 1fr; align-items: center; gap: 7px; margin-top: 14px; }
+    .price-input { min-width: 0; width: 100%; height: 42px; border: 1px solid #e1e1e1; border-radius: 11px; padding: 0 10px; outline: none; font-size: 13px; }
+    .apply-price { width: 100%; height: 42px; margin-top: 15px; border-radius: 11px; background: #e8222e; color: #fff; font-weight: 600; }
+    .mobile-filter-button { display: none; }
+    @media (max-width: 1023px) {
+      .catalog-layout.with-filters { grid-template-columns: 1fr; }
+      .mobile-filter-button { display: inline-flex; }
+      #smartphoneFilters { display: none; }
+      #smartphoneFilters.mobile-open { display: block; position: fixed; inset: 0 auto 0 0; z-index: 90; width: min(360px, 92vw); overflow-y: auto; border-radius: 0 16px 16px 0; box-shadow: 12px 0 40px rgba(0,0,0,.2); }
+    }
+    @media (max-width: 700px) {
+      .catalog-header-row { grid-template-columns: 1fr auto; height: auto; padding-top: 12px; padding-bottom: 12px; }
+      #catalogSearchForm { grid-column: 1 / -1; grid-row: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="catalog-header-row max-w-7xl mx-auto px-4 sm:px-6 h-20">
+      <a href="index.html" class="justify-self-start">
+        <img src="img/logo.png" alt="Essen Home" class="h-16 w-36">
+      </a>
+      <form id="catalogSearchForm" class="relative w-full flex justify-self-center">
+        <input id="catalogSearch" type="search" placeholder="Məhsul axtar..."
+          class="w-full h-11 border border-gray-300 rounded-l-xl px-4 outline-none focus:border-red-500">
+        <button type="submit" class="h-11 px-5 bg-red-600 text-white rounded-r-xl hover:bg-red-700">Axtar</button>
+        <div id="catalogSearchResults" class="catalog-search-results hidden"></div>
+      </form>
+      <div class="justify-self-end flex items-center gap-2">
+        <a href="compare.html" aria-label="Müqayisə" title="Müqayisə"
+          class="relative w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center text-red-600 hover:border-red-500">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+              d="M12 3v18M6 7l6-2 6 2M6 7l-3 9h6L6 7Zm12 0-3 9h6l-3-9ZM3 16a3 3 0 0 0 6 0m6 0a3 3 0 0 0 6 0M9 21h6"/>
+          </svg>
+          <span id="catalogCompareCount"
+            class="hidden absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold items-center justify-center">
+            0
+          </span>
+        </a>
+        <a href="cart.html" aria-label="Səbət" title="Səbət"
+          class="relative w-11 h-11 rounded-xl border border-gray-300 flex items-center justify-center text-gray-700 hover:border-red-500 hover:text-red-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13 5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm-8 0a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/>
+          </svg>
+          <span id="catalogCartCount"
+            class="hidden absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-red-600 text-white text-[11px] font-bold items-center justify-center">
+            0
+          </span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-7">
+    <nav class="text-sm text-gray-500 mb-5">
+      <a href="index.html" class="hover:text-red-600">Ana səhifə</a>
+      <span class="mx-2">/</span>
+      <span id="breadcrumbCurrent" class="text-gray-800">Kataloq</span>
+    </nav>
+
+    <div id="catalogLayout" class="catalog-layout grid grid-cols-1 gap-6">
+      <aside id="smartphoneFilters" class="filter-panel hidden lg:sticky lg:top-24">
+        <div class="p-5 border-b border-gray-200 flex items-center justify-between gap-3">
+          <h2 class="font-bold text-lg">Filtrlər</h2>
+          <div class="flex items-center gap-3">
+            <button id="clearAllSmartphoneFilters" type="button"
+              class="text-sm font-medium text-red-600 hover:text-red-700 whitespace-nowrap">
+              Hamısını təmizlə
+            </button>
+            <button id="closeMobileFilters" type="button" class="lg:hidden text-2xl leading-none">×</button>
+          </div>
+        </div>
+        <div id="dynamicFilters"></div>
+      </aside>
+      <aside class="hidden relative bg-white border border-gray-200 rounded-2xl overflow-hidden h-fit lg:sticky lg:top-24">
+        <div class="p-4 border-b border-gray-200">
+          <h2 class="font-bold text-lg">Kateqoriyalar</h2>
+        </div>
+        <div id="categoryList" class="max-h-[70vh] overflow-y-auto"></div>
+        <div id="categoryScrollTrack" class="category-scroll-track" aria-hidden="true">
+          <div id="categoryScrollThumb" class="category-scroll-thumb"></div>
+        </div>
+      </aside>
+
+      <section>
+        <div class="bg-white border border-gray-200 rounded-2xl p-5 mb-5">
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h1 id="catalogTitle" class="text-2xl sm:text-3xl font-bold">Bütün məhsullar</h1>
+              <p id="productCount" class="text-sm text-gray-500 mt-2">Məhsullar yüklənir...</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="openMobileFilters" type="button"
+                class="mobile-filter-button text-sm border border-gray-300 rounded-lg px-3 py-2 hover:border-red-500 hover:text-red-600">
+                Filtrlər
+              </button>
+              <a id="clearFilter" href="catalog.html"
+                class="hidden text-sm border border-gray-300 rounded-lg px-3 py-2 hover:border-red-500 hover:text-red-600">
+                Filtri təmizlə
+              </a>
+            </div>
+          </div>
+          <div id="subcategoryList" class="flex flex-wrap gap-2 mt-5"></div>
+        </div>
+
+        <div id="loadingState" class="bg-white border border-gray-200 rounded-2xl p-10 text-center text-gray-500">
+          Məhsullar yüklənir...
+        </div>
+        <div id="emptyState" class="hidden bg-white border border-gray-200 rounded-2xl p-10 text-center">
+          <h2 class="text-xl font-semibold">Məhsul tapılmadı</h2>
+          <p class="text-gray-500 mt-2">Bu seçim üzrə admin paneldə məhsul yoxdur.</p>
+        </div>
+        <div id="productGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+      </section>
+    </div>
+  </main>
+
+  <div id="catalogLoginModal" class="hidden fixed inset-0 z-[100] bg-black/45 items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-bold">Hesaba daxil ol</h2>
+        <button id="closeCatalogLogin" type="button"
+          class="w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:text-red-600">×</button>
+      </div>
+      <form id="catalogLoginForm" class="space-y-4">
+        <div>
+          <label for="catalogLoginEmail" class="block text-sm font-medium mb-1">Email</label>
+          <input id="catalogLoginEmail" type="email" required
+            class="w-full h-11 rounded-xl border border-gray-300 px-3 outline-none focus:border-red-500">
+        </div>
+        <div>
+          <label for="catalogLoginPassword" class="block text-sm font-medium mb-1">Şifrə</label>
+          <input id="catalogLoginPassword" type="password" required
+            class="w-full h-11 rounded-xl border border-gray-300 px-3 outline-none focus:border-red-500">
+        </div>
+        <p id="catalogLoginMessage" class="hidden text-sm text-red-600"></p>
+        <button type="submit" class="w-full h-11 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700">
+          Daxil ol
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin-categories.js?v=20260705-2"></script>
+  <script>
+    const API = 'http://localhost:3000';
+    const params = new URLSearchParams(window.location.search);
+    const selectedCategory = params.get('category') || '';
+    const selectedSubcategory = params.get('subcategory') || '';
+    const searchQuery = params.get('search') || '';
+
+    function catalogUrl(category = '', subcategory = '', search = '') {
+      const query = new URLSearchParams();
+      if (category) query.set('category', category);
+      if (subcategory) query.set('subcategory', subcategory);
+      if (search) query.set('search', search);
+      return `catalog.html${query.toString() ? `?${query.toString()}` : ''}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderCategories() {
+      const categoryList = document.getElementById('categoryList');
+      const allLink = document.createElement('a');
+      allLink.href = 'catalog.html';
+      allLink.className = `category-link block px-4 py-3 border-b border-gray-100 hover:bg-red-50 hover:text-red-600 ${!selectedCategory ? 'active' : ''}`;
+      allLink.textContent = 'Bütün məhsullar';
+      categoryList.appendChild(allLink);
+
+      Object.keys(ADMIN_CATEGORY_TREE).forEach(category => {
+        const link = document.createElement('a');
+        link.href = catalogUrl(category);
+        link.className = `category-link block px-4 py-3 border-b border-gray-100 hover:bg-red-50 hover:text-red-600 ${selectedCategory === category ? 'active' : ''}`;
+        link.textContent = category;
+        categoryList.appendChild(link);
+      });
+    }
+
+    function setupCategoryScrollbar() {
+      const list = document.getElementById('categoryList');
+      const track = document.getElementById('categoryScrollTrack');
+      const thumb = document.getElementById('categoryScrollThumb');
+      if (!list || !track || !thumb) return;
+
+      function updateThumb() {
+        const scrollRange = list.scrollHeight - list.clientHeight;
+        const canScroll = scrollRange > 1;
+        track.style.display = canScroll ? 'block' : 'none';
+        if (!canScroll) return;
+
+        const trackHeight = track.clientHeight;
+        const thumbHeight = Math.max(42, trackHeight * (list.clientHeight / list.scrollHeight));
+        const thumbRange = Math.max(0, trackHeight - thumbHeight);
+        const thumbTop = scrollRange ? (list.scrollTop / scrollRange) * thumbRange : 0;
+        thumb.style.height = `${thumbHeight}px`;
+        thumb.style.transform = `translateY(${thumbTop}px)`;
+      }
+
+      let dragging = false;
+      let startY = 0;
+      let startScrollTop = 0;
+
+      thumb.addEventListener('pointerdown', event => {
+        dragging = true;
+        startY = event.clientY;
+        startScrollTop = list.scrollTop;
+        thumb.setPointerCapture(event.pointerId);
+        event.preventDefault();
+      });
+
+      thumb.addEventListener('pointermove', event => {
+        if (!dragging) return;
+        const scrollRange = list.scrollHeight - list.clientHeight;
+        const thumbRange = track.clientHeight - thumb.offsetHeight;
+        if (thumbRange <= 0) return;
+        list.scrollTop = startScrollTop + (event.clientY - startY) * (scrollRange / thumbRange);
+      });
+
+      function stopDragging(event) {
+        dragging = false;
+        if (thumb.hasPointerCapture(event.pointerId)) thumb.releasePointerCapture(event.pointerId);
+      }
+
+      thumb.addEventListener('pointerup', stopDragging);
+      thumb.addEventListener('pointercancel', stopDragging);
+
+      track.addEventListener('pointerdown', event => {
+        if (event.target === thumb) return;
+        const rect = track.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        list.scrollTop = ratio * (list.scrollHeight - list.clientHeight);
+      });
+
+      list.addEventListener('scroll', updateThumb, { passive: true });
+      window.addEventListener('resize', updateThumb);
+      if ('ResizeObserver' in window) new ResizeObserver(updateThumb).observe(list);
+      requestAnimationFrame(updateThumb);
+    }
+
+    function renderSubcategories() {
+      const target = document.getElementById('subcategoryList');
+      if (!selectedCategory || !ADMIN_CATEGORY_TREE[selectedCategory]) return;
+
+      const allLink = document.createElement('a');
+      allLink.href = catalogUrl(selectedCategory);
+      allLink.className = `subcategory-link border border-gray-300 rounded-full px-3 py-1.5 text-sm hover:border-red-500 hover:text-red-600 ${!selectedSubcategory ? 'active' : ''}`;
+      allLink.textContent = 'Hamısı';
+      target.appendChild(allLink);
+
+      ADMIN_CATEGORY_TREE[selectedCategory].forEach(group => {
+        (group.items || []).forEach(subcategory => {
+          const link = document.createElement('a');
+          link.href = catalogUrl(selectedCategory, subcategory);
+          link.className = `subcategory-link border border-gray-300 rounded-full px-3 py-1.5 text-sm hover:border-red-500 hover:text-red-600 ${selectedSubcategory === subcategory ? 'active' : ''}`;
+          link.textContent = subcategory;
+          target.appendChild(link);
+        });
+      });
+    }
+
+    function updateHeading() {
+      const title = selectedSubcategory || selectedCategory ||
+        (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar');
+      document.getElementById('catalogTitle').textContent = title;
+      document.getElementById('breadcrumbCurrent').textContent = title;
+      document.title = `${title} — Essen Home`;
+      document.getElementById('catalogSearch').value = searchQuery;
+      document.getElementById('clearFilter').classList.toggle('hidden', !selectedCategory && !selectedSubcategory && !searchQuery);
+    }
+
+    function productMatchesPlacement(product, category, subcategory) {
+      const placements = Array.isArray(product.placements) && product.placements.length
+        ? product.placements
+        : [{ category: product.category, subcategory: product.subcategory }];
+      return placements.some(placement =>
+        (!category || placement.category === category) &&
+        (!subcategory || placement.subcategory === subcategory)
+      );
+    }
+
+    function filteredProducts(products) {
+      return products.filter(product => {
+        if (!productMatchesPlacement(product, selectedCategory, selectedSubcategory)) return false;
+        if (searchQuery) {
+          const needle = searchQuery.toLocaleLowerCase('az');
+          const haystack = [
+            product.name,
+            product.nameRu,
+            product.category,
+            product.subcategory,
+            product.brand,
+            ...(product.placements || []).flatMap(placement => [
+              placement.category,
+              placement.subcategory
+            ])
+          ].filter(Boolean).join(' ').toLocaleLowerCase('az');
+          if (!haystack.includes(needle)) return false;
+        }
+        return true;
+      });
+    }
+
+    function isSmartphoneProduct(product) {
+      return String(`${product.category || ''} ${product.subcategory || ''} ${product.name || ''}`)
+        .toLocaleLowerCase('az')
+        .includes('smartfon');
+    }
+
+    const SMARTPHONE_FILTERS = [
+      { id: 'brand', title: 'Brend', source: 'brand', searchable: true },
+      { id: 'series', title: 'Seriya', keys: ['Seriya'] },
+      { id: 'storage', title: 'Daxili yaddaş', keys: ['Daxili yaddaş'] },
+      { id: 'ram', title: 'Operativ yaddaş', keys: ['Operativ yaddaş'] },
+      { id: 'color', title: 'Rəng', keys: ['Rəng', 'Rənglər'], source: 'colors', searchable: true },
+      { id: 'battery', title: 'Akkumulyatorun tutumu', keys: ['Akkumulyatorun tutumu'] },
+      { id: 'processor', title: 'Prosessorun adı', keys: ['Prosessorun adı'] },
+      { id: 'os', title: 'Əməliyyat sistemi', keys: ['Əməliyyat sistemi'] },
+      { id: 'screen', title: 'Ekran', keys: ['Ekran'], searchable: true },
+      { id: 'simCount', title: 'SIM-kart sayı', keys: ['SIM-kart sayı'] },
+      { id: 'simType', title: 'SIM-kart növü', keys: ['SIM-kart növü'] },
+      { id: 'nfc', title: 'NFC', keys: ['NFC'] },
+      { id: 'wireless', title: 'Simsiz enerji', keys: ['Simsiz enerji'] }
+    ];
+    let catalogProducts = [];
+    const activeFilters = {};
+
+    function normalized(value) {
+      return String(value || '').trim().toLocaleLowerCase('az')
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function specValue(product, keys) {
+      const specs = product.specs && typeof product.specs === 'object' ? product.specs : {};
+      const wanted = (keys || []).map(normalized);
+      const found = Object.keys(specs).find(key => wanted.includes(normalized(key)));
+      return found ? specs[found] : '';
+    }
+
+    function splitValues(value) {
+      if (Array.isArray(value)) return value.flatMap(splitValues);
+      if (value && typeof value === 'object') return [value.name || value.value || ''].filter(Boolean);
+      const raw = String(value || '').trim();
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed.flatMap(splitValues);
+      } catch (_) {}
+      return raw.split(/\s*[;,|]\s*/).map(item => item.replace(/^["']|["']$/g, '').trim()).filter(Boolean);
+    }
+
+    function colorNames(value) {
+      if (Array.isArray(value)) return value.flatMap(colorNames);
+      if (value && typeof value === 'object') {
+        return colorNames(value.name || value.label || value.value || '');
+      }
+      const raw = String(value || '').trim();
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) || (parsed && typeof parsed === 'object')) return colorNames(parsed);
+      } catch (_) {}
+      return raw.split(/\s*[,;]\s*/)
+        .map(item => item.split('|')[0].trim())
+        .filter(item => item && !/^#[0-9a-f]{3,8}$/i.test(item));
+    }
+
+    function filterValues(product, definition) {
+      if (definition.source === 'brand') return splitValues(product.brand);
+      if (definition.source === 'colors') {
+        return [...colorNames(specValue(product, definition.keys)), ...colorNames(product.colors)]
+          .filter((value, index, all) =>
+          all.findIndex(other => normalized(other) === normalized(value)) === index
+        );
+      }
+      const values = splitValues(specValue(product, definition.keys));
+      return values;
+    }
+
+    function isSmartphoneCatalog(products) {
+      return products.some(isSmartphoneProduct) &&
+        (normalized(selectedSubcategory).includes('smartfon') ||
+         normalized(selectedCategory).includes('smartfon') ||
+         products.every(isSmartphoneProduct));
+    }
+
+    function optionCounts(products, definition) {
+      const counts = new Map();
+      products.forEach(product => {
+        const unique = new Map(filterValues(product, definition).map(value => [normalized(value), value]));
+        unique.forEach((label, key) => {
+          const current = counts.get(key);
+          counts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
+        });
+      });
+      return [...counts.entries()]
+        .map(([key, data]) => ({ key, ...data }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'az', { numeric: true }));
+    }
+
+    function filterSection(definition, options) {
+      if (!options.length) return '';
+      const search = definition.searchable && options.length > 7
+        ? `<input class="filter-search" data-search-filter="${definition.id}" placeholder="Axtar">` : '';
+      const optionHtml = options.map(option => `
+        <label class="filter-option" data-option-label="${escapeHtml(normalized(option.label))}">
+          <input type="checkbox" data-filter-id="${definition.id}" value="${escapeHtml(option.key)}">
+          <span>${escapeHtml(option.label)} <span class="filter-count">(${option.count})</span></span>
+        </label>`).join('');
+      const showAll = options.length > 7
+        ? `<button type="button" class="show-filter-options">Hamısını göstər (${options.length})</button>` : '';
+      return `<section class="filter-section" data-filter-section="${definition.id}">
+        <button type="button" class="filter-title">
+          <span>${escapeHtml(definition.title)}</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>
+        </button>
+        <div class="filter-content">${search}
+          <div class="filter-options${options.length > 7 ? ' is-limited' : ''}">${optionHtml}</div>${showAll}
+        </div>
+      </section>`;
+    }
+
+    function renderSmartphoneFilters(products) {
+      const panel = document.getElementById('smartphoneFilters');
+      const layout = document.getElementById('catalogLayout');
+      const smartphoneMode = isSmartphoneCatalog(products);
+      panel.classList.toggle('hidden', !smartphoneMode);
+      layout.classList.toggle('with-filters', smartphoneMode);
+      document.getElementById('openMobileFilters').classList.toggle('hidden', !smartphoneMode);
+      if (!smartphoneMode) return;
+
+      const prices = products.map(p => Number(p.price)).filter(Number.isFinite);
+      const min = prices.length ? Math.floor(Math.min(...prices)) : 0;
+      const max = prices.length ? Math.ceil(Math.max(...prices)) : 0;
+      const price = `<section class="filter-section">
+        <button type="button" class="filter-title"><span>Qiymət</span>
+          <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg>
+        </button>
+        <div class="filter-content">
+          <div class="price-row">
+            <input id="filterMinPrice" class="price-input" type="number" min="0" placeholder="${min} ₼">
+            <span>–</span>
+            <input id="filterMaxPrice" class="price-input" type="number" min="0" placeholder="${max} ₼">
+          </div>
+          <button id="applyPriceFilter" type="button" class="apply-price">Tətbiq et</button>
+        </div>
+      </section>`;
+      document.getElementById('dynamicFilters').innerHTML = price +
+        SMARTPHONE_FILTERS.map(def => filterSection(def, optionCounts(products, def))).join('');
+      bindSmartphoneFilters();
+    }
+
+    function bindSmartphoneFilters() {
+      document.querySelectorAll('.filter-title').forEach(button => {
+        button.addEventListener('click', () => button.closest('.filter-section').classList.toggle('collapsed'));
+      });
+      document.querySelectorAll('[data-filter-id]').forEach(input => {
+        input.addEventListener('change', () => {
+          const id = input.dataset.filterId;
+          activeFilters[id] = new Set(
+            [...document.querySelectorAll(`[data-filter-id="${id}"]:checked`)].map(item => item.value)
+          );
+          renderCatalogProducts();
+        });
+      });
+      document.querySelectorAll('.filter-search').forEach(input => {
+        input.addEventListener('input', () => {
+          const section = input.closest('.filter-section');
+          const needle = normalized(input.value);
+          section.querySelectorAll('.filter-option').forEach(option => {
+            option.style.display = !needle || option.dataset.optionLabel.includes(needle) ? 'flex' : 'none';
+          });
+        });
+      });
+      document.querySelectorAll('.show-filter-options').forEach(button => {
+        button.addEventListener('click', () => {
+          const options = button.previousElementSibling;
+          const expanded = options.classList.toggle('show-all');
+          button.textContent = expanded ? 'Daha az göstər' : `Hamısını göstər (${options.children.length})`;
+        });
+      });
+      document.getElementById('applyPriceFilter').addEventListener('click', renderCatalogProducts);
+    }
+
+    function clearAllSmartphoneFilters() {
+      Object.keys(activeFilters).forEach(key => delete activeFilters[key]);
+      document.querySelectorAll('[data-filter-id]:checked').forEach(input => {
+        input.checked = false;
+      });
+      document.querySelectorAll('.filter-search').forEach(input => {
+        input.value = '';
+        input.closest('.filter-section').querySelectorAll('.filter-option').forEach(option => {
+          option.style.display = '';
+        });
+      });
+      const minPrice = document.getElementById('filterMinPrice');
+      const maxPrice = document.getElementById('filterMaxPrice');
+      if (minPrice) minPrice.value = '';
+      if (maxPrice) maxPrice.value = '';
+      renderCatalogProducts();
+    }
+
+    function applySmartphoneFilters(products) {
+      const min = Number(document.getElementById('filterMinPrice')?.value || 0);
+      const max = Number(document.getElementById('filterMaxPrice')?.value || Infinity);
+      return products.filter(product => {
+        const price = Number(product.price);
+        if (price < min || price > max) return false;
+        return SMARTPHONE_FILTERS.every(definition => {
+          const selected = activeFilters[definition.id];
+          if (!selected || !selected.size) return true;
+          return filterValues(product, definition).some(value => selected.has(normalized(value)));
+        });
+      });
+    }
+
+    function renderCatalogProducts() {
+      const products = applySmartphoneFilters(catalogProducts);
+      const grid = document.getElementById('productGrid');
+      document.getElementById('productCount').textContent = `${products.length} məhsul`;
+      document.getElementById('emptyState').classList.toggle('hidden', products.length > 0);
+      grid.classList.toggle('hidden', products.length === 0);
+      if (!products.length) return;
+      grid.innerHTML = products.map(productCard).join('');
+      grid.querySelectorAll('.fav-card-btn').forEach(button => button.addEventListener('click', () => toggleCardFavourite(button)));
+      grid.querySelectorAll('.compare-card-btn').forEach(button => button.addEventListener('click', () => toggleCardCompare(button)));
+      grid.querySelectorAll('.add-cart-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+          await addToCatalogCart(Number(button.dataset.id), button.dataset.name, Number(button.dataset.price), button);
+        });
+      });
+      initCardActionButtons();
+      initCatalogCartState();
+    }
+
+    function productTopBadge(product) {
+      if (isSmartphoneProduct(product)) {
+        return '<div style="height:32px;display:flex;align-items:flex-end;justify-content:flex-start;padding:7px 12px 0;box-sizing:border-box;"><span style="display:inline-flex;align-items:center;box-sizing:border-box;max-width:100%;white-space:nowrap;border-radius:6px;border:1px solid #dc2626;background:#fff;padding:4px 8px;font-size:11px;font-weight:700;line-height:1;color:#dc2626;">çatdırılma 0 ₼</span></div>';
+      }
+      return Number(product.price) > 199.99
+        ? '<span style="position:absolute;top:12px;left:12px;z-index:10;box-sizing:border-box;max-width:calc(100% - 24px);white-space:nowrap;border-radius:6px;border:1px solid #dc2626;background:#fff;padding:4px 8px;font-size:11px;font-weight:600;line-height:1;color:#dc2626;">quraşdırılma 0 ₼</span>'
+        : '';
+    }
+
+    function productCard(product) {
+      const image = product.image
+        ? `<img src="${API}${escapeHtml(product.image)}" alt="${escapeHtml(product.name)}" class="w-full h-full object-contain px-4 pt-3 pb-3">`
+        : '<span class="text-gray-300 text-sm">Şəkil yoxdur</span>';
+      const oldPrice = product.oldPrice
+        ? `<p class="text-sm text-gray-400 line-through">${escapeHtml(product.oldPrice)} ₼</p>`
+        : '<div class="h-2"></div>';
+      const topBadge = productTopBadge(product);
+      return `
+        <article class="product-card bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col">
+          <a href="product.html?id=${product.id}" class="relative h-44 bg-white flex flex-col">
+            ${topBadge}
+            <div class="flex-1 min-h-0 flex items-center justify-center">
+              ${image}
+            </div>
+          </a>
+          <div class="p-3 flex flex-col flex-1">
+            <a href="product.html?id=${product.id}" class="font-medium leading-5 min-h-10 line-clamp-2 hover:text-red-600">
+              ${escapeHtml(product.name)}
+            </a>
+            <div class="mt-auto pt-2">
+              ${oldPrice}
+              <p class="text-xl font-bold text-red-600">${escapeHtml(product.price)} ₼</p>
+              <div class="grid grid-cols-[auto_1fr] gap-2 mt-3">
+                <div class="flex gap-1.5">
+                  <button type="button" data-fav-id="${product.id}" title="Sevimlilərə əlavə et"
+                    class="card-action-btn fav-card-btn w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+                        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78Z"/>
+                    </svg>
+                  </button>
+                  <button type="button" data-compare-id="${product.id}" title="Müqayisəyə əlavə et"
+                    class="card-action-btn compare-card-btn w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center text-red-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7"
+                        d="M12 3v18M6 7l6-2 6 2M6 7l-3 9h6L6 7Zm12 0-3 9h6l-3-9ZM3 16a3 3 0 0 0 6 0m6 0a3 3 0 0 0 6 0M9 21h6"/>
+                    </svg>
+                  </button>
+                </div>
+                <button type="button" class="add-cart-btn bg-red-600 text-white rounded-lg px-2 py-2 text-sm hover:bg-red-700"
+                  data-id="${product.id}" data-name="${escapeHtml(product.name)}" data-price="${Number(product.price)}">
+                  Səbətə at
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    async function loadCatalogProducts() {
+      const query = new URLSearchParams();
+      if (selectedCategory) query.set('category', selectedCategory);
+      if (selectedSubcategory) query.set('subcategory', selectedSubcategory);
+      if (searchQuery) query.set('search', searchQuery);
+
+      try {
+        const response = await fetch(`${API}/api/products?${query.toString()}`);
+        if (!response.ok) throw new Error('Məhsullar yüklənmədi');
+        const products = filteredProducts(await response.json());
+        catalogProducts = products;
+        document.getElementById('loadingState').classList.add('hidden');
+        renderSmartphoneFilters(products);
+        document.getElementById('productCount').textContent = `${products.length} məhsul`;
+
+        if (!products.length) {
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+
+        renderCatalogProducts();
+      } catch (error) {
+        document.getElementById('loadingState').textContent = 'Məhsulları yükləmək mümkün olmadı.';
+        document.getElementById('productCount').textContent = '';
+      }
+    }
+
+    document.getElementById('openMobileFilters').addEventListener('click', () => {
+      document.getElementById('smartphoneFilters').classList.add('mobile-open');
+    });
+    document.getElementById('closeMobileFilters').addEventListener('click', () => {
+      document.getElementById('smartphoneFilters').classList.remove('mobile-open');
+    });
+    document.getElementById('clearAllSmartphoneFilters').addEventListener('click', clearAllSmartphoneFilters);
+
+    function getLocalCart() {
+      try {
+        return JSON.parse(localStorage.getItem('essenCart') || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function setCartButtonState(button, active) {
+      if (!button) return;
+      button.dataset.active = String(active);
+      button.classList.toggle('bg-green-600', active);
+      button.classList.toggle('hover:bg-green-700', active);
+      button.classList.toggle('bg-red-600', !active);
+      button.classList.toggle('hover:bg-red-700', !active);
+      button.innerHTML = active
+        ? '<span aria-hidden="true">✓</span> Səbətdə'
+        : 'Səbətə at';
+    }
+
+    async function updateCatalogCartCount(cartItems) {
+      let items = cartItems;
+      const token = localStorage.getItem('token');
+      if (!items) {
+        if (token) {
+          try {
+            const response = await fetch(`${API}/api/cart`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            items = response.ok ? await response.json() : [];
+          } catch {
+            items = [];
+          }
+        } else {
+          items = getLocalCart();
+        }
+      }
+
+      const total = items.reduce((sum, item) => sum + Number(item.quantity || item.qty || 1), 0);
+      const badge = document.getElementById('catalogCartCount');
+      badge.textContent = total;
+      badge.classList.toggle('hidden', total === 0);
+      badge.classList.toggle('flex', total > 0);
+      return items;
+    }
+
+    async function initCatalogCartState() {
+      const items = await updateCatalogCartCount();
+      const productIds = new Set(items.map(item => Number(item.productId || item.product?.id || item.id)));
+      document.querySelectorAll('.add-cart-btn').forEach(button => {
+        setCartButtonState(button, productIds.has(Number(button.dataset.id)));
+      });
+    }
+
+    async function addToCatalogCart(id, name, price, button) {
+      const token = localStorage.getItem('token');
+
+      try {
+        if (token) {
+          const response = await fetch(`${API}/api/cart`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ productId: id, quantity: 1 })
+          });
+          if (!response.ok) throw new Error();
+        } else {
+          const cart = getLocalCart();
+          const existing = cart.find(item => Number(item.id) === id);
+          if (existing) existing.qty = Number(existing.qty || 1) + 1;
+          else cart.push({ id, name, price, qty: 1, color: null });
+          localStorage.setItem('essenCart', JSON.stringify(cart));
+        }
+
+        setCartButtonState(button, true);
+        localStorage.setItem('essenCartChanged', String(Date.now()));
+        await updateCatalogCartCount();
+      } catch {
+        alert('Məhsulu səbətə əlavə etmək mümkün olmadı.');
+      }
+    }
+
+    let searchProductsPromise = null;
+    let searchDebounceTimer = null;
+
+    function getSearchProducts() {
+      if (!searchProductsPromise) {
+        searchProductsPromise = fetch(`${API}/api/products`)
+          .then(response => {
+            if (!response.ok) throw new Error();
+            return response.json();
+          })
+          .catch(() => []);
+      }
+      return searchProductsPromise;
+    }
+
+    function hideSearchResults() {
+      const results = document.getElementById('catalogSearchResults');
+      results.classList.add('hidden');
+      results.innerHTML = '';
+    }
+
+    async function renderSearchResults(query) {
+      const results = document.getElementById('catalogSearchResults');
+      const normalizedQuery = query.trim().toLocaleLowerCase('az');
+      if (normalizedQuery.length < 2) {
+        hideSearchResults();
+        return;
+      }
+
+      results.innerHTML = '<div class="px-4 py-4 text-sm text-gray-500">Axtarılır...</div>';
+      results.classList.remove('hidden');
+      const products = await getSearchProducts();
+
+      if (document.getElementById('catalogSearch').value.trim().toLocaleLowerCase('az') !== normalizedQuery) return;
+
+      const matches = products.filter(product => {
+        const searchable = [
+          product.name,
+          product.nameRu,
+          product.category,
+          product.subcategory,
+          product.brand
+        ].filter(Boolean).join(' ').toLocaleLowerCase('az');
+        return searchable.includes(normalizedQuery);
+      }).slice(0, 6);
+
+      results.innerHTML = '';
+      if (!matches.length) {
+        const empty = document.createElement('div');
+        empty.className = 'px-4 py-5 text-sm text-gray-500 text-center';
+        empty.textContent = 'Uyğun məhsul tapılmadı';
+        results.appendChild(empty);
+        return;
+      }
+
+      matches.forEach(product => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'w-full flex items-center gap-3 px-4 py-3 text-left border-b border-gray-100 hover:bg-red-50';
+
+        const imageBox = document.createElement('span');
+        imageBox.className = 'w-12 h-12 rounded-lg border border-gray-200 bg-white flex items-center justify-center shrink-0 overflow-hidden';
+        if (product.image) {
+          const image = document.createElement('img');
+          image.src = `${API}${product.image}`;
+          image.alt = product.name || '';
+          image.className = 'w-full h-full object-contain p-1';
+          imageBox.appendChild(image);
+        }
+
+        const info = document.createElement('span');
+        info.className = 'min-w-0 flex-1';
+        const name = document.createElement('span');
+        name.className = 'block text-sm font-medium text-gray-900 truncate';
+        name.textContent = product.name;
+        const meta = document.createElement('span');
+        meta.className = 'block text-xs text-gray-500 mt-1 truncate';
+        meta.textContent = [product.subcategory, `${product.price} ₼`].filter(Boolean).join(' • ');
+        info.append(name, meta);
+
+        button.append(imageBox, info);
+        button.addEventListener('click', () => {
+          window.location.href = `product.html?id=${product.id}`;
+        });
+        results.appendChild(button);
+      });
+
+      const viewAll = document.createElement('button');
+      viewAll.type = 'button';
+      viewAll.className = 'w-full px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50';
+      viewAll.textContent = `Bütün nəticələrə bax (${matches.length})`;
+      viewAll.addEventListener('click', () => {
+        window.location.href = catalogUrl('', '', query.trim());
+      });
+      results.appendChild(viewAll);
+    }
+
+    let pendingProtectedAction = null;
+
+    function showCatalogLogin(action) {
+      pendingProtectedAction = action || null;
+      const modal = document.getElementById('catalogLoginModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.getElementById('catalogLoginEmail').focus();
+    }
+
+    function closeCatalogLogin() {
+      const modal = document.getElementById('catalogLoginModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      document.getElementById('catalogLoginMessage').classList.add('hidden');
+    }
+
+    function setFavouriteState(button, active) {
+      button.dataset.active = String(active);
+      button.classList.toggle('border-red-600', active);
+      button.classList.toggle('border-gray-300', !active);
+      button.classList.toggle('bg-red-50', active);
+      button.classList.toggle('text-red-600', active);
+      button.classList.toggle('text-gray-500', !active);
+      const icon = button.querySelector('svg');
+      icon.setAttribute('fill', active ? 'currentColor' : 'none');
+    }
+
+    function setCompareState(button, active) {
+      button.dataset.active = String(active);
+      button.classList.toggle('border-red-600', active);
+      button.classList.toggle('border-gray-300', !active);
+      button.classList.toggle('bg-red-50', active);
+    }
+
+    async function updateCatalogCompareCount() {
+      const badge = document.getElementById('catalogCompareCount');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API}/api/compare/count`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        const count = Number(data.count || 0);
+        badge.textContent = count;
+        badge.classList.toggle('hidden', count === 0);
+        badge.classList.toggle('flex', count > 0);
+      } catch {
+        badge.classList.add('hidden');
+        badge.classList.remove('flex');
+      }
+    }
+
+    async function toggleCardFavourite(button) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showCatalogLogin(() => toggleCardFavourite(button));
+        return;
+      }
+      const productId = Number(button.dataset.favId);
+      const wasActive = button.dataset.active === 'true';
+      setFavouriteState(button, !wasActive);
+
+      try {
+        const response = await fetch(
+          wasActive ? `${API}/api/favourites/${productId}` : `${API}/api/favourites`,
+          {
+            method: wasActive ? 'DELETE' : 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: wasActive ? undefined : JSON.stringify({ productId })
+          }
+        );
+        if (!response.ok) throw new Error();
+      } catch {
+        setFavouriteState(button, wasActive);
+      }
+    }
+
+    async function toggleCardCompare(button) {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showCatalogLogin(() => toggleCardCompare(button));
+        return;
+      }
+      const productId = Number(button.dataset.compareId);
+      const wasActive = button.dataset.active === 'true';
+
+      try {
+        const response = await fetch(
+          wasActive ? `${API}/api/compare/${productId}` : `${API}/api/compare`,
+          {
+            method: wasActive ? 'DELETE' : 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: wasActive ? undefined : JSON.stringify({ productId })
+          }
+        );
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          alert(data.error || 'Müqayisə əməliyyatı alınmadı.');
+          return;
+        }
+        setCompareState(button, !wasActive);
+        localStorage.setItem('essenCompareChanged', String(Date.now()));
+        await updateCatalogCompareCount();
+      } catch {
+        alert('Müqayisə əməliyyatı alınmadı.');
+      }
+    }
+
+    async function initCardActionButtons() {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const favouriteButtons = Array.from(document.querySelectorAll('.fav-card-btn'));
+      const compareButtons = Array.from(document.querySelectorAll('.compare-card-btn'));
+
+      await Promise.all([
+        ...favouriteButtons.map(async button => {
+          try {
+            const response = await fetch(`${API}/api/favourites/check/${button.dataset.favId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            setFavouriteState(button, Boolean(data.isFavourite));
+          } catch {}
+        }),
+        ...compareButtons.map(async button => {
+          try {
+            const response = await fetch(`${API}/api/compare/check/${button.dataset.compareId}`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            setCompareState(button, Boolean(data.isCompared));
+          } catch {}
+        })
+      ]);
+      await updateCatalogCompareCount();
+    }
+
+    const catalogSearchInput = document.getElementById('catalogSearch');
+    const catalogSearchForm = document.getElementById('catalogSearchForm');
+    const catalogLoginModal = document.getElementById('catalogLoginModal');
+
+    catalogSearchForm.addEventListener('submit', event => {
+      event.preventDefault();
+      const value = catalogSearchInput.value.trim();
+      window.location.href = catalogUrl('', '', value);
+    });
+
+    catalogSearchInput.addEventListener('input', () => {
+      clearTimeout(searchDebounceTimer);
+      const query = catalogSearchInput.value;
+      searchDebounceTimer = setTimeout(() => renderSearchResults(query), 180);
+    });
+
+    catalogSearchInput.addEventListener('keydown', event => {
+      if (event.key === 'Escape') hideSearchResults();
+    });
+
+    document.addEventListener('click', event => {
+      if (!catalogSearchForm.contains(event.target)) hideSearchResults();
+    });
+
+    document.getElementById('closeCatalogLogin').addEventListener('click', closeCatalogLogin);
+    catalogLoginModal.addEventListener('click', event => {
+      if (event.target === catalogLoginModal) closeCatalogLogin();
+    });
+
+    document.getElementById('catalogLoginForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const email = document.getElementById('catalogLoginEmail').value.trim();
+      const password = document.getElementById('catalogLoginPassword').value;
+      const message = document.getElementById('catalogLoginMessage');
+
+      try {
+        const response = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || data.error || 'Giriş alınmadı');
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('activeUser', data.user.email);
+        localStorage.setItem('userRole', data.user.role);
+        const action = pendingProtectedAction;
+        pendingProtectedAction = null;
+        closeCatalogLogin();
+        await initCardActionButtons();
+        await initCatalogCartState();
+        if (action) await action();
+      } catch (error) {
+        message.textContent = error.message || 'Giriş alınmadı';
+        message.classList.remove('hidden');
+      }
+    });
+
+    renderCategories();
+    setupCategoryScrollbar();
+    renderSubcategories();
+    updateHeading();
+    loadCatalogProducts();
+    updateCatalogCartCount();
+    updateCatalogCompareCount();
+    window.addEventListener('storage', event => {
+      if (event.key === 'essenCartChanged' || event.key === 'essenCart') {
+        initCatalogCartState();
+      }
+      if (event.key === 'essenCompareChanged') {
+        updateCatalogCompareCount();
+      }
+    });
+    window.addEventListener('focus', () => {
+      initCatalogCartState();
+      updateCatalogCompareCount();
+    });
+    window.addEventListener('pageshow', () => {
+      initCatalogCartState();
+      updateCatalogCompareCount();
+    });
+  </script>
+</body>
+</html>
