@@ -1,4 +1,4 @@
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+require('dotenv').config({ path: require('path').join(__dirname, '.env'), quiet: true });
 
 const express = require('express');
 const cors = require('cors');
@@ -45,6 +45,6 @@ app.get('/:page', (req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Server http://localhost:${PORT} ünvanında işləyir`);
 });
