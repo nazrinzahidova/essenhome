@@ -7,8 +7,6 @@ node_modules/
 **/.env.*
 !**/.env.example
 backend/generated/
-backend/uploads/*
-!backend/uploads/.gitkeep
 *.log
 *.dump
 *.sql.gz
