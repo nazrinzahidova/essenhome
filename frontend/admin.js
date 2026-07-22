@@ -116,6 +116,7 @@ async function loadProducts() {
     const res = await fetch(`${API}/api/products`);
     if (!res.ok) throw new Error();
     allProducts = await res.json();
+    syncAdminColorPaletteFromProducts(allProducts);
     // artıq mövcud olmayan id-ləri seçimdən təmizlə
     const validIds = new Set(allProducts.map(p => p.id));
     selectedIds.forEach(id => { if (!validIds.has(id)) selectedIds.delete(id); });
@@ -666,6 +667,19 @@ function syncColorsHidden() {
 function parseColorsString(str) {
   if (!str) return [];
   return str.split(',').map(s => normalizeColor(s)).filter(c => c.name);
+}
+
+function syncAdminColorPaletteFromProducts(products) {
+  let changed = false;
+  products.forEach(product => {
+    parseColorsString(product.colors).forEach(color => {
+      if (!adminColorPalette.some(item => sameColor(item, color))) {
+        adminColorPalette.push({ name: color.name, hex: color.hex });
+        changed = true;
+      }
+    });
+  });
+  if (changed) saveAdminColorPalette();
 }
 
 document.getElementById('addCustomColorBtn').addEventListener('click', () => {
