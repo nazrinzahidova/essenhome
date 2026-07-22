@@ -305,7 +305,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:3000/api';
+  const API = '/api';
   const FREE_THRESHOLD = 199.99;
 
   // In-memory selected state (keyed by product id)
@@ -511,7 +511,7 @@
         <div class="item-checkbox"></div>
         <div class="item-img">
           ${item.image
-            ? `<img src="http://localhost:3000${item.image}" alt="${item.name}" />`
+            ? `<img src="${item.image}" alt="${item.name}" />`
             : `<i class="fa-solid fa-box"></i>`
           }
         </div>
