@@ -1,8 +1,7 @@
 // backend/routes/favourites.js
 const express = require('express');
 const router  = express.Router();
-const { PrismaClient } = require('../generated/client-v3');
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 const auth   = require('../middleware/auth'); // mövcud middleware
 
 // ── GET /api/favourites ──────────────────────────────────────

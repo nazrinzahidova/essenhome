@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('../generated/client-v3');
+const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
-
-const prisma = new PrismaClient();
 
 // Multer konfiqurasiyası
 const storage = multer.diskStorage({

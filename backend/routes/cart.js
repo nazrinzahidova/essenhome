@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('../generated/client-v3');
+const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
 
-const prisma = new PrismaClient();
 
 // Səbəti gətir
 router.get('/', authMiddleware, async (req, res) => {

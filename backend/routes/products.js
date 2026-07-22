@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { PrismaClient } = require('../generated/client-v3');
-
-const prisma = new PrismaClient();
+const prisma = require('../lib/prisma');
 
 function sortByPlacementDate(products, category, subcategory) {
   const matchingDate = product => {
