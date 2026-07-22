@@ -4,14 +4,20 @@ const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+fs.mkdirSync(uploadsDir, { recursive: true });
 
 // Multer konfiqurasiyası
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    const extension = path.extname(file.originalname).toLowerCase();
+    const uniqueName = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
+    cb(null, uniqueName);
   }
 });
 
