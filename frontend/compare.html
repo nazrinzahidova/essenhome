@@ -275,7 +275,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:3000/api';
+  const API = '/api';
 const MAX_PRODUCTS = 4; // backend-dəki limitlə uyğun
 
 // Bu 4 alt-kateqoriya müqayisə səhifəsində TEK bir qrup ("Hava emalı") kimi göstərilir.
@@ -623,7 +623,7 @@ function render() {
       <button class="remove-btn" title="Müqayisədən sil" onclick="removeProduct(${p.id})"><i class="fa-solid fa-xmark"></i></button>
       <div class="prod-name">${escapeHtml(p.name)}</div>
       <div class="prod-img-wrap">
-        <img src="${p.image ? 'http://localhost:3000' + p.image : 'https://placehold.co/220x220?text=Şəkil+yoxdur'}" alt="${escapeHtml(p.name)}">
+        <img src="${p.image ? '' + p.image : 'https://placehold.co/220x220?text=Şəkil+yoxdur'}" alt="${escapeHtml(p.name)}">
       </div>
       <div class="value-row" style="margin-bottom:0;padding:18px 0 0;border-top:none;">
         <div class="price-row value-row">
