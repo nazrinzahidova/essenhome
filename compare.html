@@ -275,7 +275,7 @@
 </div>
 
 <script>
-  const API = 'http://localhost:3000/api';
+  const API = '/api';
 const MAX_PRODUCTS = 4; // backend-dəki limitlə uyğun
 
 // Bu 4 alt-kateqoriya müqayisə səhifəsində TEK bir qrup ("Hava emalı") kimi göstərilir.
@@ -411,6 +411,37 @@ function buildSpecFields(products) {
     'Avtomatik sönmə', 'Pərin diametri',
     'Həddindən artıq qızmaya qarşı qorunma'
   ];
+  const dispenserOrder = [
+    'SKU', 'Brend', 'Növ', 'Rəng', 'Ölçülər (H × E × D)',
+    'Əlavə xüsusiyyətlər', 'Quraşdırılma növü', 'Naqilin uzunluğu', 'Çəki',
+    'İstehsalçı ölkə', 'Zəmanət', 'Funksiyalar', 'İsitmə gücü', 'Soyutma gücü',
+    'Soyutma növü', 'Soyutma indikatoru', 'İsitmə indikatoru', 'Kran sistemi',
+    'Uşaq kilidi', 'Bidonun yerləşdirilməsi'
+  ];
+  const fridgeOrder = [
+    'SKU', 'Brend', 'Növ', 'Hündürlük', 'İdarəetmə növü', 'Displey', 'Rəng',
+    'Ölçülər (H × E × D)', 'Əritmə sistemi', 'Enerji istifadə sinfi',
+    'Toplam həcm', 'Soyuducu kameranın faydalı həcmi',
+    'Dondurucu kameranın faydalı həcmi', 'Kameraların sayı', 'Qapıların sayı',
+    'Qapı istiqamətinin dəyişdirilməsi', 'Buz generatoru', 'Rəflərin materialı',
+    'Səs səviyyəsi', 'İqlim sinfi', 'En', 'Dərinlik', 'Kompressor tipi',
+    'Əlavə xüsusiyyətlər', 'Quraşdırılma növü', 'Tutacaqların növü',
+    'İstehsalçı ölkə', 'Zəmanət', 'Toplam faydalı həcm',
+    'Dondurucu kameranın yerləşməsi', 'Təravət bölməsi'
+  ];
+  const hoodOrder = [
+    'SKU', 'Brend', 'Növ', 'İdarəetmə növü', 'Rəng', 'Məhsuldarlıq',
+    'Ölçülər (H × E × D)', 'Səs səviyyəsi', 'En', 'Sürət sayı',
+    'Hava kanalının diametri', 'İstehsalçı ölkə', 'Zəmanət',
+    'Korpusun materialı', 'İş rejimi'
+  ];
+  const vacuumOrder = [
+    'SKU', 'Brend', 'Güc', 'Rəng', 'Ölçülər (H × E × D)', 'Səs səviyyəsi',
+    'Naqilin uzunluğu', 'Çəki', 'Toz qabının həcmi', 'Toz qabının növü',
+    'Təmizləmə növü', 'Güc tənzimləyicisi', 'Borunun materialı',
+    'İstehsalçı ölkə', 'Xüsusiyyətlər', 'Sorma gücü', 'Zəmanət',
+    'Çıxış filtri', 'Başlıqlar'
+  ];
   const airTreatmentOrder = [
     'SKU', 'Brend', 'Növ', 'Güc', 'Displey', 'Rəng', 'Enerji istehlakı',
     'Çəki', 'Su çəninin həcmi', 'Xidmət olunan sahə', 'Məhsuldarlıq', 'Rejim sayı',
@@ -489,6 +520,14 @@ function buildSpecFields(products) {
     ? airConditionerOrder
     : subcategory === 'ventilyatorlar'
       ? fanOrder
+      : subcategory === 'dispenserlər'
+      ? dispenserOrder
+      : subcategory === 'soyuducular'
+      ? fridgeOrder
+      : subcategory === 'aspiratorlar'
+      ? hoodOrder
+      : subcategory === 'tozsoranlar'
+      ? vacuumOrder
       : smartphoneOrder;
 
   // Kateqoriya şablonundakı bütün sətirləri göstər; dəyər yoxdursa "—" yazılacaq.
@@ -623,7 +662,7 @@ function render() {
       <button class="remove-btn" title="Müqayisədən sil" onclick="removeProduct(${p.id})"><i class="fa-solid fa-xmark"></i></button>
       <div class="prod-name">${escapeHtml(p.name)}</div>
       <div class="prod-img-wrap">
-        <img src="${p.image ? 'http://localhost:3000' + p.image : 'https://placehold.co/220x220?text=Şəkil+yoxdur'}" alt="${escapeHtml(p.name)}">
+        <img src="${p.image || 'https://placehold.co/220x220?text=Şəkil+yoxdur'}" alt="${escapeHtml(p.name)}">
       </div>
       <div class="value-row" style="margin-bottom:0;padding:18px 0 0;border-top:none;">
         <div class="price-row value-row">

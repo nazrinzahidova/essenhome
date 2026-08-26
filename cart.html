@@ -305,13 +305,14 @@
 </div>
 
 <script>
-  const API = 'http://localhost:3000/api';
+  const API = '/api';
   const FREE_THRESHOLD = 199.99;
 
   // In-memory selected state (keyed by product id)
   let selectedIds = new Set();
 
   function getToken() { return localStorage.getItem('token'); }
+  function clearExpiredSession() { ['token','activeUser','userRole','user'].forEach(key => localStorage.removeItem(key)); }
 
   function getLocalCart() {
     try { return JSON.parse(localStorage.getItem('essenCart')) || []; } catch { return []; }
@@ -335,6 +336,7 @@
         const res = await fetch(`${API}/cart`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (res.status === 401 || res.status === 403) { clearExpiredSession(); return getLocalCart(); }
         if (!res.ok) throw new Error();
         const data = await res.json();
         return data.map(item => ({
@@ -511,7 +513,7 @@
         <div class="item-checkbox"></div>
         <div class="item-img">
           ${item.image
-            ? `<img src="http://localhost:3000${item.image}" alt="${item.name}" />`
+            ? `<img src="${item.image}" alt="${item.name}" />`
             : `<i class="fa-solid fa-box"></i>`
           }
         </div>

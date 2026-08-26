@@ -90,6 +90,8 @@
     .show-filter-options { margin-top: 13px; color: #ff1744; font-size: 14px; font-weight: 500; }
     .price-row { display: grid; grid-template-columns: 1fr 14px 1fr; align-items: center; gap: 7px; margin-top: 14px; }
     .price-input { min-width: 0; width: 100%; height: 42px; border: 1px solid #e1e1e1; border-radius: 11px; padding: 0 10px; outline: none; font-size: 13px; }
+    .price-sliders { display: grid; gap: 8px; margin-top: 14px; }
+    .price-slider { width: 100%; accent-color: #e8222e; cursor: pointer; }
     .apply-price { width: 100%; height: 42px; margin-top: 15px; border-radius: 11px; background: #e8222e; color: #fff; font-weight: 600; }
     .mobile-filter-button { display: none; }
     @media (max-width: 1023px) {
@@ -236,7 +238,7 @@
 
   <script src="admin-categories.js?v=20260705-2"></script>
   <script>
-    const API = 'http://localhost:3000';
+    const API = '';
     const params = new URLSearchParams(window.location.search);
     const selectedCategory = params.get('category') || '';
     const selectedSubcategory = params.get('subcategory') || '';
@@ -406,23 +408,53 @@
         .includes('smartfon');
     }
 
-    const SMARTPHONE_FILTERS = [
-      { id: 'brand', title: 'Brend', source: 'brand', searchable: true },
-      { id: 'series', title: 'Seriya', keys: ['Seriya'] },
-      { id: 'storage', title: 'Daxili yaddaş', keys: ['Daxili yaddaş'] },
-      { id: 'ram', title: 'Operativ yaddaş', keys: ['Operativ yaddaş'] },
-      { id: 'color', title: 'Rəng', keys: ['Rəng', 'Rənglər'], source: 'colors', searchable: true },
-      { id: 'battery', title: 'Akkumulyatorun tutumu', keys: ['Akkumulyatorun tutumu'] },
-      { id: 'processor', title: 'Prosessorun adı', keys: ['Prosessorun adı'] },
-      { id: 'os', title: 'Əməliyyat sistemi', keys: ['Əməliyyat sistemi'] },
-      { id: 'screen', title: 'Ekran', keys: ['Ekran'], searchable: true },
-      { id: 'simCount', title: 'SIM-kart sayı', keys: ['SIM-kart sayı'] },
-      { id: 'simType', title: 'SIM-kart növü', keys: ['SIM-kart növü'] },
-      { id: 'nfc', title: 'NFC', keys: ['NFC'] },
-      { id: 'wireless', title: 'Simsiz enerji', keys: ['Simsiz enerji'] }
-    ];
+    function isTvProduct(product) {
+      const placements = [
+        { category: product.category, subcategory: product.subcategory },
+        ...(Array.isArray(product.placements) ? product.placements : [])
+      ];
+      return placements.some(placement => {
+        const category = normalized(placement.category);
+        const subcategory = normalized(placement.subcategory);
+        return subcategory === 'gaming tv' || subcategory.startsWith('tv brend ') ||
+          (category.includes('tv') && (subcategory.includes('tv') || !subcategory));
+      });
+    }
+
     let catalogProducts = [];
     const activeFilters = {};
+    let currentFilterDefinitions = [];
+    const DISPENSER_FILTER_ORDER = [
+      'Növ', 'Quraşdırılma növü', 'Soyutma növü', 'Soyutma indikatoru',
+      'İsitmə indikatoru', 'Kran sistemi', 'Uşaq kilidi',
+      'Bidonun yerləşdirilməsi', 'İstehsalçı ölkə', 'Zəmanət',
+      'Funksiyalar', 'Əlavə xüsusiyyətlər', 'İsitmə gücü', 'Soyutma gücü',
+      'Naqilin uzunluğu', 'Çəki', 'Ölçülər (H × E × D)', 'SKU'
+    ];
+    const FRIDGE_FILTER_ORDER = [
+      'Növ', 'Əritmə sistemi', 'Enerji istifadə sinfi', 'Kompressor tipi',
+      'Quraşdırılma növü', 'Dondurucu kameranın yerləşməsi',
+      'İdarəetmə növü', 'Displey', 'Qapı istiqamətinin dəyişdirilməsi',
+      'Buz generatoru', 'Təravət bölməsi', 'Rəflərin materialı',
+      'Tutacaqların növü', 'İqlim sinfi', 'İstehsalçı ölkə', 'Zəmanət',
+      'Kameraların sayı', 'Qapıların sayı', 'Toplam həcm',
+      'Toplam faydalı həcm', 'Soyuducu kameranın faydalı həcmi',
+      'Dondurucu kameranın faydalı həcmi', 'Hündürlük', 'En', 'Dərinlik',
+      'Ölçülər (H × E × D)', 'Səs səviyyəsi', 'Əlavə xüsusiyyətlər', 'SKU'
+    ];
+    const HOOD_FILTER_ORDER = [
+      'Növ', 'İdarəetmə növü', 'İş rejimi', 'Korpusun materialı',
+      'İstehsalçı ölkə', 'Zəmanət', 'Məhsuldarlıq', 'Səs səviyyəsi',
+      'Sürət sayı', 'Hava kanalının diametri', 'En',
+      'Ölçülər (H × E × D)', 'SKU'
+    ];
+    const VACUUM_FILTER_ORDER = [
+      'Toz qabının növü', 'Təmizləmə növü', 'Güc tənzimləyicisi',
+      'Borunun materialı', 'Çıxış filtri', 'İstehsalçı ölkə', 'Zəmanət',
+      'Güc', 'Sorma gücü', 'Toz qabının həcmi', 'Səs səviyyəsi',
+      'Naqilin uzunluğu', 'Çəki', 'Ölçülər (H × E × D)',
+      'Xüsusiyyətlər', 'Başlıqlar', 'SKU'
+    ];
 
     function normalized(value) {
       return String(value || '').trim().toLocaleLowerCase('az')
@@ -483,13 +515,100 @@
          products.every(isSmartphoneProduct));
     }
 
+    function isDispenserCatalog() {
+      return normalized(selectedSubcategory) === normalized('Dispenserlər');
+    }
+
+    function isFridgeCatalog() {
+      return normalized(selectedSubcategory) === normalized('Soyuducular');
+    }
+
+    function isHoodCatalog() {
+      return normalized(selectedSubcategory) === normalized('Aspiratorlar');
+    }
+
+    function isVacuumCatalog() {
+      return normalized(selectedSubcategory) === normalized('Tozsoranlar');
+    }
+
+    // Filtr siyahısı sabit kateqoriya şablonlarından deyil, ekranda olan real
+    // məhsulların admin paneldə saxlanılmış `specs` məlumatlarından qurulur.
+    function buildFilterDefinitions(products) {
+      const definitions = [];
+      const seenKeys = new Set();
+      const add = definition => {
+        if (!seenKeys.has(definition.id)) {
+          seenKeys.add(definition.id);
+          definitions.push(definition);
+        }
+      };
+
+      if (products.some(product => String(product.brand || '').trim())) {
+        add({ id: 'brand', title: 'Brend', source: 'brand', searchable: true });
+      }
+
+      // Rəng adminin ayrıca rəng sahəsindən də gələ bildiyi üçün onu bir dəfə
+      // ümumi "Rəng" filtri altında birləşdiririk.
+      if (products.some(product => colorNames(product.colors).length ||
+          Object.keys(product.specs || {}).some(key => ['rəng', 'rənglər'].includes(normalized(key))))) {
+        add({ id: 'colors', title: 'Rəng', source: 'colors', keys: ['Rəng', 'Rənglər'], searchable: true });
+      }
+
+      // Dispenserlər üçün əsas filtr sahələrini admin panelindəki ardıcıllıqla
+      // göstər. Dəyəri olmayan sahələr görünmür; bu, mövcud filtr davranışını saxlayır.
+      if (isDispenserCatalog()) {
+        DISPENSER_FILTER_ORDER.forEach(key => {
+          if (products.some(product => splitValues(specValue(product, [key])).length)) {
+            add({ id: `spec:${normalized(key)}`, title: key, keys: [key], searchable: true });
+          }
+        });
+      }
+
+      if (isFridgeCatalog()) {
+        FRIDGE_FILTER_ORDER.forEach(key => {
+          if (products.some(product => splitValues(specValue(product, [key])).length)) {
+            add({ id: `spec:${normalized(key)}`, title: key, keys: [key], searchable: true });
+          }
+        });
+      }
+
+      if (isHoodCatalog()) {
+        HOOD_FILTER_ORDER.forEach(key => {
+          if (products.some(product => splitValues(specValue(product, [key])).length)) {
+            add({ id: `spec:${normalized(key)}`, title: key, keys: [key], searchable: true });
+          }
+        });
+      }
+
+      if (isVacuumCatalog()) {
+        VACUUM_FILTER_ORDER.forEach(key => {
+          if (products.some(product => splitValues(specValue(product, [key])).length)) {
+            add({ id: `spec:${normalized(key)}`, title: key, keys: [key], searchable: true });
+          }
+        });
+      }
+
+      products.forEach(product => {
+        const specs = product.specs && typeof product.specs === 'object' ? product.specs : {};
+        Object.keys(specs).forEach(key => {
+          const cleanKey = String(key || '').trim();
+          if (!cleanKey || ['rəng', 'rənglər'].includes(normalized(cleanKey))) return;
+          const id = `spec:${normalized(cleanKey)}`;
+          add({ id, title: cleanKey, keys: [cleanKey], searchable: true });
+        });
+      });
+      return definitions;
+    }
+
     function optionCounts(products, definition) {
       const counts = new Map();
       products.forEach(product => {
         const unique = new Map(filterValues(product, definition).map(value => [normalized(value), value]));
         unique.forEach((label, key) => {
           const current = counts.get(key);
-          counts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
+          const displayLabel = definition.valueLabels?.[key] ||
+            (key === 'true' ? 'Bəli' : key === 'false' ? 'Xeyr' : label);
+          counts.set(key, { label: current?.label || displayLabel, count: (current?.count || 0) + 1 });
         });
       });
       return [...counts.entries()]
@@ -519,14 +638,19 @@
       </section>`;
     }
 
-    function renderSmartphoneFilters(products) {
+    function renderCatalogFilters(products) {
       const panel = document.getElementById('smartphoneFilters');
       const layout = document.getElementById('catalogLayout');
-      const smartphoneMode = isSmartphoneCatalog(products);
-      panel.classList.toggle('hidden', !smartphoneMode);
-      layout.classList.toggle('with-filters', smartphoneMode);
-      document.getElementById('openMobileFilters').classList.toggle('hidden', !smartphoneMode);
-      if (!smartphoneMode) return;
+      // Qiymət və ən azı bir real parametr olduqda bütün kateqoriyalar eyni
+      // Smartfon filtr panelindən istifadə edir. Beləliklə yeni kateqoriya üçün
+      // ayrıca frontend kodu yazılmır.
+      currentFilterDefinitions = buildFilterDefinitions(products);
+      const filterMode = products.length > 0;
+      panel.classList.toggle('hidden', !filterMode);
+      layout.classList.toggle('with-filters', filterMode);
+      document.getElementById('openMobileFilters').classList.toggle('hidden', !filterMode);
+      if (!filterMode) return;
+      Object.keys(activeFilters).forEach(key => delete activeFilters[key]);
 
       const prices = products.map(p => Number(p.price)).filter(Number.isFinite);
       const min = prices.length ? Math.floor(Math.min(...prices)) : 0;
@@ -541,15 +665,19 @@
             <span>–</span>
             <input id="filterMaxPrice" class="price-input" type="number" min="0" placeholder="${max} ₼">
           </div>
+          <div class="price-sliders">
+            <input id="filterMinRange" class="price-slider" type="range" min="${min}" max="${max}" value="${min}" aria-label="Minimum qiymət">
+            <input id="filterMaxRange" class="price-slider" type="range" min="${min}" max="${max}" value="${max}" aria-label="Maksimum qiymət">
+          </div>
           <button id="applyPriceFilter" type="button" class="apply-price">Tətbiq et</button>
         </div>
       </section>`;
       document.getElementById('dynamicFilters').innerHTML = price +
-        SMARTPHONE_FILTERS.map(def => filterSection(def, optionCounts(products, def))).join('');
-      bindSmartphoneFilters();
+        currentFilterDefinitions.map(def => filterSection(def, optionCounts(products, def))).join('');
+      bindCatalogFilters();
     }
 
-    function bindSmartphoneFilters() {
+    function bindCatalogFilters() {
       document.querySelectorAll('.filter-title').forEach(button => {
         button.addEventListener('click', () => button.closest('.filter-section').classList.toggle('collapsed'));
       });
@@ -579,9 +707,29 @@
         });
       });
       document.getElementById('applyPriceFilter').addEventListener('click', renderCatalogProducts);
+      const minInput = document.getElementById('filterMinPrice');
+      const maxInput = document.getElementById('filterMaxPrice');
+      const minRange = document.getElementById('filterMinRange');
+      const maxRange = document.getElementById('filterMaxRange');
+      minRange.addEventListener('input', () => {
+        if (Number(minRange.value) > Number(maxRange.value)) minRange.value = maxRange.value;
+        minInput.value = minRange.value;
+        renderCatalogProducts();
+      });
+      maxRange.addEventListener('input', () => {
+        if (Number(maxRange.value) < Number(minRange.value)) maxRange.value = minRange.value;
+        maxInput.value = maxRange.value;
+        renderCatalogProducts();
+      });
+      minInput.addEventListener('change', () => {
+        minRange.value = Math.min(Number(minInput.value || minRange.min), Number(maxRange.value));
+      });
+      maxInput.addEventListener('change', () => {
+        maxRange.value = Math.max(Number(maxInput.value || maxRange.max), Number(minRange.value));
+      });
     }
 
-    function clearAllSmartphoneFilters() {
+    function clearAllCatalogFilters() {
       Object.keys(activeFilters).forEach(key => delete activeFilters[key]);
       document.querySelectorAll('[data-filter-id]:checked').forEach(input => {
         input.checked = false;
@@ -596,16 +744,20 @@
       const maxPrice = document.getElementById('filterMaxPrice');
       if (minPrice) minPrice.value = '';
       if (maxPrice) maxPrice.value = '';
+      const minRange = document.getElementById('filterMinRange');
+      const maxRange = document.getElementById('filterMaxRange');
+      if (minRange) minRange.value = minRange.min;
+      if (maxRange) maxRange.value = maxRange.max;
       renderCatalogProducts();
     }
 
-    function applySmartphoneFilters(products) {
+    function applyCatalogFilters(products) {
       const min = Number(document.getElementById('filterMinPrice')?.value || 0);
       const max = Number(document.getElementById('filterMaxPrice')?.value || Infinity);
       return products.filter(product => {
         const price = Number(product.price);
         if (price < min || price > max) return false;
-        return SMARTPHONE_FILTERS.every(definition => {
+        return currentFilterDefinitions.every(definition => {
           const selected = activeFilters[definition.id];
           if (!selected || !selected.size) return true;
           return filterValues(product, definition).some(value => selected.has(normalized(value)));
@@ -614,7 +766,7 @@
     }
 
     function renderCatalogProducts() {
-      const products = applySmartphoneFilters(catalogProducts);
+      const products = applyCatalogFilters(catalogProducts);
       const grid = document.getElementById('productGrid');
       document.getElementById('productCount').textContent = `${products.length} məhsul`;
       document.getElementById('emptyState').classList.toggle('hidden', products.length > 0);
@@ -625,7 +777,7 @@
       grid.querySelectorAll('.compare-card-btn').forEach(button => button.addEventListener('click', () => toggleCardCompare(button)));
       grid.querySelectorAll('.add-cart-btn').forEach(button => {
         button.addEventListener('click', async () => {
-          await addToCatalogCart(Number(button.dataset.id), button.dataset.name, Number(button.dataset.price), button);
+          await addToCatalogCart(Number(button.dataset.id), button.dataset.name, Number(button.dataset.price), button.dataset.image, button);
         });
       });
       initCardActionButtons();
@@ -682,7 +834,7 @@
                   </button>
                 </div>
                 <button type="button" class="add-cart-btn bg-red-600 text-white rounded-lg px-2 py-2 text-sm hover:bg-red-700"
-                  data-id="${product.id}" data-name="${escapeHtml(product.name)}" data-price="${Number(product.price)}">
+                  data-id="${product.id}" data-name="${escapeHtml(product.name)}" data-price="${Number(product.price)}" data-image="${escapeHtml(product.image || '')}">
                   Səbətə at
                 </button>
               </div>
@@ -703,7 +855,7 @@
         const products = filteredProducts(await response.json());
         catalogProducts = products;
         document.getElementById('loadingState').classList.add('hidden');
-        renderSmartphoneFilters(products);
+        renderCatalogFilters(products);
         document.getElementById('productCount').textContent = `${products.length} məhsul`;
 
         if (!products.length) {
@@ -724,7 +876,7 @@
     document.getElementById('closeMobileFilters').addEventListener('click', () => {
       document.getElementById('smartphoneFilters').classList.remove('mobile-open');
     });
-    document.getElementById('clearAllSmartphoneFilters').addEventListener('click', clearAllSmartphoneFilters);
+    document.getElementById('clearAllSmartphoneFilters').addEventListener('click', clearAllCatalogFilters);
 
     function getLocalCart() {
       try {
@@ -732,6 +884,10 @@
       } catch {
         return [];
       }
+    }
+
+    function clearExpiredCatalogSession() {
+      ['token','activeUser','userRole','user'].forEach(key => localStorage.removeItem(key));
     }
 
     function setCartButtonState(button, active) {
@@ -755,7 +911,9 @@
             const response = await fetch(`${API}/api/cart`, {
               headers: { 'Authorization': `Bearer ${token}` }
             });
-            items = response.ok ? await response.json() : [];
+            if (response.ok) items = await response.json();
+            else if (response.status === 401 || response.status === 403) { clearExpiredCatalogSession(); items = getLocalCart(); }
+            else items = [];
           } catch {
             items = [];
           }
@@ -780,10 +938,11 @@
       });
     }
 
-    async function addToCatalogCart(id, name, price, button) {
+    async function addToCatalogCart(id, name, price, image, button) {
       const token = localStorage.getItem('token');
 
       try {
+        let saveLocally = !token;
         if (token) {
           const response = await fetch(`${API}/api/cart`, {
             method: 'POST',
@@ -793,12 +952,14 @@
             },
             body: JSON.stringify({ productId: id, quantity: 1 })
           });
-          if (!response.ok) throw new Error();
-        } else {
+          if (response.status === 401 || response.status === 403) { clearExpiredCatalogSession(); saveLocally = true; }
+          else if (!response.ok) throw new Error();
+        }
+        if (saveLocally) {
           const cart = getLocalCart();
           const existing = cart.find(item => Number(item.id) === id);
-          if (existing) existing.qty = Number(existing.qty || 1) + 1;
-          else cart.push({ id, name, price, qty: 1, color: null });
+          if (existing) { existing.qty = Number(existing.qty || 1) + 1; if (!existing.image && image) existing.image = image; }
+          else cart.push({ id, name, price, image: image || '', qty: 1, color: null });
           localStorage.setItem('essenCart', JSON.stringify(cart));
         }
 

@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client-v3"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  phone     String?  @unique
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+
+  orders     Order[]
+  carts      Cart[]
+  favourites Favourite[]
+  compares   Compare[]
+  chatSessions ChatSession[]
+}
+
+model ChatSession {
+  id        Int      @id @default(autoincrement())
+  chatKey   String   @unique
+  userId    Int?
+  name      String
+  phone     String
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  messages  ChatMessage[]
+  @@index([updatedAt])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  sessionId Int
+  sender    String
+  text      String
+  createdAt DateTime @default(now())
+  readAt    DateTime?
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  @@index([sessionId, createdAt])
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameRu      String
+  description String
+  descRu      String
+  price       Float
+  image       String?
+  category    String
+  subcategory String?
+  brand       String?
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt @default(now())
+
+  colors      String?
+  discount    String?
+  installment String?
+  oldPrice    Float?
+  specs       Json?
+
+  orderItems OrderItem[]
+  carts      Cart[]
+  favourites Favourite[]
+  compares   Compare[]
+  placements ProductPlacement[]
+}
+
+model ProductPlacement {
+  id          Int     @id @default(autoincrement())
+  productId   Int
+  category    String
+  subcategory String?
+  createdAt   DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, category, subcategory])
+  @@index([category, subcategory])
+}
+
+model Order {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  status    String   @default("pending")
+  total     Float
+  createdAt DateTime @default(now())
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Cart {
+  id        Int @id @default(autoincrement())
+  userId    Int
+  productId Int
+  quantity  Int @default(1)
+
+  user    User    @relation(fields: [userId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Favourite {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Compare {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}

@@ -500,6 +500,13 @@
     </div>
     <form id="loginForm" class="space-y-6">
       <div class="space-y-4">
+        <div id="registerFields" class="hidden space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-2"><label for="registerFirstName" class="block text-sm">Ad</label><input type="text" id="registerFirstName" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none"></div>
+            <div class="space-y-2"><label for="registerLastName" class="block text-sm">Soyad</label><input type="text" id="registerLastName" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none"></div>
+          </div>
+          <div class="space-y-2"><label for="registerPhone" class="block text-sm">Telefon nömrəsi</label><input type="tel" id="registerPhone" placeholder="050 123 45 67" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none"></div>
+        </div>
         <div class="space-y-2">
           <label for="loginEmail" class="block text-sm">Email address</label>
           <input type="email" name="email" id="loginEmail" placeholder="leroy@jenkins.com" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none" required>
@@ -829,15 +836,21 @@
     authTitle.textContent = isRegisterMode ? "Qeydiyyatdan keç" : "Hesaba daxil ol";
     authSubmitBtn.textContent = isRegisterMode ? "Qeydiyyat ol" : "Sign in";
     toggleAuthMode.textContent = isRegisterMode ? "Daxil ol" : "Buradan qeydiyyat ol";
+    document.getElementById('registerFields').classList.toggle('hidden', !isRegisterMode);
+    ['registerFirstName','registerLastName','registerPhone'].forEach(id => document.getElementById(id).required = isRegisterMode);
     loginMessage.classList.add("hidden");
   });
   loginForm.addEventListener("submit", async function(e) {
     e.preventDefault();
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
+    const firstName = document.getElementById('registerFirstName').value.trim();
+    const lastName = document.getElementById('registerLastName').value.trim();
+    const phone = document.getElementById('registerPhone').value.trim();
     if (!email || !password) { showMessage("Email və şifrə daxil edin.", "error"); return; }
-    const url = isRegisterMode ? "http://localhost:3000/api/auth/register" : "http://localhost:3000/api/auth/login";
-    const body = isRegisterMode ? { name: email.split("@")[0], email, password } : { email, password };
+    if (isRegisterMode && (!firstName || !lastName || phone.replace(/\D/g, '').length < 9)) { showMessage('Ad, soyad və telefon nömrəsini düzgün daxil edin.', 'error'); return; }
+    const url = isRegisterMode ? "/api/auth/register" : "/api/auth/login";
+    const body = isRegisterMode ? { name: `${firstName} ${lastName}`, phone, email, password } : { email, password };
     try {
       const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
@@ -845,6 +858,7 @@
       localStorage.setItem("token", data.token);
       localStorage.setItem("activeUser", data.user.email);
       localStorage.setItem("userRole", data.user.role);
+      localStorage.setItem('user', JSON.stringify(data.user));
       loginSuccess(data.user.email);
     } catch(err) { showMessage("Server ilə əlaqə yoxdur.", "error"); }
   });
@@ -1284,7 +1298,7 @@ function productTopBadge(product) {
       if (filter.subcategory) query.set('subcategory', filter.subcategory);
       if (filter.search) query.set('search', filter.search);
 
-      const res = await fetch(`http://localhost:3000/api/products?${query.toString()}`);
+      const res = await fetch(`/api/products?${query.toString()}`);
       if (!res.ok) throw new Error('Məhsullar yüklənmədi');
       let products = await res.json();
 
@@ -1327,11 +1341,25 @@ function productTopBadge(product) {
         wrapper.className = "product-card-wrapper";
         const card = document.createElement("div");
         card.className = "product-card";
+        card.setAttribute('role', 'link');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `${p.name} məhsul səhifəsini aç`);
+        const openProduct = () => { window.location.href = `product.html?id=${encodeURIComponent(p.id)}`; };
+        card.addEventListener('click', event => {
+          if (event.target.closest('button, .color-dot, a, input, select')) return;
+          openProduct();
+        });
+        card.addEventListener('keydown', event => {
+          if ((event.key === 'Enter' || event.key === ' ') && event.target === card) {
+            event.preventDefault();
+            openProduct();
+          }
+        });
         card.innerHTML = `
   <div style="position:relative;">
     ${productTopBadge(p)}
     <div style="width:100%;height:${isSmartphoneProduct(p) ? '112px' : '144px'};background:#ffffff;display:flex;align-items:center;justify-content:center;">
-      ${p.image ? `<img src="http://localhost:3000${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;" />` : ''}
+      ${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;" />` : ''}
     </div>
   </div>
   <div class="product-card-content" style="padding:12px;">
@@ -1405,7 +1433,7 @@ const flatCategories = getFlatCategories();
 async function fetchAllProductsForSearch() {
   if (allProductsCache) return allProductsCache;
   if (!allProductsPromise) {
-    allProductsPromise = fetch("http://localhost:3000/api/products")
+    allProductsPromise = fetch("/api/products")
       .then(res => res.json())
       .then(data => { allProductsCache = data; return data; })
       .catch(() => { allProductsCache = []; return []; });
@@ -1433,7 +1461,7 @@ function renderSearchDropdown(dropdownEl, query, productMatches, loading) {
   if (productMatches.length) {
     productMatches.slice(0, 6).forEach(p => {
       html += `<div class="sd-product-item" data-id="${p.id}">
-        <img src="http://localhost:3000${p.image || ''}" alt="${p.name}" onerror="this.style.display='none'"/>
+        <img src="${p.image || ''}" alt="${p.name}" onerror="this.style.display='none'"/>
         <div>
           <div class="sd-name">${p.name}</div>
           <div class="sd-price">${p.price} ₼</div>
@@ -1503,6 +1531,92 @@ setupLiveSearch('searchInput', 'searchDropdown');
 setupLiveSearch('searchInputMobile', 'searchDropdownMobile');
 // Səhifə yüklənəndə məhsulları arxa fonda keşləyək ki, ilk axtarış sürətli olsun
 fetchAllProductsForSearch();
+
+// Məhsul kartlarının inline onclick-i həmişə çata bilsin deyə səbət funksiyası
+// məhsulları yaradan əsas skriptdə qlobal olaraq qeydiyyatdan keçirilir.
+function readHomepageCart() {
+  try {
+    const cart = JSON.parse(localStorage.getItem('essenCart') || '[]');
+    return Array.isArray(cart) ? cart : [];
+  } catch {
+    return [];
+  }
+}
+
+function clearExpiredHomepageSession() {
+  ['token', 'activeUser', 'userRole', 'user'].forEach(key => localStorage.removeItem(key));
+}
+
+function refreshHomepageCartBadge(cartItems) {
+  const total = (cartItems || readHomepageCart())
+    .reduce((sum, item) => sum + Number(item.quantity || item.qty || 1), 0);
+  ['cart-count', 'cart-count-mobile'].forEach(id => {
+    const badge = document.getElementById(id);
+    if (!badge) return;
+    badge.textContent = total;
+    badge.style.display = total > 0 ? 'flex' : 'none';
+  });
+}
+
+window.addToCart = async function(productId, name, price, btnEl) {
+  const card = btnEl?.closest('.product-card');
+  const colorRow = card?.querySelector('.color-select-row');
+  const color = colorRow
+    ? (colorRow.dataset.selectedColor || colorRow.querySelector('.color-dot')?.dataset.colorName || null)
+    : null;
+  const image = card?.querySelector('img')?.getAttribute('src') || '';
+  const token = localStorage.getItem('token');
+  let saveLocally = !token;
+
+  if (token) {
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, quantity: 1 })
+      });
+      if (response.status === 401 || response.status === 403) {
+        clearExpiredHomepageSession();
+        saveLocally = true;
+      } else if (!response.ok) {
+        throw new Error('Cart request failed');
+      }
+    } catch (error) {
+      console.error('Səbətə əlavə edilmədi:', error);
+      alert('Məhsulu səbətə əlavə etmək mümkün olmadı. Yenidən cəhd edin.');
+      return;
+    }
+  }
+
+  if (saveLocally) {
+    const cart = readHomepageCart();
+    const existing = cart.find(item => Number(item.id) === Number(productId) && (item.color || null) === color);
+    if (existing) {
+      existing.qty = Number(existing.qty || 1) + 1;
+      if (!existing.image && image) existing.image = image;
+    } else {
+      cart.push({ id: Number(productId), name, price: Number(price), image, qty: 1, color });
+    }
+    localStorage.setItem('essenCart', JSON.stringify(cart));
+    refreshHomepageCartBadge(cart);
+  } else {
+    try {
+      const response = await fetch('/api/cart', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (response.ok) refreshHomepageCartBadge(await response.json());
+    } catch {}
+  }
+
+  localStorage.setItem('essenCartChanged', String(Date.now()));
+  document.querySelectorAll(`[data-cart-id="${productId}"]`).forEach(button => {
+    button.style.background = '#16a34a';
+    button.innerHTML = '<span aria-hidden="true">✓</span> Səbətdə';
+  });
+};
+
+document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
 </script>
 
 <!-- ===== ESSEN CHATBOT WIDGET ===== -->
@@ -1587,17 +1701,17 @@ fetchAllProductsForSearch();
         <div class="chat-avatar"><i class="fa-regular fa-comment-dots"></i></div>
         <div>
           <div class="chat-title">Essen Dəstək</div>
-          <div class="chat-subtitle" id="status-text">🟢 AI Köməkçi aktivdir</div>
+          <div class="chat-subtitle" id="status-text">🟢 Sayt operatoru aktivdir</div>
         </div>
       </div>
       <button class="chat-close" id="close-btn">&times;</button>
     </div>
     <div class="mode-tabs">
-      <button class="mode-tab active" id="tab-ai" onclick="switchMode('ai')">
-        <i class="fa-solid fa-robot" style="margin-right:4px;font-size:11px;"></i>AI Köməkçi
+      <button class="mode-tab active" id="tab-ai" onclick="switchMode('internal')">
+        <i class="fa-solid fa-headset" style="margin-right:4px;font-size:11px;"></i>Sayt operatoru
       </button>
       <button class="mode-tab" id="tab-op" onclick="switchMode('operator')">
-        <i class="fa-solid fa-headset" style="margin-right:4px;font-size:11px;"></i>Operator
+        <i class="fa-brands fa-whatsapp" style="margin-right:4px;font-size:12px;"></i>WhatsApp-a yönləndir
       </button>
     </div>
     <div class="chat-body" id="chat-body"></div>
@@ -1618,18 +1732,48 @@ fetchAllProductsForSearch();
 </div>
 
 <script>
-const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
-let mode = 'ai'; let chatOpen = false; let chatHistory = []; let opMsgIdx = 0;
-const operatorMsgs = [
-  "Salam! Operator xidmətinə bağlandınız. Az gözləyin...",
-  "Operator Nigar sizinlə əlaqə saxlayır. Necə kömək edə bilərəm?",
-  "Əlbəttə, bu məsələni həll etmək üçün lazımi addımları atacağam.",
-  "Başqa sualınız varmı? Sizə kömək etməkdən məmnuniyyət duyuram!"
-];
+const OPERATOR_WHATSAPP = '994508724336';
+let mode = 'internal'; let chatOpen = false;
+let internalChatId = null;
+let lastAdminMessageId = 0;
+let chatPollTimer = null;
+async function ensureInternalChat() {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  if (internalChatId) return internalChatId;
+  const response = await fetch('/api/chats/session', { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
+  if (!response.ok) return null;
+  const session = await response.json();
+  internalChatId = session.id;
+  return internalChatId;
+}
+async function sendInternalChat(text) {
+  const token = localStorage.getItem('token');
+  const sessionId = await ensureInternalChat();
+  if (!token || !sessionId) return false;
+  const response = await fetch(`/api/chats/${sessionId}/messages`, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body:JSON.stringify({ text }) });
+  return response.ok;
+}
+async function pollInternalChat() {
+  if (!chatOpen || mode !== 'internal') return;
+  const token = localStorage.getItem('token');
+  const sessionId = await ensureInternalChat().catch(() => null);
+  if (!token || !sessionId) return;
+  try {
+    const response = await fetch(`/api/chats/${sessionId}/messages`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (!response.ok) return;
+    const messages = await response.json();
+    messages.filter(message => message.sender === 'admin' && message.id > lastAdminMessageId).forEach(message => { addMsg('op', message.text); lastAdminMessageId = Math.max(lastAdminMessageId, message.id); });
+  } catch {}
+}
+function openOperatorWhatsApp(message) {
+  const text = message || 'Salam, operatorla əlaqə saxlamaq istəyirəm.';
+  window.open(`https://wa.me/${OPERATOR_WHATSAPP}?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+}
 const localAnswers = {
   "çatdırılma": "Bakı daxili sifarişlər 1-2 iş günü ərzində çatdırılır. 49.99 AZN-dən yuxarı sifarişlərə çatdırılma pulsuzdur! 🚚",
   "zəmanət": "Məhsullarımıza istehsalçı zəmanəti, Qızıl Zəmanət və Zəmanət Plus seçimləri mövcuddur. 🛡️",
-  "hissə": "Bəli! 0% faizlə 6 və 12 aylıq hissəli ödəmə imkanımız var. 💳",
+  "hissə": "Bəli!",
   "qiymət": "Biz ən yaxşı qiymətə zəmanət veririk! Daha ucuz tapsanız, fərqin 120%-ni geri alırsınız. 🏆",
   "sifariş": "Sifarişi saytda, mobil tətbiqdə və ya +994 50 705 18 18 nömrəsi ilə verə bilərsiniz. 📦"
 };
@@ -1637,45 +1781,46 @@ function now() { return new Date().toLocaleTimeString('az-AZ', {hour:'2-digit', 
 function toggleChat() {
   chatOpen = !chatOpen;
   const win = document.getElementById('chat-window');
-  if (chatOpen) { win.classList.add('open'); if (!document.getElementById('chat-body').children.length) addMsg('bot', 'Salam! 👋 Essen Ev Alətlərinə xoş gəlmisiniz! Sizə necə kömək edə bilərəm?'); }
-  else win.classList.remove('open');
+  if (chatOpen) {
+    win.classList.add('open');
+    if (!document.getElementById('chat-body').children.length) addMsg('op', 'Salam! 👋 Essen Ev Alətlərinin sayt operatoruna xoş gəlmisiniz! Sizə necə kömək edə bilərəm?');
+    ensureInternalChat().then(id => { if (!id) addMsg('op', 'Operatora yazmaq üçün əvvəlcə qeydiyyatdan keçib hesabınıza daxil olun.'); });
+    clearInterval(chatPollTimer); chatPollTimer = setInterval(pollInternalChat, 5000); pollInternalChat();
+  } else { win.classList.remove('open'); clearInterval(chatPollTimer); }
 }
 document.getElementById('close-btn').onclick = () => { chatOpen = false; document.getElementById('chat-window').classList.remove('open'); };
 document.getElementById('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 function switchMode(m) {
   mode = m;
-  document.getElementById('tab-ai').classList.toggle('active', m === 'ai');
+  document.getElementById('tab-ai').classList.toggle('active', m === 'internal');
   document.getElementById('tab-op').classList.toggle('active', m === 'operator');
   const body = document.getElementById('chat-body');
   const quick = document.getElementById('quick-btns');
   if (m === 'operator') {
-    document.getElementById('status-text').textContent = '🔵 Operator ilə bağlantı';
-    quick.style.display = 'none'; opMsgIdx = 0;
-    const notice = document.createElement('div');
-    notice.className = 'operator-notice';
-    notice.innerHTML = '<i class="fa-solid fa-headset"></i> Operator ilə əlaqə qurulur...';
-    body.appendChild(notice); body.scrollTop = body.scrollHeight;
-    setTimeout(() => { notice.remove(); addMsg('op', operatorMsgs[0]); opMsgIdx = 1; }, 1800);
+    document.getElementById('status-text').textContent = '🟢 WhatsApp operatoru';
+    quick.style.display = 'none';
+    addMsg('op', 'WhatsApp operatoruna yönləndirilirsiniz. Mesajınızı aşağıda yazıb göndərə bilərsiniz.');
+    openOperatorWhatsApp();
   } else {
-    document.getElementById('status-text').textContent = '🟢 AI Köməkçi aktivdir';
+    document.getElementById('status-text').textContent = '🟢 Sayt operatoru aktivdir';
     quick.style.display = 'flex';
-    addMsg('bot', 'AI köməkçiyə qayıtdınız. Sualınızı yazın! 🤖');
+    addMsg('op', 'Sayt operatoruna qayıtdınız. Sualınızı yazın!');
   }
 }
 function addMsg(role, text) {
   const body = document.getElementById('chat-body');
   const wrap = document.createElement('div');
   wrap.className = `msg ${role === 'user' ? 'user' : role}`;
-  const avatarClass = role === 'bot' ? 'bot' : role === 'op' ? 'op' : 'user-av';
-  const avatarIcon = role === 'bot' ? '<i class="fa-solid fa-robot"></i>' : role === 'op' ? '<i class="fa-solid fa-headset"></i>' : '<i class="fa-solid fa-user"></i>';
+  const avatarClass = role === 'bot' ? 'op' : role === 'op' ? 'op' : 'user-av';
+  const avatarIcon = role === 'bot' || role === 'op' ? '<i class="fa-solid fa-headset"></i>' : '<i class="fa-solid fa-user"></i>';
   wrap.innerHTML = `<div class="msg-avatar ${avatarClass}">${avatarIcon}</div><div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
   body.appendChild(wrap); body.scrollTop = body.scrollHeight;
 }
 function showTyping() {
   const body = document.getElementById('chat-body');
   const el = document.createElement('div');
-  el.className = 'msg bot'; el.id = 'typing-indicator';
-  el.innerHTML = `<div class="msg-avatar bot"><i class="fa-solid fa-robot"></i></div><div class="msg-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+  el.className = 'msg op'; el.id = 'typing-indicator';
+  el.innerHTML = `<div class="msg-avatar op"><i class="fa-solid fa-headset"></i></div><div class="msg-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
   body.appendChild(el); body.scrollTop = body.scrollHeight;
 }
 function removeTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
@@ -1686,25 +1831,25 @@ async function sendMessage() {
   if (!text) return;
   input.value = ''; addMsg('user', text);
   if (mode === 'operator') {
-    setTimeout(() => { const reply = operatorMsgs[opMsgIdx] || 'Başqa sualınız üçün buradayam!'; addMsg('op', reply); if (opMsgIdx < operatorMsgs.length - 1) opMsgIdx++; }, 1200);
+    openOperatorWhatsApp(text);
+    addMsg('op', 'Mesaj WhatsApp-da hazırlandı. Göndərmək üçün açılan WhatsApp pəncərəsində təsdiqləyin.');
+    return;
+  }
+  const delivered = await sendInternalChat(text).catch(() => false);
+  if (!delivered) {
+    addMsg('op', 'Mesaj göndərilmədi. Operatora yazmaq üçün qeydiyyatdan keçib hesabınıza daxil olun.');
+    document.getElementById('loginModal').classList.remove('hidden');
+    document.getElementById('loginModal').classList.add('flex');
     return;
   }
   const lower = text.toLowerCase();
   for (const [key, val] of Object.entries(localAnswers)) {
-    if (lower.includes(key)) { showTyping(); await new Promise(r => setTimeout(r, 900)); removeTyping(); addMsg('bot', val); return; }
+    if (lower.includes(key)) { showTyping(); await new Promise(r => setTimeout(r, 600)); removeTyping(); addMsg('op', val); return; }
   }
   showTyping();
-  chatHistory.push({ role: "user", content: text });
-  try {
-    const res = await fetch(ANTHROPIC_API, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system: "Sən Essen Ev Alətləri mağazasının AI köməkçisisən. Azərbaycan dilində qısa, mehriban cavablar ver. Məhsullar, çatdırılma, zəmanət, qiymət və sifariş məsələlərində kömək et.", messages: chatHistory })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || "Bağışlayın, hal-hazırda cavab verə bilmirəm. Zəhmət olmasa operatora keçin.";
-    chatHistory.push({ role: "assistant", content: reply });
-    removeTyping(); addMsg('bot', reply);
-  } catch(e) { removeTyping(); addMsg('bot', 'Bağlantı xətası baş verdi. Zəhmət olmasa operatora keçin. 📞'); }
+  await new Promise(r => setTimeout(r, 600));
+  removeTyping();
+  addMsg('op', 'Bu sual üçün WhatsApp bölməsindən operatorla əlaqə saxlaya bilərsiniz.');
 }
 
 // ── CART ──────────────────────────────────────────────
@@ -1725,7 +1870,7 @@ async function updateCartBadge() {
 
   if (token) {
     try {
-      const res = await fetch('http://localhost:3000/api/cart', {
+      const res = await fetch('/api/cart', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -1742,52 +1887,6 @@ async function updateCartBadge() {
     if (!el) return;
     el.textContent = total;
     el.style.display = total > 0 ? 'flex' : 'none';
-  });
-}
-
-async function addToCart(productId, name, price, btnEl) {
-  const card = btnEl.closest('.product-card');
-  const colorRow = card ? card.querySelector('.color-select-row') : null;
-  const color = colorRow ? (colorRow.dataset.selectedColor || colorRow.querySelector('.color-dot')?.dataset.colorName) : null;
-
-  const token = localStorage.getItem('token');
-
-  if (token) {
-    try {
-      const res = await fetch('http://localhost:3000/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId, quantity: 1, color })
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      console.error('Səbətə əlavə edilmədi');
-      return;
-    }
-  } else {
-    const cart = getCart();
-    const existing = cart.find(i => i.id === productId && i.color === color);
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push({ id: productId, name, price, qty: 1, color });
-    }
-    localStorage.setItem('essenCart', JSON.stringify(cart));
-  }
-
-  notifyCartChanged();
-  updateCartBadge();
-
-  document.querySelectorAll(`[data-cart-id="${productId}"]`).forEach(btn => {
-    btn.style.background = '#16a34a';
-    btn.innerHTML = `
-      <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-      </svg>
-      Səbətdə`;
   });
 }
 
@@ -1810,12 +1909,12 @@ async function toggleFavourite(productId, btn) {
 
   try {
     if (isActive) {
-      await fetch(`http://localhost:3000/api/favourites/${productId}`, {
+      await fetch(`/api/favourites/${productId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
     } else {
-      await fetch('http://localhost:3000/api/favourites', {
+      await fetch('/api/favourites', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1852,7 +1951,7 @@ async function initFavButtons() {
   await Promise.all(Array.from(btns).map(async btn => {
     const productId = btn.dataset.favId;
     try {
-      const res = await fetch(`http://localhost:3000/api/favourites/check/${productId}`, {
+      const res = await fetch(`/api/favourites/check/${productId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) return;
@@ -1918,7 +2017,7 @@ async function toggleCompare(productId, btn) {
 
   try {
     if (isActive) {
-      await fetch(`http://localhost:3000/api/compare/${productId}`, {
+      await fetch(`/api/compare/${productId}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -1926,7 +2025,7 @@ async function toggleCompare(productId, btn) {
       notifyCompareChanged();
       setCompareBadgeCount(readCompareBadgeCount() - 1);
     } else {
-      const res = await fetch('http://localhost:3000/api/compare', {
+      const res = await fetch('/api/compare', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1979,7 +2078,7 @@ async function initCompareButtons() {
     await Promise.all(Array.from(btns).map(async btn => {
       const productId = btn.dataset.compareId;
       try {
-        const res = await fetch(`http://localhost:3000/api/compare/check/${productId}`, {
+        const res = await fetch(`/api/compare/check/${productId}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return;
@@ -2002,7 +2101,7 @@ async function updateCompareBadge() {
     return;
   }
   try {
-    const res = await fetch('http://localhost:3000/api/compare/count', {
+    const res = await fetch('/api/compare/count', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) return;

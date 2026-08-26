@@ -19,7 +19,7 @@ const TV_SPEC_GROUPS = [
       { key: 'Ekran icazəsi', placeholder: 'məs: 4K UHD (3840 × 2160)' },
       { key: 'Tezlik', placeholder: 'məs: 165 Hz' },
       { key: 'HDR formatı', placeholder: 'məs: Dolby Vision, HDR10, HDR10+' },
-      { key: 'Ekran filtr texnologiyası', options: ['OLED', 'QLED', 'Mini-LED', 'RGB', 'Triluminos', 'RGB LED', 'Yox'] },
+      { key: 'Ekran filtr texnologiyası', options: ['OLED', 'QLED', 'QNED', 'Mini-LED', 'RGB', 'Triluminos', 'RGB LED', 'Yox'] },
       { key: 'İşıqlandırma növü', placeholder: 'məs: RGB Mini-LED' }
     ]
   },

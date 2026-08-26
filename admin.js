@@ -107,8 +107,114 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   showLogin();
 });
 
+// ============== İSTİFADƏÇİ ÇATLARI ==============
+let activeChatId = null;
+let chatRefreshTimer = null;
+const productsTab = document.getElementById('productsTab');
+const chatsTab = document.getElementById('chatsTab');
+
+productsTab.addEventListener('click', () => {
+  productsTab.classList.add('active'); chatsTab.classList.remove('active');
+  document.getElementById('productView').style.display = 'block'; document.getElementById('chatView').style.display = 'none';
+  clearInterval(chatRefreshTimer);
+});
+chatsTab.addEventListener('click', () => {
+  chatsTab.classList.add('active'); productsTab.classList.remove('active');
+  document.getElementById('productView').style.display = 'none'; document.getElementById('chatView').style.display = 'block';
+  loadChatSessions(); clearInterval(chatRefreshTimer); chatRefreshTimer = setInterval(() => { loadChatSessions(false); if (activeChatId) loadChatRoom(activeChatId, false); }, 5000);
+});
+document.getElementById('refreshChatsBtn').addEventListener('click', () => loadChatSessions());
+
+async function loadChatSessions(showError = true) {
+  try {
+    const response = await fetch(`${API}/api/chats/admin/sessions/list`, { headers: authHeaders() });
+    if (!response.ok) throw new Error();
+    const sessions = await response.json();
+    document.getElementById('chatCount').textContent = `${sessions.length} çat`;
+    const list = document.getElementById('chatList');
+    if (!sessions.length) { list.innerHTML = '<div class="empty-state">Hələ çat yoxdur.</div>'; return; }
+    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}</strong><span>📞 ${escapeHtml(session.phone)}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
+    list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
+  } catch { if (showError) showToast('Çatlar yüklənmədi'); }
+}
+
+async function loadChatRoom(id, showError = true) {
+  try {
+    const response = await fetch(`${API}/api/chats/admin/sessions/${id}`, { headers: authHeaders() });
+    if (!response.ok) throw new Error();
+    const session = await response.json(); activeChatId = session.id;
+    document.getElementById('chatRoomHead').textContent = `${session.name} — ${session.phone}`;
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}">${escapeHtml(message.text)}</div>`).join('');
+    messages.scrollTop = messages.scrollHeight;
+    document.getElementById('chatReplyInput').disabled = false; document.getElementById('chatReplyBtn').disabled = false;
+    document.querySelectorAll('[data-chat-id]').forEach(item => item.classList.toggle('active', Number(item.dataset.chatId) === id));
+  } catch { if (showError) showToast('Çat yüklənmədi'); }
+}
+
+document.getElementById('chatReplyForm').addEventListener('submit', async event => {
+  event.preventDefault(); const input = document.getElementById('chatReplyInput'); const text = input.value.trim();
+  if (!activeChatId || !text) return;
+  const response = await fetch(`${API}/api/chats/admin/sessions/${activeChatId}/messages`, { method:'POST', headers:{ ...authHeaders(), 'Content-Type':'application/json' }, body:JSON.stringify({ text }) });
+  if (!response.ok) return showToast('Cavab göndərilmədi');
+  input.value = ''; await loadChatRoom(activeChatId, false); await loadChatSessions(false);
+});
+
+const passwordOverlay = document.getElementById('passwordOverlay');
+const changePasswordError = document.getElementById('changePasswordError');
+
+function closePasswordModal() {
+  passwordOverlay.style.display = 'none';
+  document.getElementById('changePasswordForm').reset();
+  changePasswordError.textContent = '';
+}
+
+document.getElementById('changePasswordBtn').addEventListener('click', () => {
+  passwordOverlay.style.display = 'flex';
+  document.getElementById('currentPassword').focus();
+});
+document.getElementById('closePasswordBtn').addEventListener('click', closePasswordModal);
+document.getElementById('cancelPasswordBtn').addEventListener('click', closePasswordModal);
+passwordOverlay.addEventListener('click', event => {
+  if (event.target === passwordOverlay) closePasswordModal();
+});
+
+document.getElementById('changePasswordForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+  changePasswordError.textContent = '';
+
+  if (newPassword !== confirmNewPassword) {
+    changePasswordError.textContent = 'Yeni şifrələr eyni deyil';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API}/api/auth/change-password`, {
+      method: 'PUT',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      changePasswordError.textContent = data.message || 'Şifrə dəyişdirilə bilmədi';
+      return;
+    }
+
+    closePasswordModal();
+    clearSession();
+    showLogin();
+    showToast('Şifrə dəyişdirildi. Yeni şifrə ilə yenidən daxil olun.');
+  } catch {
+    changePasswordError.textContent = 'Serverlə əlaqə qurula bilmədi';
+  }
+});
+
 // ============== MƏHSUL SİYAHISI ==============
 let allProducts = [];
+let productSearchQuery = '';
 let selectedIds = new Set(); // toplu seçim üçün
 
 async function loadProducts() {
@@ -116,6 +222,7 @@ async function loadProducts() {
     const res = await fetch(`${API}/api/products`);
     if (!res.ok) throw new Error();
     allProducts = await res.json();
+    syncAdminColorPaletteFromProducts(allProducts);
     // artıq mövcud olmayan id-ləri seçimdən təmizlə
     const validIds = new Set(allProducts.map(p => p.id));
     selectedIds.forEach(id => { if (!validIds.has(id)) selectedIds.delete(id); });
@@ -142,18 +249,29 @@ function renderProducts() {
   const tbody = document.getElementById('prodTbody');
   const empty = document.getElementById('emptyState');
   const table = document.getElementById('prodTable');
-  document.getElementById('prodCount').textContent = `${allProducts.length} məhsul`;
+  const query = productSearchQuery.trim().toLocaleLowerCase('az');
+  const visibleProducts = query ? allProducts.filter(p =>
+    [p.name, p.brand, p.category, p.subcategory]
+      .some(value => String(value || '').toLocaleLowerCase('az').includes(query))
+  ) : allProducts;
 
-  if (allProducts.length === 0) {
+  document.getElementById('prodCount').textContent = query
+    ? `${visibleProducts.length} / ${allProducts.length} məhsul`
+    : `${allProducts.length} məhsul`;
+
+  if (allProducts.length === 0 || visibleProducts.length === 0) {
     table.style.display = 'none';
     empty.style.display = 'block';
+    empty.textContent = allProducts.length === 0
+      ? 'Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.'
+      : 'Axtarışa uyğun məhsul tapılmadı.';
     updateBulkBar();
     return;
   }
   table.style.display = 'table';
   empty.style.display = 'none';
 
-  tbody.innerHTML = allProducts.map(p => `
+  tbody.innerHTML = visibleProducts.map(p => `
     <tr class="${selectedIds.has(p.id) ? 'row-selected' : ''}" data-id="${p.id}">
       <td><input type="checkbox" class="row-check" data-id="${p.id}" ${selectedIds.has(p.id) ? 'checked' : ''}></td>
       <td><img class="prod-thumb" src="${p.image || ''}" onerror="this.style.visibility='hidden'"></td>
@@ -281,9 +399,9 @@ const ADMIN_BRAND_LIST = [
   "2E", "Acer", "AEG", "Alarko", "Anbernic", "Apple", "Arçelik",
   "Ardesto", "Askona", "ASUS", "AUX", "Ayaneo", "Beko", "BergHOFF",
   "Biryusa", "Blackview", "BORK", "Bosch", "Braun", "Canon", "Chicco",
-  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Euroklimat",
-  "Fieldmann", "Fujiaire", "Gorenje", "Graft", "Gree", "Haier",
-  "HANN", "Hisense", "HOFFMANN", "Honor", "HP", "HUAWEI", "Infinix", "JVC",
+  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Euroacs", "Euroklimat",
+  "Fakir", "Fieldmann", "Fujiaire", "Gorenje", "Graft", "Gree", "Haier",
+  "HANN", "Hisense", "HOFFMANN", "Honor", "HP", "HUAWEI", "Infinix", "JBL", "JVC",
   "Karcher", "Keman", "Kenwood", "Komfy", "LEGO", "Lenovo", "LG", "Logitech",
   "MDV", "Microsoft", "Midea", "Mitsubishi", "Miyoo", "Motorola", "MSI",
   "Moulinex", "MyChoice", "Nintendo", "Nutribullet", "OPPO", "Ormatek", "Oukitel", "P.I.T.",
@@ -440,6 +558,7 @@ function activeSpecificationTemplate() {
   if (subcategory === 'oyun smartfonları') {
     return { title: 'Oyun smartfonu xüsusiyyətləri', groups: SMARTPHONE_SPEC_GROUPS };
   }
+  
   if (subcategory === 'tws simsiz qulaqlıqlar') {
     return { title: 'TWS simsiz qulaqlıq xüsusiyyətləri', groups: TWS_HEADPHONE_SPEC_GROUPS };
   }
@@ -458,6 +577,15 @@ function activeSpecificationTemplate() {
   if (subcategory === 'ventilyatorlar') {
     return { title: 'Ventilyator xüsusiyyətləri', groups: FAN_SPEC_GROUPS };
   }
+  if (subcategory === 'dispenserlər') {
+    return { title: 'Dispenser xüsusiyyətləri', groups: DISPENSER_SPEC_GROUPS };
+  }
+  if (subcategory === 'aspiratorlar') {
+    return { title: 'Aspirator xüsusiyyətləri', groups: HOOD_SPEC_GROUPS };
+  }
+  if (subcategory === 'tozsoranlar') {
+    return { title: 'Tozsoran xüsusiyyətləri', groups: VACUUM_SPEC_GROUPS };
+  }
   if (subcategory === 'oyun konsolları') {
     return { title: 'Oyun konsolu xüsusiyyətləri', groups: GAME_CONSOLE_SPEC_GROUPS };
   }
@@ -475,8 +603,14 @@ function activeSpecificationTemplate() {
       groups: GAMING_LAPTOP_SPEC_GROUPS
     };
   }
-  if (subcategory === 'gaming tv') {
-    return { title: 'Gaming TV xüsusiyyətləri', groups: TV_SPEC_GROUPS };
+  if (
+    subcategory === 'gaming tv' ||
+    subcategory === 'tv brend üzrə'
+  ) {
+    return {
+      title: 'TV xüsusiyyətləri',
+      groups: TV_SPEC_GROUPS
+    };
   }
   if (subcategory === 'oyun routerləri') {
     return { title: 'Oyun routeri xüsusiyyətləri', groups: GAMING_ROUTER_SPEC_GROUPS };
@@ -491,6 +625,19 @@ function activeSpecificationTemplate() {
       automaticProductType: 'Hava nəmləndirici'
     };
   }
+  if (subcategory === 'paltaryuyan maşınlar') {
+  return {
+    title: 'Paltaryuyan maşın xüsusiyyətləri',
+    groups: WASHING_MACHINE_SPEC_GROUPS
+  };
+}
+
+if (subcategory === 'soyuducular') {
+  return {
+    title: 'Soyuducu xüsusiyyətləri',
+    groups: FRIDGE_SPEC_GROUPS
+  };
+}
   const airTreatmentTypes = [
     'hava nəmləndirici',
     'hava təmizləyici',
@@ -668,6 +815,19 @@ function parseColorsString(str) {
   return str.split(',').map(s => normalizeColor(s)).filter(c => c.name);
 }
 
+function syncAdminColorPaletteFromProducts(products) {
+  let changed = false;
+  products.forEach(product => {
+    parseColorsString(product.colors).forEach(color => {
+      if (!adminColorPalette.some(item => sameColor(item, color))) {
+        adminColorPalette.push({ name: color.name, hex: color.hex });
+        changed = true;
+      }
+    });
+  });
+  if (changed) saveAdminColorPalette();
+}
+
 document.getElementById('addCustomColorBtn').addEventListener('click', () => {
   const nameInput = document.getElementById('customColorName');
   const hexInput = document.getElementById('customColorHex');
@@ -790,6 +950,11 @@ function openCopy(id) {
 function closeModal() {
   overlay.style.display = 'none';
 }
+document.getElementById('productSearchInput').addEventListener('input', event => {
+  productSearchQuery = event.target.value;
+  renderProducts();
+});
+
 document.getElementById('newProductBtn').addEventListener('click', openCreate);
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
