@@ -69,7 +69,9 @@ function showLogin() {
 // ============== LOGIN ==============
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
+  const emailInput = document.getElementById('loginEmail');
+  const email = emailInput.value.trim().toLowerCase();
+  emailInput.value = email;
   const password = document.getElementById('loginPassword').value;
   const errEl = document.getElementById('loginError');
   errEl.style.display = 'none';
@@ -107,8 +109,114 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
   showLogin();
 });
 
+// ============== İSTİFADƏÇİ ÇATLARI ==============
+let activeChatId = null;
+let chatRefreshTimer = null;
+const productsTab = document.getElementById('productsTab');
+const chatsTab = document.getElementById('chatsTab');
+
+productsTab.addEventListener('click', () => {
+  productsTab.classList.add('active'); chatsTab.classList.remove('active');
+  document.getElementById('productView').style.display = 'block'; document.getElementById('chatView').style.display = 'none';
+  clearInterval(chatRefreshTimer);
+});
+chatsTab.addEventListener('click', () => {
+  chatsTab.classList.add('active'); productsTab.classList.remove('active');
+  document.getElementById('productView').style.display = 'none'; document.getElementById('chatView').style.display = 'block';
+  loadChatSessions(); clearInterval(chatRefreshTimer); chatRefreshTimer = setInterval(() => { loadChatSessions(false); if (activeChatId) loadChatRoom(activeChatId, false); }, 5000);
+});
+document.getElementById('refreshChatsBtn').addEventListener('click', () => loadChatSessions());
+
+async function loadChatSessions(showError = true) {
+  try {
+    const response = await fetch(`${API}/api/chats/admin/sessions/list`, { headers: authHeaders() });
+    if (!response.ok) throw new Error();
+    const sessions = await response.json();
+    document.getElementById('chatCount').textContent = `${sessions.length} çat`;
+    const list = document.getElementById('chatList');
+    if (!sessions.length) { list.innerHTML = '<div class="empty-state">Hələ çat yoxdur.</div>'; return; }
+    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}</strong><span>📞 ${escapeHtml(session.phone)}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
+    list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
+  } catch { if (showError) showToast('Çatlar yüklənmədi'); }
+}
+
+async function loadChatRoom(id, showError = true) {
+  try {
+    const response = await fetch(`${API}/api/chats/admin/sessions/${id}`, { headers: authHeaders() });
+    if (!response.ok) throw new Error();
+    const session = await response.json(); activeChatId = session.id;
+    document.getElementById('chatRoomHead').textContent = `${session.name} — ${session.phone}`;
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}">${escapeHtml(message.text)}</div>`).join('');
+    messages.scrollTop = messages.scrollHeight;
+    document.getElementById('chatReplyInput').disabled = false; document.getElementById('chatReplyBtn').disabled = false;
+    document.querySelectorAll('[data-chat-id]').forEach(item => item.classList.toggle('active', Number(item.dataset.chatId) === id));
+  } catch { if (showError) showToast('Çat yüklənmədi'); }
+}
+
+document.getElementById('chatReplyForm').addEventListener('submit', async event => {
+  event.preventDefault(); const input = document.getElementById('chatReplyInput'); const text = input.value.trim();
+  if (!activeChatId || !text) return;
+  const response = await fetch(`${API}/api/chats/admin/sessions/${activeChatId}/messages`, { method:'POST', headers:{ ...authHeaders(), 'Content-Type':'application/json' }, body:JSON.stringify({ text }) });
+  if (!response.ok) return showToast('Cavab göndərilmədi');
+  input.value = ''; await loadChatRoom(activeChatId, false); await loadChatSessions(false);
+});
+
+const passwordOverlay = document.getElementById('passwordOverlay');
+const changePasswordError = document.getElementById('changePasswordError');
+
+function closePasswordModal() {
+  passwordOverlay.style.display = 'none';
+  document.getElementById('changePasswordForm').reset();
+  changePasswordError.textContent = '';
+}
+
+document.getElementById('changePasswordBtn').addEventListener('click', () => {
+  passwordOverlay.style.display = 'flex';
+  document.getElementById('currentPassword').focus();
+});
+document.getElementById('closePasswordBtn').addEventListener('click', closePasswordModal);
+document.getElementById('cancelPasswordBtn').addEventListener('click', closePasswordModal);
+passwordOverlay.addEventListener('click', event => {
+  if (event.target === passwordOverlay) closePasswordModal();
+});
+
+document.getElementById('changePasswordForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const currentPassword = document.getElementById('currentPassword').value;
+  const newPassword = document.getElementById('newPassword').value;
+  const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+  changePasswordError.textContent = '';
+
+  if (newPassword !== confirmNewPassword) {
+    changePasswordError.textContent = 'Yeni şifrələr eyni deyil';
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API}/api/auth/change-password`, {
+      method: 'PUT',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      changePasswordError.textContent = data.message || 'Şifrə dəyişdirilə bilmədi';
+      return;
+    }
+
+    closePasswordModal();
+    clearSession();
+    showLogin();
+    showToast('Şifrə dəyişdirildi. Yeni şifrə ilə yenidən daxil olun.');
+  } catch {
+    changePasswordError.textContent = 'Serverlə əlaqə qurula bilmədi';
+  }
+});
+
 // ============== MƏHSUL SİYAHISI ==============
 let allProducts = [];
+let productSearchQuery = '';
 let selectedIds = new Set(); // toplu seçim üçün
 
 async function loadProducts() {
@@ -143,18 +251,29 @@ function renderProducts() {
   const tbody = document.getElementById('prodTbody');
   const empty = document.getElementById('emptyState');
   const table = document.getElementById('prodTable');
-  document.getElementById('prodCount').textContent = `${allProducts.length} məhsul`;
+  const query = productSearchQuery.trim().toLocaleLowerCase('az');
+  const visibleProducts = query ? allProducts.filter(p =>
+    [p.name, p.brand, p.category, p.subcategory]
+      .some(value => String(value || '').toLocaleLowerCase('az').includes(query))
+  ) : allProducts;
 
-  if (allProducts.length === 0) {
+  document.getElementById('prodCount').textContent = query
+    ? `${visibleProducts.length} / ${allProducts.length} məhsul`
+    : `${allProducts.length} məhsul`;
+
+  if (allProducts.length === 0 || visibleProducts.length === 0) {
     table.style.display = 'none';
     empty.style.display = 'block';
+    empty.textContent = allProducts.length === 0
+      ? 'Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.'
+      : 'Axtarışa uyğun məhsul tapılmadı.';
     updateBulkBar();
     return;
   }
   table.style.display = 'table';
   empty.style.display = 'none';
 
-  tbody.innerHTML = allProducts.map(p => `
+  tbody.innerHTML = visibleProducts.map(p => `
     <tr class="${selectedIds.has(p.id) ? 'row-selected' : ''}" data-id="${p.id}">
       <td><input type="checkbox" class="row-check" data-id="${p.id}" ${selectedIds.has(p.id) ? 'checked' : ''}></td>
       <td><img class="prod-thumb" src="${p.image || ''}" onerror="this.style.visibility='hidden'"></td>
@@ -282,9 +401,9 @@ const ADMIN_BRAND_LIST = [
   "2E", "Acer", "AEG", "Alarko", "Anbernic", "Apple", "Arçelik",
   "Ardesto", "Askona", "ASUS", "AUX", "Ayaneo", "Beko", "BergHOFF",
   "Biryusa", "Blackview", "BORK", "Bosch", "Braun", "Canon", "Chicco",
-  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Euroklimat",
-  "Fieldmann", "Fujiaire", "Gorenje", "Graft", "Gree", "Haier",
-  "HANN", "Hisense", "HOFFMANN", "Honor", "HP", "HUAWEI", "Infinix", "JVC",
+  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Euroacs", "Euroklimat",
+  "Fakir", "Fieldmann", "Fujiaire", "Gorenje", "Graft", "Gree", "Haier",
+  "HANN", "Hisense", "HOFFMANN", "Honor", "HP", "HUAWEI", "Infinix", "JBL", "JVC",
   "Karcher", "Keman", "Kenwood", "Komfy", "LEGO", "Lenovo", "LG", "Logitech",
   "MDV", "Microsoft", "Midea", "Mitsubishi", "Miyoo", "Motorola", "MSI",
   "Moulinex", "MyChoice", "Nintendo", "Nutribullet", "OPPO", "Ormatek", "Oukitel", "P.I.T.",
@@ -441,6 +560,7 @@ function activeSpecificationTemplate() {
   if (subcategory === 'oyun smartfonları') {
     return { title: 'Oyun smartfonu xüsusiyyətləri', groups: SMARTPHONE_SPEC_GROUPS };
   }
+  
   if (subcategory === 'tws simsiz qulaqlıqlar') {
     return { title: 'TWS simsiz qulaqlıq xüsusiyyətləri', groups: TWS_HEADPHONE_SPEC_GROUPS };
   }
@@ -459,6 +579,15 @@ function activeSpecificationTemplate() {
   if (subcategory === 'ventilyatorlar') {
     return { title: 'Ventilyator xüsusiyyətləri', groups: FAN_SPEC_GROUPS };
   }
+  if (subcategory === 'dispenserlər') {
+    return { title: 'Dispenser xüsusiyyətləri', groups: DISPENSER_SPEC_GROUPS };
+  }
+  if (subcategory === 'aspiratorlar') {
+    return { title: 'Aspirator xüsusiyyətləri', groups: HOOD_SPEC_GROUPS };
+  }
+  if (subcategory === 'tozsoranlar') {
+    return { title: 'Tozsoran xüsusiyyətləri', groups: VACUUM_SPEC_GROUPS };
+  }
   if (subcategory === 'oyun konsolları') {
     return { title: 'Oyun konsolu xüsusiyyətləri', groups: GAME_CONSOLE_SPEC_GROUPS };
   }
@@ -476,8 +605,14 @@ function activeSpecificationTemplate() {
       groups: GAMING_LAPTOP_SPEC_GROUPS
     };
   }
-  if (subcategory === 'gaming tv') {
-    return { title: 'Gaming TV xüsusiyyətləri', groups: TV_SPEC_GROUPS };
+  if (
+    subcategory === 'gaming tv' ||
+    subcategory === 'tv brend üzrə'
+  ) {
+    return {
+      title: 'TV xüsusiyyətləri',
+      groups: TV_SPEC_GROUPS
+    };
   }
   if (subcategory === 'oyun routerləri') {
     return { title: 'Oyun routeri xüsusiyyətləri', groups: GAMING_ROUTER_SPEC_GROUPS };
@@ -492,6 +627,19 @@ function activeSpecificationTemplate() {
       automaticProductType: 'Hava nəmləndirici'
     };
   }
+  if (subcategory === 'paltaryuyan maşınlar') {
+  return {
+    title: 'Paltaryuyan maşın xüsusiyyətləri',
+    groups: WASHING_MACHINE_SPEC_GROUPS
+  };
+}
+
+if (subcategory === 'soyuducular') {
+  return {
+    title: 'Soyuducu xüsusiyyətləri',
+    groups: FRIDGE_SPEC_GROUPS
+  };
+}
   const airTreatmentTypes = [
     'hava nəmləndirici',
     'hava təmizləyici',
@@ -720,6 +868,58 @@ const overlay = document.getElementById('overlay');
 const form = document.getElementById('productForm');
 const SPEC_DRAFT_PREFIX = 'admin-product-specs:';
 let preservedProductSpecs = {};
+let managedImages = [];
+let nextImageKey = 1;
+
+function clearManagedImages() {
+  managedImages.forEach(item => { if (item.objectUrl) URL.revokeObjectURL(item.objectUrl); });
+  managedImages = [];
+  nextImageKey = 1;
+  document.getElementById('f_image').value = '';
+  renderManagedImages();
+}
+
+function setManagedImagesFromProduct(product) {
+  clearManagedImages();
+  const images = Array.isArray(product.images) && product.images.length
+    ? product.images
+    : (product.image ? [{ id: null, url: product.image, isPrimary: true }] : []);
+  managedImages = images.slice(0, 10).map((item, index) => ({
+    key: item.id ? `existing:${item.id}` : `legacy:${index}`,
+    id: item.id || null,
+    url: item.url || item.image || product.image,
+    existing: Boolean(item.id),
+    isPrimary: Boolean(item.isPrimary) || index === 0
+  }));
+  if (!managedImages.some(item => item.isPrimary) && managedImages[0]) managedImages[0].isPrimary = true;
+  renderManagedImages();
+}
+
+function renderManagedImages() {
+  const target = document.getElementById('imagePreviews');
+  document.getElementById('imageCount').textContent = `${managedImages.length} / 10 şəkil`;
+  target.innerHTML = managedImages.map(item => `
+    <div class="image-preview-card${item.isPrimary ? ' primary' : ''}">
+      <img src="${escapeAttr(item.url)}" alt="Məhsul şəkli">
+      <div class="image-preview-actions">
+        <button type="button" class="${item.isPrimary ? 'active' : ''}" data-main-image="${escapeAttr(item.key)}">${item.isPrimary ? 'Əsas şəkil' : 'Əsas et'}</button>
+        <button type="button" class="remove" data-remove-image="${escapeAttr(item.key)}" title="Şəkli sil">×</button>
+      </div>
+    </div>
+  `).join('');
+  target.querySelectorAll('[data-main-image]').forEach(button => button.addEventListener('click', () => {
+    managedImages.forEach(item => { item.isPrimary = item.key === button.dataset.mainImage; });
+    renderManagedImages();
+  }));
+  target.querySelectorAll('[data-remove-image]').forEach(button => button.addEventListener('click', () => {
+    const index = managedImages.findIndex(item => item.key === button.dataset.removeImage);
+    if (index < 0) return;
+    const [removed] = managedImages.splice(index, 1);
+    if (removed.objectUrl) URL.revokeObjectURL(removed.objectUrl);
+    if (removed.isPrimary && managedImages[0]) managedImages[0].isPrimary = true;
+    renderManagedImages();
+  }));
+}
 
 function saveSpecsDraft(productId, specs) {
   try {
@@ -741,9 +941,7 @@ function openCreate() {
   overlay.style.display = 'flex';
   document.getElementById('productId').value = '';
   document.getElementById('modalTitle').textContent = 'Yeni məhsul';
-  document.getElementById('filePreview').style.display = 'none';
-  document.getElementById('imageHint').textContent = '';
-  document.getElementById('f_image').required = false;
+  clearManagedImages();
   populateSubcategorySelect('', ''); // alt-kateqoriya sıfırlanır və deaktiv olur
   populateBrandSelect('');
   renderColorPicker([]);
@@ -781,14 +979,7 @@ function openEdit(id) {
 
   renderColorPicker(parseColorsString(p.colors));
 
-  const preview = document.getElementById('filePreview');
-  if (p.image) {
-    preview.src = p.image;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
-  document.getElementById('imageHint').textContent = 'Yeni şəkil seçməsən, mövcud şəkil saxlanılacaq.';
+  setManagedImagesFromProduct(p);
 }
 
 function openCopy(id) {
@@ -797,25 +988,35 @@ function openCopy(id) {
   openEdit(id);
   document.getElementById('productId').value = '';
   document.getElementById('modalTitle').textContent = 'Məhsulu kopyala';
-  document.getElementById('f_image').value = '';
-  document.getElementById('imageHint').textContent = 'Bu kopyadır. İstəsən yalnız rəngi və şəkli dəyişib yeni məhsul kimi yadda saxla.';
+  clearManagedImages();
+  document.getElementById('imageHint').textContent = 'Bu kopyadır. Yeni məhsul üçün 10-a qədər şəkil seçin.';
 }
 
 function closeModal() {
   overlay.style.display = 'none';
 }
+document.getElementById('productSearchInput').addEventListener('input', event => {
+  productSearchQuery = event.target.value;
+  renderProducts();
+});
+
 document.getElementById('newProductBtn').addEventListener('click', openCreate);
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('cancelBtn').addEventListener('click', closeModal);
 overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
 document.getElementById('f_image').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  const preview = document.getElementById('filePreview');
-  if (file) {
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-  }
+  const files = Array.from(e.target.files || []);
+  const available = 10 - managedImages.length;
+  if (files.length > available) showToast(`Maksimum 10 şəkil olar. Yalnız ${available} şəkil əlavə edilə bilər.`);
+  files.slice(0, available).forEach(file => {
+    if (file.size > 5 * 1024 * 1024) return showToast(`${file.name}: şəkil 5 MB-dan böyükdür`);
+    const key = `new:${nextImageKey++}`;
+    const objectUrl = URL.createObjectURL(file);
+    managedImages.push({ key, file, url: objectUrl, objectUrl, existing: false, isPrimary: managedImages.length === 0 });
+  });
+  e.target.value = '';
+  renderManagedImages();
 });
 
 // ============== YADDA SAXLA (CREATE / UPDATE) ==============
@@ -848,12 +1049,12 @@ form.addEventListener('submit', async (e) => {
   if (installment) fd.append('installment', installment);
   if (colors) fd.append('colors', colors);
 
-  const imageFile = document.getElementById('f_image').files[0];
-  if (imageFile) fd.append('image', imageFile);
-  const preview = document.getElementById('filePreview');
-  if (!id && !imageFile && preview.style.display !== 'none' && preview.getAttribute('src')) {
-    fd.append('existingImage', preview.getAttribute('src'));
-  }
+  const existingImageIds = managedImages.filter(item => item.existing).map(item => item.id);
+  const newImages = managedImages.filter(item => item.file);
+  fd.append('existingImageIds', JSON.stringify(existingImageIds));
+  fd.append('newImageKeys', JSON.stringify(newImages.map(item => item.key)));
+  fd.append('primaryImageKey', managedImages.find(item => item.isPrimary)?.key || '');
+  newImages.forEach(item => fd.append('images', item.file, item.file.name));
 
   const url = id ? `${API}/api/admin/products/${id}` : `${API}/api/admin/products`;
   const method = id ? 'PUT' : 'POST';
