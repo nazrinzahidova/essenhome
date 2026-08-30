@@ -3,25 +3,54 @@ const router = express.Router();
 const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { IMAGE_SELECT, imageUrl, serializeProduct } = require('../lib/productImages');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-fs.mkdirSync(uploadsDir, { recursive: true });
-
-// Multer konfiqurasiyası
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname).toLowerCase();
-    const uniqueName = `product-${Date.now()}-${Math.round(Math.random() * 1e9)}${extension}`;
-    cb(null, uniqueName);
-  }
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { files: 10, fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => cb(null, /^image\/(jpeg|png|webp|gif|avif)$/i.test(file.mimetype))
 });
 
-const upload = multer({ storage });
+const productInclude = {
+  placements: true,
+  images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] }
+};
+
+function parseJsonArray(value) {
+  try {
+    const parsed = JSON.parse(value || '[]');
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function imageRows(files, keys, startPosition = 0) {
+  return files.map((file, index) => ({
+    key: String(keys[index] || `new:${index}`),
+    filename: String(file.originalname || `image-${index + 1}`).slice(0, 240),
+    mimeType: file.mimetype,
+    data: file.buffer,
+    position: startPosition + index,
+    isPrimary: false
+  }));
+}
+
+async function finalizePrimaryImage(tx, productId, requestedKey, keyToId) {
+  const images = await tx.productImage.findMany({
+    where: { productId },
+    orderBy: [{ position: 'asc' }, { id: 'asc' }]
+  });
+  if (!images.length) {
+    await tx.product.update({ where: { id: productId }, data: { image: null } });
+    return;
+  }
+  const requestedId = keyToId.get(String(requestedKey || ''));
+  const primaryId = images.some(item => item.id === requestedId) ? requestedId : images[0].id;
+  await tx.productImage.updateMany({ where: { productId }, data: { isPrimary: false } });
+  await tx.productImage.update({ where: { id: primaryId }, data: { isPrimary: true } });
+  await tx.product.update({ where: { id: productId }, data: { image: imageUrl(primaryId) } });
+}
 
 function parseSpecs(value) {
   if (!value) return null;
@@ -72,36 +101,44 @@ const adminCheck = (req, res, next) => {
 };
 
 // Məhsul əlavə et
-router.post('/products', authMiddleware, adminCheck, upload.single('image'), async (req, res) => {
+router.post('/products', authMiddleware, adminCheck, upload.array('images', 10), async (req, res) => {
   try {
-    const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, existingImage, placements } = req.body;
+    const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, placements, primaryImageKey } = req.body;
     const placementRows = parsePlacements(placements, category, subcategory);
+    const files = req.files || [];
+    const newRows = imageRows(files, parseJsonArray(req.body.newImageKeys));
+    if (newRows.length > 10) return res.status(400).json({ message: 'Maksimum 10 şəkil əlavə etmək olar' });
 
-    const product = await prisma.product.create({
-      data: {
-        name,
-        nameRu,
-        description,
-        descRu,
-        price: parseFloat(price),
-        oldPrice: oldPrice ? parseFloat(oldPrice) : null,
-        discount: discount || null,
-        installment: installment || null,
-        colors: colors || null,
-        category,
-        subcategory: subcategory?.trim() || null,
-        brand: brand?.trim() || null,
-        specs: parseSpecs(specs),
-        stock: parseInt(stock),
-        image: req.file ? `/uploads/${req.file.filename}` : (existingImage || null),
-        placements: { create: placementRows }
-      },
-      include: { placements: true }
+    const product = await prisma.$transaction(async tx => {
+      const created = await tx.product.create({
+        data: {
+          name, nameRu, description, descRu,
+          price: parseFloat(price),
+          oldPrice: oldPrice ? parseFloat(oldPrice) : null,
+          discount: discount || null,
+          installment: installment || null,
+          colors: colors || null,
+          category,
+          subcategory: subcategory?.trim() || null,
+          brand: brand?.trim() || null,
+          specs: parseSpecs(specs),
+          stock: parseInt(stock),
+          image: null,
+          placements: { create: placementRows }
+        }
+      });
+      const keyToId = new Map();
+      for (const row of newRows) {
+        const { key, ...data } = row;
+        const image = await tx.productImage.create({ data: { ...data, productId: created.id } });
+        keyToId.set(key, image.id);
+      }
+      await finalizePrimaryImage(tx, created.id, primaryImageKey, keyToId);
+      return tx.product.findUnique({ where: { id: created.id }, include: productInclude });
     });
-
-    res.json(product);
+    res.json(serializeProduct(product));
   } catch (err) {
-    console.log(err);
+    console.error('Product create failed:', err);
     res.status(500).json({ message: 'Server xətası' });
   }
 });
@@ -119,12 +156,22 @@ router.delete('/products/:id', authMiddleware, adminCheck, async (req, res) => {
 });
 
 // Məhsul yenilə
-router.put('/products/:id', authMiddleware, adminCheck, upload.single('image'), async (req, res) => {
+router.put('/products/:id', authMiddleware, adminCheck, upload.array('images', 10), async (req, res) => {
   try {
-    const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, placements } = req.body;
+    const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, placements, primaryImageKey } = req.body;
     const placementRows = parsePlacements(placements, category, subcategory);
 
     const productId = parseInt(req.params.id);
+    const currentImages = await prisma.productImage.findMany({ where: { productId }, orderBy: { position: 'asc' } });
+    const requestedExistingIds = req.body.existingImageIds === undefined
+      ? currentImages.map(item => item.id)
+      : parseJsonArray(req.body.existingImageIds).map(Number).filter(Number.isInteger);
+    const keepIds = requestedExistingIds.filter(id => currentImages.some(item => item.id === id));
+    const files = req.files || [];
+    if (keepIds.length + files.length > 10) {
+      return res.status(400).json({ message: 'Maksimum 10 şəkil saxlamaq olar' });
+    }
+    const newRows = imageRows(files, parseJsonArray(req.body.newImageKeys), keepIds.length);
     const existingPlacements = await prisma.productPlacement.findMany({
       where: { productId }
     });
@@ -153,8 +200,7 @@ router.put('/products/:id', authMiddleware, adminCheck, upload.single('image'), 
           subcategory: subcategory?.trim() || null,
           brand: brand?.trim() || null,
           specs: parseSpecs(specs),
-          stock: parseInt(stock),
-          image: req.file ? `/uploads/${req.file.filename}` : undefined
+          stock: parseInt(stock)
         }
       });
       if (deleteIds.length) {
@@ -165,14 +211,28 @@ router.put('/products/:id', authMiddleware, adminCheck, upload.single('image'), 
           data: createRows.map(item => ({ ...item, productId }))
         });
       }
+      await tx.productImage.deleteMany({
+        where: { productId, ...(keepIds.length ? { id: { notIn: keepIds } } : {}) }
+      });
+      const keyToId = new Map(keepIds.map(id => [`existing:${id}`, id]));
+      for (let position = 0; position < keepIds.length; position += 1) {
+        await tx.productImage.update({ where: { id: keepIds[position] }, data: { position } });
+      }
+      for (const row of newRows) {
+        const { key, ...data } = row;
+        const image = await tx.productImage.create({ data: { ...data, productId } });
+        keyToId.set(key, image.id);
+      }
+      await finalizePrimaryImage(tx, productId, primaryImageKey, keyToId);
       return tx.product.findUnique({
         where: { id: productId },
-        include: { placements: true }
+        include: productInclude
       });
     });
 
-    res.json(product);
+    res.json(serializeProduct(product));
   } catch (err) {
+    console.error('Product update failed:', err);
     res.status(500).json({ message: 'Server xətası' });
   }
 });
