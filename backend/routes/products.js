@@ -1,6 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../lib/prisma');
+const { IMAGE_SELECT, serializeProduct } = require('../lib/productImages');
+
+const productInclude = {
+  placements: true,
+  images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] }
+};
 
 function sortByPlacementDate(products, category, subcategory) {
   const matchingDate = product => {
@@ -62,18 +68,22 @@ router.get('/search', async (req, res) => {
     const products = await prisma.product.findMany({
       where,
       take: 15,
-      include: { placements: true },
+      include: productInclude,
     });
 
-    res.json(products.map(p => ({
+    res.json(products.map(raw => {
+      const p = serializeProduct(raw);
+      return ({
       id: p.id,
       name: p.name,
       price: p.price,
       image: p.image,
+      images: p.images,
       category: p.category,
       subcategory: p.subcategory,
       brand: p.brand,
-    })));
+      });
+    }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server xətası' });
@@ -93,24 +103,28 @@ router.get('/compare', async (req, res) => {
 
     const products = await prisma.product.findMany({
       where: { id: { in: ids } },
-      include: { placements: true },
+      include: productInclude,
     });
 
     // sıralamanı seçim sırasına uyğun saxla (findMany sırasız qaytara bilər)
     const byId = new Map(products.map(p => [p.id, p]));
     const ordered = ids.map(id => byId.get(id)).filter(Boolean);
 
-    res.json(ordered.map(p => ({
+    res.json(ordered.map(raw => {
+      const p = serializeProduct(raw);
+      return ({
       id: p.id,
       name: p.name,
       image: p.image,
+      images: p.images,
       price: p.price,
       oldPrice: p.oldPrice || null,
       category: p.category,
       subcategory: p.subcategory,
       brand: p.brand,
       specs: buildSpecs(p),
-    })));
+      });
+    }));
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server xətası' });
@@ -149,13 +163,13 @@ router.get('/', async (req, res) => {
     const products = await prisma.product.findMany({
       where: filters.length ? { AND: filters } : undefined,
       orderBy: { createdAt: 'desc' },
-      include: { placements: true }
+      include: productInclude
     });
-    res.json(
+    const ordered =
       category || subcategory
         ? sortByPlacementDate(products, category, subcategory)
-        : products
-    );
+        : products;
+    res.json(ordered.map(serializeProduct));
   } catch (err) {
     res.status(500).json({ message: 'Server xətası' });
   }
@@ -166,9 +180,9 @@ router.get('/category/:category', async (req, res) => {
   try {
     const products = await prisma.product.findMany({
       where: { placements: { some: { category: req.params.category } } },
-      include: { placements: true }
+      include: productInclude
     });
-    res.json(sortByPlacementDate(products, req.params.category));
+    res.json(sortByPlacementDate(products, req.params.category).map(serializeProduct));
   } catch (err) {
     res.status(500).json({ message: 'Server xətası' });
   }
@@ -181,12 +195,12 @@ router.get('/:id', async (req, res) => {
   try {
     const product = await prisma.product.findUnique({
       where: { id: parseInt(req.params.id) },
-      include: { placements: true }
+      include: productInclude
     });
     if (!product) {
       return res.status(404).json({ message: 'Məhsul tapılmadı' });
     }
-    res.json(product);
+    res.json(serializeProduct(product));
   } catch (err) {
     res.status(500).json({ message: 'Server xətası' });
   }
