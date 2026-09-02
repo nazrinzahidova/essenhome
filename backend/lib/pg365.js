@@ -1,5 +1,12 @@
 const API_URL = (process.env.PG365_API_URL || 'https://api.poctgoyercini.com').replace(/\/$/, '');
 
+// PG365 sənədində göstərilən mesaj məqsədləri.
+const MESSAGE_PURPOSE = Object.freeze({
+  OTP: 'OTP', // Doğrulama və giriş kodu
+  SERVICE: 'INF', // Servis / məlumatlandırma mesajı
+  ADVERTISING: 'ADV' // Reklam mesajı
+});
+
 function config() {
   return {
     apiUrl: API_URL,
@@ -31,7 +38,7 @@ async function sendOtpSms(receiver, code) {
       },
       body: JSON.stringify({
         Text: `Essen Home giris kodunuz: ${code}. Kod 5 deqiqe etibarlidir.`,
-        Purpose: 'OTP',
+        Purpose: MESSAGE_PURPOSE.OTP,
         Options: {
           ...(settings.originator ? { Originator: settings.originator } : {}),
           Encoding: 'LATIN',
@@ -56,4 +63,4 @@ async function sendOtpSms(receiver, code) {
   return { providerId: String(accepted.id), mocked: false };
 }
 
-module.exports = { sendOtpSms, config };
+module.exports = { sendOtpSms, config, MESSAGE_PURPOSE };
