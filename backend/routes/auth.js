@@ -10,6 +10,32 @@ const { sendOtpSms } = require('../lib/pg365');
 const OTP_TTL_MS = 5 * 60 * 1000;
 const OTP_RESEND_MS = 59 * 1000;
 const OTP_MAX_PER_HOUR = 5;
+let otpSchemaReady;
+
+function ensureOtpSchema() {
+  if (!otpSchemaReady) {
+    otpSchemaReady = (async () => {
+      await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "OtpChallenge" (
+        "id" SERIAL PRIMARY KEY,
+        "phone" TEXT NOT NULL,
+        "codeHash" TEXT NOT NULL,
+        "purpose" TEXT NOT NULL DEFAULT 'login',
+        "providerId" TEXT,
+        "attempts" INTEGER NOT NULL DEFAULT 0,
+        "expiresAt" TIMESTAMP(3) NOT NULL,
+        "consumedAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "userId" INTEGER REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      )`);
+      await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "OtpChallenge_phone_createdAt_idx" ON "OtpChallenge"("phone", "createdAt")');
+      await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "OtpChallenge_expiresAt_idx" ON "OtpChallenge"("expiresAt")');
+    })().catch(error => {
+      otpSchemaReady = null;
+      throw error;
+    });
+  }
+  return otpSchemaReady;
+}
 
 function normalizeAzPhone(value) {
   let digits = String(value || '').replace(/\D/g, '');
@@ -28,6 +54,7 @@ function publicUser(user) {
 
 router.post('/otp/request', async (req, res) => {
   try {
+    await ensureOtpSchema();
     const phone = normalizeAzPhone(req.body?.phone);
     if (!phone) return res.status(400).json({ message: 'Telefon nömrəsini düzgün daxil edin' });
     if (!process.env.JWT_SECRET) return res.status(500).json({ message: 'Server konfiqurasiyası tamamlanmayıb' });
@@ -53,6 +80,7 @@ router.post('/otp/request', async (req, res) => {
 
 router.post('/otp/verify', async (req, res) => {
   try {
+    await ensureOtpSchema();
     const phone = normalizeAzPhone(req.body?.phone);
     const code = String(req.body?.code || '').replace(/\D/g, '');
     if (!phone || !/^\d{6}$/.test(code)) return res.status(400).json({ message: 'Telefon və 6 rəqəmli kodu düzgün daxil edin' });
