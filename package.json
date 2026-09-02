@@ -1,13 +1,9 @@
 {
-  "name": "essenhome",
-  "version": "1.0.0",
-  "main": "index.js",
   "scripts": {
-    "postinstall": "prisma generate --schema=backend/prisma/schema.prisma",
-    "start": "node index.js"
+    "postinstall": "prisma generate --schema=backend/prisma/schema.prisma && prisma migrate deploy --schema=backend/prisma/schema.prisma",
+    "start": "node backend/server.js"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^6.19.3",
     "@prisma/client": "^6.19.3",
     "autoprefixer": "^10.5.2",
     "bcryptjs": "^3.0.3",
@@ -17,7 +13,6 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",
     "postcss": "^8.5.15",
-    "pg": "^8.16.3",
     "prisma": "^6.19.3",
     "tailwindcss": "^4.3.1"
   }
