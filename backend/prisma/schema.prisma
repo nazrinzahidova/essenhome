@@ -22,6 +22,24 @@ model User {
   favourites Favourite[]
   compares   Compare[]
   chatSessions ChatSession[]
+  otpChallenges OtpChallenge[]
+}
+
+model OtpChallenge {
+  id             Int       @id @default(autoincrement())
+  phone          String
+  codeHash       String
+  purpose        String    @default("login")
+  providerId     String?
+  attempts       Int       @default(0)
+  expiresAt      DateTime
+  consumedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  userId         Int?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone, createdAt])
+  @@index([expiresAt])
 }
 
 model ChatSession {
