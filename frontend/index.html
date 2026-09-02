@@ -475,46 +475,52 @@
   </div>
 </div>
 
-<div id="loginModal" class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/50 px-4">
-  <div class="relative w-full max-w-md rounded-md bg-white p-4 shadow sm:p-8 text-gray-800">
-    <button id="closeLoginModal" class="absolute right-4 top-4 text-gray-500 hover:text-red-600 text-2xl leading-none" type="button">&times;</button>
-    <h2 id="authTitle" class="mb-3 text-3xl font-semibold text-center">Hesaba daxil ol</h2>
-    <p class="text-sm text-center text-gray-600">
-      Hesabın yoxdur?
-      <button id="toggleAuthMode" type="button" class="text-red-600 hover:underline focus:underline">Buradan qeydiyyat ol</button>
-    </p>
-    <div class="my-6 space-y-4">
-      <button aria-label="Login with Google" type="button" class="social-login flex items-center justify-center w-full p-4 gap-4 border rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-red-500">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 fill-current"><path d="M16.318 13.714v5.484h9.078c-0.37 2.354-2.745 6.901-9.078 6.901-5.458 0-9.917-4.521-9.917-10.099s4.458-10.099 9.917-10.099c3.109 0 5.193 1.318 6.38 2.464l4.339-4.182c-2.786-2.599-6.396-4.182-10.719-4.182-8.844 0-16 7.151-16 16s7.156 16 16 16c9.234 0 15.365-6.49 15.365-15.635 0-1.052-0.115-1.854-0.255-2.651z"></path></svg>
-        <p>Google ilə daxil ol</p>
-      </button>
-      <button aria-label="Login with GitHub" type="button" class="social-login flex items-center justify-center w-full p-4 gap-4 border rounded-md focus:ring-2 focus:ring-offset-1 focus:ring-red-500">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-5 h-5 fill-current"><path d="M16 0.396c-8.839 0-16 7.167-16 16 0 7.073 4.584 13.068 10.937 15.183 0.803 0.151 1.093-0.344 1.093-0.772 0-0.38-0.009-1.385-0.015-2.719-4.453 0.964-5.391-2.151-5.391-2.151-0.729-1.844-1.781-2.339-1.781-2.339-1.448-0.989 0.115-0.968 0.115-0.968 1.604 0.109 2.448 1.645 2.448 1.645 1.427 2.448 3.744 1.74 4.661 1.328 0.14-1.031 0.557-1.74 1.011-2.135-3.552-0.401-7.287-1.776-7.287-7.907 0-1.751 0.62-3.177 1.645-4.297-0.177-0.401-0.719-2.031 0.141-4.235 0 0 1.339-0.427 4.4 1.641 1.281-0.355 2.641-0.532 4-0.541 1.36 0.009 2.719 0.187 4 0.541 3.043-2.068 4.381-1.641 4.381-1.641 0.859 2.204 0.317 3.833 0.161 4.235 1.015 1.12 1.635 2.547 1.635 4.297 0 6.145-3.74 7.5-7.296 7.891 0.556 0.479 1.077 1.464 1.077 2.959 0 2.14-0.020 3.864-0.020 4.385 0 0.416 0.28 0.916 1.104 0.755 6.4-2.093 10.979-8.093 10.979-15.156 0-8.833-7.161-16-16-16z"></path></svg>
-        <p>GitHub ilə daxil ol</p>
-      </button>
-    </div>
-    <div class="flex items-center w-full my-4">
-      <hr class="w-full border-gray-300">
-      <p class="px-3 text-gray-600">OR</p>
-      <hr class="w-full border-gray-300">
-    </div>
-    <form id="loginForm" class="space-y-6">
-      <div class="space-y-4">
-        <div class="space-y-2">
-          <label for="loginEmail" class="block text-sm">Email address</label>
-          <input type="email" name="email" id="loginEmail" placeholder="leroy@jenkins.com" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none" required>
+<style>
+  .essen-auth-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(9,12,18,.72);backdrop-filter:blur(8px)}
+  .essen-auth-overlay.flex{display:flex}.essen-auth-card{position:relative;width:min(100%,440px);min-height:520px;padding:38px 38px 34px;border:1px solid rgba(20,25,35,.08);border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.28);color:#151820}
+  .essen-auth-close{position:absolute;right:20px;top:18px;width:38px;height:38px;border:0;border-radius:50%;background:#f4f5f7;color:#616875;font-size:25px;line-height:1;cursor:pointer}.essen-auth-logo{display:block;width:176px;max-height:76px;object-fit:contain;margin:0 auto 22px}
+  .essen-auth-step{display:none}.essen-auth-step.active{display:block}.essen-auth-card h2{margin:0 0 10px;font-size:30px;line-height:1.2;text-align:center;font-weight:750}.essen-auth-lead{margin:0 auto 30px;max-width:330px;text-align:center;color:#747b88;font-size:14px;line-height:1.65}
+  .essen-auth-label{display:block;margin:0 0 9px;font-size:13px;font-weight:650;color:#292e38}.essen-auth-input{width:100%;height:56px;border:1px solid #dfe2e7;border-radius:14px;padding:0 16px;background:#fafbfc;color:#151820;font:500 16px Poppins,sans-serif;outline:0;transition:.2s}.essen-auth-input:focus{border-color:#e8222e;background:#fff;box-shadow:0 0 0 4px rgba(232,34,46,.08)}
+  .essen-auth-primary{width:100%;height:56px;margin-top:18px;border:0;border-radius:14px;background:#e8222e;color:#fff;font:700 15px Poppins,sans-serif;cursor:pointer;box-shadow:0 10px 24px rgba(232,34,46,.22);transition:.2s}.essen-auth-primary:hover{background:#ca101c;transform:translateY(-1px)}.essen-auth-note{min-height:20px;margin:14px 0 0;text-align:center;color:#e8222e;font-size:12px}
+  .otp-row{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}.otp-box{width:100%;height:58px;border:1px solid #dfe2e7;border-radius:12px;text-align:center;font:700 22px Poppins,sans-serif;outline:0}.otp-box:focus{border-color:#e8222e;box-shadow:0 0 0 3px rgba(232,34,46,.08)}.otp-meta{display:flex;justify-content:space-between;gap:12px;margin:18px 0 4px;color:#7a818d;font-size:12px}.otp-resend{border:0;background:none;color:#e8222e;font-weight:650;cursor:pointer}.otp-resend:disabled{color:#9ba0a9;cursor:default}.essen-auth-back{display:block;margin:18px auto 0;border:0;background:none;color:#646b77;font:600 13px Poppins,sans-serif;cursor:pointer}
+  @media(max-width:640px){.essen-auth-overlay{padding:0;background:#fff;backdrop-filter:none;align-items:stretch}.essen-auth-card{width:100%;min-height:100dvh;border:0;border-radius:0;box-shadow:none;padding:58px 24px 32px;display:flex;flex-direction:column;justify-content:center}.essen-auth-logo{width:164px;margin-bottom:30px}.essen-auth-card h2{font-size:28px}.essen-auth-close{right:18px;top:18px}.otp-row{gap:6px}.otp-box{height:54px;border-radius:10px}}
+</style>
+<div id="loginModal" class="essen-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="essen-auth-card">
+    <button id="closeLoginModal" class="essen-auth-close" type="button" aria-label="Bağla">&times;</button>
+    <img src="img/logo.png" alt="Essen Home" class="essen-auth-logo">
+    <section class="essen-auth-step active" data-auth-step="phone">
+      <h2 id="authTitle">Giriş</h2>
+      <p class="essen-auth-lead">Hesabınıza təhlükəsiz daxil olmaq üçün telefon nömrənizi qeyd edin.</p>
+      <form id="phoneDesignForm">
+        <label class="essen-auth-label" for="authPhone">Telefon nömrəsi</label>
+        <input id="authPhone" class="essen-auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+994 (50) 123 45 67" maxlength="19" required>
+        <button class="essen-auth-primary" type="submit">Kodu əldə et</button>
+      </form>
+    </section>
+    <section class="essen-auth-step" data-auth-step="otp">
+      <h2>Təsdiq kodu</h2>
+      <p class="essen-auth-lead"><span id="otpPhonePreview"></span> nömrəsinə göndərilən 6 rəqəmli kodu daxil edin.</p>
+      <form id="otpDesignForm">
+        <div class="otp-row" aria-label="6 rəqəmli təsdiq kodu">
+          <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="1-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="2-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="3-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="4-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="5-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="6-cı rəqəm">
         </div>
-        <div class="space-y-2">
-          <div class="flex justify-between">
-            <label for="loginPassword" class="text-sm">Password</label>
-            <a href="#" class="text-xs hover:underline text-gray-600">Forgot password?</a>
-          </div>
-          <input type="password" name="password" id="loginPassword" placeholder="*****" class="w-full px-3 py-2 border rounded-md border-gray-300 bg-white text-gray-800 focus:border-red-600 outline-none" required>
-        </div>
-      </div>
-      <p id="loginMessage" class="hidden text-sm text-center"></p>
-      <button id="authSubmitBtn" type="submit" class="w-full px-8 py-3 font-semibold rounded-md bg-red-600 text-white hover:bg-red-700 transition">Sign in</button>
-    </form>
+        <div class="otp-meta"><span id="otpTimer">00:59</span><button id="otpResend" class="otp-resend" type="button" disabled>Kodu yenidən göndər</button></div>
+        <button class="essen-auth-primary" type="submit">Kodu təsdiqlə</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
+    </section>
+    <section class="essen-auth-step" data-auth-step="email">
+      <h2>Hesabı tamamlayın</h2>
+      <p class="essen-auth-lead">İlk qeydiyyat üçün Gmail və ya e-mail ünvanınızı daxil edin.</p>
+      <form id="emailDesignForm">
+        <label class="essen-auth-label" for="authEmail">Gmail / E-mail</label>
+        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email" placeholder="adiniz@gmail.com" required>
+        <button class="essen-auth-primary" type="submit">Hesab yarat</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="otp">← Geri qayıt</button>
+    </section>
+    <p id="loginMessage" class="essen-auth-note" aria-live="polite"></p>
   </div>
 </div>
 
@@ -776,8 +782,8 @@
       <div>
         <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-6">Əlaqə</p>
         <ul class="flex flex-col gap-4">
-          <li><a href="tel:+994507051818" class="flex items-center gap-3 group"><span class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-500 group-hover:text-white transition-all flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></span><span><span class="block text-xs text-gray-400">Telefon</span><span class="block text-sm text-gray-700 group-hover:text-gray-900 transition-colors">+994 50 705 18 18</span></span></a></li>
-          <li><a href="https://wa.me/994507051818" target="_blank" rel="noopener" class="flex items-center gap-3 group"><span class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all flex-shrink-0"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span><span><span class="block text-xs text-gray-400">WhatsApp</span><span class="block text-sm text-gray-700 group-hover:text-gray-900 transition-colors">Birbaşa yaz</span></span></a></li>
+          <li><a href="tel:+994102414782" class="flex items-center gap-3 group"><span class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-500 group-hover:text-white transition-all flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></span><span><span class="block text-xs text-gray-400">Telefon</span><span class="block text-sm text-gray-700 group-hover:text-gray-900 transition-colors">010 241 47 82</span></span></a></li>
+          <li><a href="https://wa.me/994102414782" target="_blank" rel="noopener" class="flex items-center gap-3 group"><span class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all flex-shrink-0"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></span><span><span class="block text-xs text-gray-400">WhatsApp</span><span class="block text-sm text-gray-700 group-hover:text-gray-900 transition-colors">010 241 47 82</span></span></a></li>
           <li><a href="mailto:info@essenevaletleri.com" class="flex items-center gap-3 group"><span class="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all flex-shrink-0"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></span><span><span class="block text-xs text-gray-400">E-poçt</span><span class="block text-sm text-gray-700 group-hover:text-gray-900 transition-colors">info@essenevaletleri.com</span></span></a></li>
         </ul>
       </div>
@@ -796,7 +802,6 @@
 <div class="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen border-t border-red-500 py-6 flex flex-col items-center justify-center gap-4 bg-red-500">
   <p class="text-xs text-white text-center">© 2026 Essen Home. Bütün hüquqlar qorunur.</p>
   <div class="flex flex-wrap justify-center items-center gap-3">
-    <a href="https://wa.me/994507051818" target="_blank" rel="noopener" class="flex items-center gap-2 text-xs text-white border border-white rounded-full px-4 py-1.5 hover:bg-gray-50 hover:text-gray-600 transition-all"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</a>
     <a href="https://www.instagram.com/essenhome.az?igsh=bzd0c2xkNTc2NzFh" target="_blank" rel="noopener" class="flex items-center gap-2 text-xs text-white border border-gray-200 rounded-full px-4 py-1.5 hover:bg-gray-50 hover:text-gray-600 transition-all"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>Instagram</a>
     <a href="https://www.tiktok.com/@essenhome.az" target="_blank" rel="noopener" class="flex items-center gap-2 text-xs text-white border border-gray-200 rounded-full px-4 py-1.5 hover:bg-gray-50 hover:text-gray-600 transition-all"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>TikTok</a>
   </div>
@@ -812,65 +817,124 @@
   const openLoginModal = document.getElementById("openLoginModal");
   const closeLoginModal = document.getElementById("closeLoginModal");
   const loginModal = document.getElementById("loginModal");
-  const loginForm = document.getElementById("loginForm");
   const loginMessage = document.getElementById("loginMessage");
-  const toggleAuthMode = document.getElementById("toggleAuthMode");
-  const authTitle = document.getElementById("authTitle");
-  const authSubmitBtn = document.getElementById("authSubmitBtn");
-  let isRegisterMode = false;
+  let otpCountdown = null;
+  let pendingOtpPhone = '';
+  let pendingRegistrationToken = '';
 
-  function openModal() { loginModal.classList.remove("hidden"); loginModal.classList.add("flex"); }
-  function closeModal() { loginModal.classList.add("hidden"); loginModal.classList.remove("flex"); loginMessage.classList.add("hidden"); }
+  async function authRequest(path, body) {
+    const response = await fetch(`/api/auth${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const error = new Error(data.message || 'Əməliyyat tamamlanmadı');
+      error.retryAfter = data.retryAfter;
+      throw error;
+    }
+    return data;
+  }
+
+  function completePhoneLogin(data) {
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('activeUser', data.user.email || data.user.phone);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    openLoginModal.textContent = data.user.name || data.user.phone;
+    openLoginModal.classList.add('logged-in');
+    closeModal();
+    window.dispatchEvent(new CustomEvent('essen:login', { detail: data.user }));
+  }
+
+  function showAuthStep(step) {
+    document.querySelectorAll('[data-auth-step]').forEach(section => section.classList.toggle('active', section.dataset.authStep === step));
+    loginMessage.textContent = '';
+  }
+  function openModal() { loginModal.classList.remove("hidden"); loginModal.classList.add("flex"); showAuthStep('phone'); setTimeout(() => document.getElementById('authPhone').focus(), 50); }
+  function closeModal() { loginModal.classList.add("hidden"); loginModal.classList.remove("flex"); clearInterval(otpCountdown); loginMessage.textContent = ''; }
   
   closeLoginModal.addEventListener("click", closeModal);
   loginModal.addEventListener("click", function(e) { if (e.target === loginModal) closeModal(); });
-  toggleAuthMode.addEventListener("click", function() {
-    isRegisterMode = !isRegisterMode;
-    authTitle.textContent = isRegisterMode ? "Qeydiyyatdan keç" : "Hesaba daxil ol";
-    authSubmitBtn.textContent = isRegisterMode ? "Qeydiyyat ol" : "Sign in";
-    toggleAuthMode.textContent = isRegisterMode ? "Daxil ol" : "Buradan qeydiyyat ol";
-    loginMessage.classList.add("hidden");
+  document.getElementById('authPhone').addEventListener('input', event => {
+    let digits = event.target.value.replace(/\D/g, '');
+    if (digits.startsWith('994')) digits = digits.slice(3);
+    digits = digits.slice(0, 9);
+    let value = '+994';
+    if (digits.length) value += ` (${digits.slice(0, 2)}`;
+    if (digits.length >= 2) value += ')';
+    if (digits.length > 2) value += ` ${digits.slice(2, 5)}`;
+    if (digits.length > 5) value += ` ${digits.slice(5, 7)}`;
+    if (digits.length > 7) value += ` ${digits.slice(7, 9)}`;
+    event.target.value = value;
   });
-  loginForm.addEventListener("submit", async function(e) {
-    e.preventDefault();
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value.trim();
-    if (!email || !password) { showMessage("Email və şifrə daxil edin.", "error"); return; }
-    const url = isRegisterMode ? "/api/auth/register" : "/api/auth/login";
-    const body = isRegisterMode ? { name: email.split("@")[0], email, password } : { email, password };
+
+  function startOtpTimer() {
+    clearInterval(otpCountdown);
+    let left = 59;
+    const timer = document.getElementById('otpTimer');
+    const resend = document.getElementById('otpResend');
+    resend.disabled = true;
+    timer.textContent = '00:59';
+    otpCountdown = setInterval(() => {
+      left -= 1; timer.textContent = `00:${String(Math.max(0, left)).padStart(2, '0')}`;
+      if (left <= 0) { clearInterval(otpCountdown); resend.disabled = false; }
+    }, 1000);
+  }
+  document.getElementById('phoneDesignForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const phone = document.getElementById('authPhone').value;
+    if (phone.replace(/\D/g, '').length !== 12) { loginMessage.textContent = 'Telefon nömrəsini tam daxil edin.'; return; }
+    loginMessage.textContent = 'Kod göndərilir...';
     try {
-      const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) { showMessage(data.message || "Xəta baş verdi.", "error"); return; }
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("activeUser", data.user.email);
-      localStorage.setItem("userRole", data.user.role);
-      loginSuccess(data.user.email);
-    } catch(err) { showMessage("Server ilə əlaqə yoxdur.", "error"); }
+      await authRequest('/otp/request', { phone });
+      pendingOtpPhone = phone;
+      document.getElementById('otpPhonePreview').textContent = phone;
+      showAuthStep('otp'); startOtpTimer(); document.querySelector('.otp-box').focus();
+    } catch (error) { loginMessage.textContent = error.message; }
   });
-  function showMessage(text, type) {
-    loginMessage.textContent = text;
-    loginMessage.classList.remove("hidden");
-    loginMessage.className = type === "error" ? "text-sm text-center text-red-600" : "text-sm text-center text-green-600";
-  }
-  function loginSuccess(email) {
-    showMessage("Giriş uğurludur!", "success");
-    openLoginModal.innerHTML = email.split("@")[0];
-    openLoginModal.classList.add("logged-in");
-    setTimeout(closeModal, 700);
-  }
-  document.querySelectorAll(".social-login").forEach(button => {
-    button.addEventListener("click", function() {
-      const demoEmail = "social-user@essen.az";
-      localStorage.setItem("activeUser", demoEmail);
-      loginSuccess(demoEmail);
+  document.querySelectorAll('.otp-box').forEach((input, index, boxes) => {
+    input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, '').slice(-1); if (input.value && boxes[index + 1]) boxes[index + 1].focus(); });
+    input.addEventListener('keydown', event => { if (event.key === 'Backspace' && !input.value && boxes[index - 1]) boxes[index - 1].focus(); });
+    input.addEventListener('paste', event => {
+      const digits = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+      if (!digits) return; event.preventDefault(); digits.split('').forEach((digit, i) => { if (boxes[i]) boxes[i].value = digit; }); boxes[Math.min(digits.length, 6) - 1].focus();
     });
   });
+  document.getElementById('otpDesignForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    const code = [...document.querySelectorAll('.otp-box')].map(input => input.value).join('');
+    if (code.length !== 6) { loginMessage.textContent = '6 rəqəmli kodu tam daxil edin.'; return; }
+    loginMessage.textContent = 'Kod yoxlanılır...';
+    try {
+      const data = await authRequest('/otp/verify', { phone: pendingOtpPhone, code });
+      if (!data.registrationRequired) return completePhoneLogin(data);
+      pendingRegistrationToken = data.registrationToken;
+      showAuthStep('email'); document.getElementById('authEmail').focus();
+    } catch (error) { loginMessage.textContent = error.message; }
+  });
+  document.getElementById('emailDesignForm').addEventListener('submit', async event => {
+    event.preventDefault();
+    loginMessage.textContent = 'Hesab yaradılır...';
+    try {
+      const data = await authRequest('/otp/register', { email: document.getElementById('authEmail').value, registrationToken: pendingRegistrationToken });
+      completePhoneLogin(data);
+    } catch (error) { loginMessage.textContent = error.message; }
+  });
+  document.getElementById('otpResend').addEventListener('click', async () => {
+    loginMessage.textContent = 'Kod yenidən göndərilir...';
+    try {
+      await authRequest('/otp/request', { phone: pendingOtpPhone });
+      document.querySelectorAll('.otp-box').forEach(input => input.value = '');
+      loginMessage.textContent = ''; startOtpTimer(); document.querySelector('.otp-box').focus();
+    } catch (error) { loginMessage.textContent = error.message; }
+  });
+  document.querySelectorAll('[data-auth-back]').forEach(button => button.addEventListener('click', () => showAuthStep(button.dataset.authBack)));
   const activeUser = localStorage.getItem("activeUser");
-  if (activeUser && activeUser !== "social-user@essen.az") {
+  if (activeUser) {
     openLoginModal.innerHTML = activeUser.split("@")[0];
     openLoginModal.classList.add("logged-in");
-  } else { localStorage.removeItem("activeUser"); }
+  }
 
   // ── DİL ──
   const languageSwitcher = document.getElementById("languageSwitcher");
@@ -1327,6 +1391,20 @@ function productTopBadge(product) {
         wrapper.className = "product-card-wrapper";
         const card = document.createElement("div");
         card.className = "product-card";
+        card.setAttribute('role', 'link');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', `${p.name} məhsul səhifəsini aç`);
+        const openProduct = () => { window.location.href = `product.html?id=${encodeURIComponent(p.id)}`; };
+        card.addEventListener('click', event => {
+          if (event.target.closest('button, .color-dot, a, input, select')) return;
+          openProduct();
+        });
+        card.addEventListener('keydown', event => {
+          if ((event.key === 'Enter' || event.key === ' ') && event.target === card) {
+            event.preventDefault();
+            openProduct();
+          }
+        });
         card.innerHTML = `
   <div style="position:relative;">
     ${productTopBadge(p)}
@@ -1503,6 +1581,92 @@ setupLiveSearch('searchInput', 'searchDropdown');
 setupLiveSearch('searchInputMobile', 'searchDropdownMobile');
 // Səhifə yüklənəndə məhsulları arxa fonda keşləyək ki, ilk axtarış sürətli olsun
 fetchAllProductsForSearch();
+
+// Məhsul kartlarının inline onclick-i həmişə çata bilsin deyə səbət funksiyası
+// məhsulları yaradan əsas skriptdə qlobal olaraq qeydiyyatdan keçirilir.
+function readHomepageCart() {
+  try {
+    const cart = JSON.parse(localStorage.getItem('essenCart') || '[]');
+    return Array.isArray(cart) ? cart : [];
+  } catch {
+    return [];
+  }
+}
+
+function clearExpiredHomepageSession() {
+  ['token', 'activeUser', 'userRole', 'user'].forEach(key => localStorage.removeItem(key));
+}
+
+function refreshHomepageCartBadge(cartItems) {
+  const total = (cartItems || readHomepageCart())
+    .reduce((sum, item) => sum + Number(item.quantity || item.qty || 1), 0);
+  ['cart-count', 'cart-count-mobile'].forEach(id => {
+    const badge = document.getElementById(id);
+    if (!badge) return;
+    badge.textContent = total;
+    badge.style.display = total > 0 ? 'flex' : 'none';
+  });
+}
+
+window.addToCart = async function(productId, name, price, btnEl) {
+  const card = btnEl?.closest('.product-card');
+  const colorRow = card?.querySelector('.color-select-row');
+  const color = colorRow
+    ? (colorRow.dataset.selectedColor || colorRow.querySelector('.color-dot')?.dataset.colorName || null)
+    : null;
+  const image = card?.querySelector('img')?.getAttribute('src') || '';
+  const token = localStorage.getItem('token');
+  let saveLocally = !token;
+
+  if (token) {
+    try {
+      const response = await fetch('/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId, quantity: 1 })
+      });
+      if (response.status === 401 || response.status === 403) {
+        clearExpiredHomepageSession();
+        saveLocally = true;
+      } else if (!response.ok) {
+        throw new Error('Cart request failed');
+      }
+    } catch (error) {
+      console.error('Səbətə əlavə edilmədi:', error);
+      alert('Məhsulu səbətə əlavə etmək mümkün olmadı. Yenidən cəhd edin.');
+      return;
+    }
+  }
+
+  if (saveLocally) {
+    const cart = readHomepageCart();
+    const existing = cart.find(item => Number(item.id) === Number(productId) && (item.color || null) === color);
+    if (existing) {
+      existing.qty = Number(existing.qty || 1) + 1;
+      if (!existing.image && image) existing.image = image;
+    } else {
+      cart.push({ id: Number(productId), name, price: Number(price), image, qty: 1, color });
+    }
+    localStorage.setItem('essenCart', JSON.stringify(cart));
+    refreshHomepageCartBadge(cart);
+  } else {
+    try {
+      const response = await fetch('/api/cart', { headers: { 'Authorization': `Bearer ${token}` } });
+      if (response.ok) refreshHomepageCartBadge(await response.json());
+    } catch {}
+  }
+
+  localStorage.setItem('essenCartChanged', String(Date.now()));
+  document.querySelectorAll(`[data-cart-id="${productId}"]`).forEach(button => {
+    button.style.background = '#16a34a';
+    button.innerHTML = '<span aria-hidden="true">✓</span> Səbətdə';
+  });
+};
+
+document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
 </script>
 
 <!-- ===== ESSEN CHATBOT WIDGET ===== -->
@@ -1587,25 +1751,12 @@ fetchAllProductsForSearch();
         <div class="chat-avatar"><i class="fa-regular fa-comment-dots"></i></div>
         <div>
           <div class="chat-title">Essen Dəstək</div>
-          <div class="chat-subtitle" id="status-text">🟢 AI Köməkçi aktivdir</div>
+          <div class="chat-subtitle" id="status-text">🟢 Sayt operatoru aktivdir</div>
         </div>
       </div>
       <button class="chat-close" id="close-btn">&times;</button>
     </div>
-    <div class="mode-tabs">
-      <button class="mode-tab active" id="tab-ai" onclick="switchMode('ai')">
-        <i class="fa-solid fa-robot" style="margin-right:4px;font-size:11px;"></i>AI Köməkçi
-      </button>
-      <button class="mode-tab" id="tab-op" onclick="switchMode('operator')">
-        <i class="fa-solid fa-headset" style="margin-right:4px;font-size:11px;"></i>Operator
-      </button>
-    </div>
     <div class="chat-body" id="chat-body"></div>
-    <div class="quick-btns" id="quick-btns">
-      <button class="quick-btn" onclick="sendQuick('Çatdırılma müddəti nə qədərdir?')">🚚 Çatdırılma</button>
-      <button class="quick-btn" onclick="sendQuick('Zəmanət şərtləri nədir?')">🛡️ Zəmanət</button>
-      <button class="quick-btn" onclick="sendQuick('Hissə-hissə ödəmə varmı?')">💳 Hissəli ödəmə</button>
-    </div>
     <div class="chat-footer">
       <input class="chat-input" id="chat-input" placeholder="Mesaj yazın..."/>
       <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
@@ -1618,93 +1769,100 @@ fetchAllProductsForSearch();
 </div>
 
 <script>
-const ANTHROPIC_API = "https://api.anthropic.com/v1/messages";
-let mode = 'ai'; let chatOpen = false; let chatHistory = []; let opMsgIdx = 0;
-const operatorMsgs = [
-  "Salam! Operator xidmətinə bağlandınız. Az gözləyin...",
-  "Operator Nigar sizinlə əlaqə saxlayır. Necə kömək edə bilərəm?",
-  "Əlbəttə, bu məsələni həll etmək üçün lazımi addımları atacağam.",
-  "Başqa sualınız varmı? Sizə kömək etməkdən məmnuniyyət duyuram!"
-];
-const localAnswers = {
-  "çatdırılma": "Bakı daxili sifarişlər 1-2 iş günü ərzində çatdırılır. 49.99 AZN-dən yuxarı sifarişlərə çatdırılma pulsuzdur! 🚚",
-  "zəmanət": "Məhsullarımıza istehsalçı zəmanəti, Qızıl Zəmanət və Zəmanət Plus seçimləri mövcuddur. 🛡️",
-  "hissə": "Bəli! 0% faizlə 6 və 12 aylıq hissəli ödəmə imkanımız var. 💳",
-  "qiymət": "Biz ən yaxşı qiymətə zəmanət veririk! Daha ucuz tapsanız, fərqin 120%-ni geri alırsınız. 🏆",
-  "sifariş": "Sifarişi saytda, mobil tətbiqdə və ya +994 50 705 18 18 nömrəsi ilə verə bilərsiniz. 📦"
-};
+let chatOpen = false;
+let internalChatId = null;
+let renderedChatMessageIds = new Set();
+let chatStreamAbort = null;
+async function ensureInternalChat() {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+  if (internalChatId) return internalChatId;
+  const response = await fetch('/api/chats/session', { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
+  if (!response.ok) return null;
+  const session = await response.json();
+  internalChatId = session.id;
+  return internalChatId;
+}
+async function sendInternalChat(text) {
+  const token = localStorage.getItem('token');
+  const sessionId = await ensureInternalChat();
+  if (!token || !sessionId) return false;
+  const response = await fetch(`/api/chats/${sessionId}/messages`, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body:JSON.stringify({ text }) });
+  return response.ok;
+}
+async function loadInternalChat() {
+  if (!chatOpen) return;
+  const token = localStorage.getItem('token');
+  const sessionId = await ensureInternalChat().catch(() => null);
+  if (!token || !sessionId) return;
+  try {
+    const response = await fetch(`/api/chats/${sessionId}/messages`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (!response.ok) return;
+    const messages = await response.json();
+    messages.forEach(message => renderChatMessage(message));
+  } catch {}
+}
+async function connectChatStream() {
+  chatStreamAbort?.abort();
+  const token = localStorage.getItem('token');
+  if (!token || !chatOpen) return;
+  chatStreamAbort = new AbortController();
+  try {
+    const response = await fetch('/api/chats/stream', { headers: { Authorization: `Bearer ${token}` }, signal: chatStreamAbort.signal });
+    if (!response.ok || !response.body) return;
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    while (chatOpen) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split('\n\n'); buffer = events.pop() || '';
+      events.forEach(block => {
+        const dataLine = block.split('\n').find(line => line.startsWith('data: '));
+        if (!dataLine) return;
+        try { const payload = JSON.parse(dataLine.slice(6)); if (payload.message) renderChatMessage(payload.message); } catch {}
+      });
+    }
+  } catch (error) { if (error.name !== 'AbortError' && chatOpen) setTimeout(connectChatStream, 1500); }
+}
 function now() { return new Date().toLocaleTimeString('az-AZ', {hour:'2-digit', minute:'2-digit'}); }
 function toggleChat() {
   chatOpen = !chatOpen;
   const win = document.getElementById('chat-window');
-  if (chatOpen) { win.classList.add('open'); if (!document.getElementById('chat-body').children.length) addMsg('bot', 'Salam! 👋 Essen Ev Alətlərinə xoş gəlmisiniz! Sizə necə kömək edə bilərəm?'); }
-  else win.classList.remove('open');
+  if (chatOpen) {
+    win.classList.add('open');
+    if (!localStorage.getItem('token')) { chatOpen = false; win.classList.remove('open'); openModal(); return; }
+    loadInternalChat(); connectChatStream();
+  } else { win.classList.remove('open'); chatStreamAbort?.abort(); }
 }
-document.getElementById('close-btn').onclick = () => { chatOpen = false; document.getElementById('chat-window').classList.remove('open'); };
+document.getElementById('close-btn').onclick = () => { chatOpen = false; chatStreamAbort?.abort(); document.getElementById('chat-window').classList.remove('open'); };
 document.getElementById('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-function switchMode(m) {
-  mode = m;
-  document.getElementById('tab-ai').classList.toggle('active', m === 'ai');
-  document.getElementById('tab-op').classList.toggle('active', m === 'operator');
-  const body = document.getElementById('chat-body');
-  const quick = document.getElementById('quick-btns');
-  if (m === 'operator') {
-    document.getElementById('status-text').textContent = '🔵 Operator ilə bağlantı';
-    quick.style.display = 'none'; opMsgIdx = 0;
-    const notice = document.createElement('div');
-    notice.className = 'operator-notice';
-    notice.innerHTML = '<i class="fa-solid fa-headset"></i> Operator ilə əlaqə qurulur...';
-    body.appendChild(notice); body.scrollTop = body.scrollHeight;
-    setTimeout(() => { notice.remove(); addMsg('op', operatorMsgs[0]); opMsgIdx = 1; }, 1800);
-  } else {
-    document.getElementById('status-text').textContent = '🟢 AI Köməkçi aktivdir';
-    quick.style.display = 'flex';
-    addMsg('bot', 'AI köməkçiyə qayıtdınız. Sualınızı yazın! 🤖');
-  }
+function renderChatMessage(message) {
+  if (!message?.id || renderedChatMessageIds.has(message.id)) return;
+  renderedChatMessageIds.add(message.id);
+  addMsg(message.sender === 'user' ? 'user' : 'op', message.text);
 }
 function addMsg(role, text) {
   const body = document.getElementById('chat-body');
   const wrap = document.createElement('div');
   wrap.className = `msg ${role === 'user' ? 'user' : role}`;
-  const avatarClass = role === 'bot' ? 'bot' : role === 'op' ? 'op' : 'user-av';
-  const avatarIcon = role === 'bot' ? '<i class="fa-solid fa-robot"></i>' : role === 'op' ? '<i class="fa-solid fa-headset"></i>' : '<i class="fa-solid fa-user"></i>';
+  const avatarClass = role === 'bot' ? 'op' : role === 'op' ? 'op' : 'user-av';
+  const avatarIcon = role === 'bot' || role === 'op' ? '<i class="fa-solid fa-headset"></i>' : '<i class="fa-solid fa-user"></i>';
   wrap.innerHTML = `<div class="msg-avatar ${avatarClass}">${avatarIcon}</div><div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
   body.appendChild(wrap); body.scrollTop = body.scrollHeight;
 }
-function showTyping() {
-  const body = document.getElementById('chat-body');
-  const el = document.createElement('div');
-  el.className = 'msg bot'; el.id = 'typing-indicator';
-  el.innerHTML = `<div class="msg-avatar bot"><i class="fa-solid fa-robot"></i></div><div class="msg-bubble typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
-  body.appendChild(el); body.scrollTop = body.scrollHeight;
-}
-function removeTyping() { const el = document.getElementById('typing-indicator'); if (el) el.remove(); }
-function sendQuick(text) { document.getElementById('chat-input').value = text; sendMessage(); }
 async function sendMessage() {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
   if (!text) return;
-  input.value = ''; addMsg('user', text);
-  if (mode === 'operator') {
-    setTimeout(() => { const reply = operatorMsgs[opMsgIdx] || 'Başqa sualınız üçün buradayam!'; addMsg('op', reply); if (opMsgIdx < operatorMsgs.length - 1) opMsgIdx++; }, 1200);
+  input.value = '';
+  const delivered = await sendInternalChat(text).catch(() => false);
+  if (!delivered) {
+    openModal();
     return;
   }
-  const lower = text.toLowerCase();
-  for (const [key, val] of Object.entries(localAnswers)) {
-    if (lower.includes(key)) { showTyping(); await new Promise(r => setTimeout(r, 900)); removeTyping(); addMsg('bot', val); return; }
-  }
-  showTyping();
-  chatHistory.push({ role: "user", content: text });
-  try {
-    const res = await fetch(ANTHROPIC_API, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system: "Sən Essen Ev Alətləri mağazasının AI köməkçisisən. Azərbaycan dilində qısa, mehriban cavablar ver. Məhsullar, çatdırılma, zəmanət, qiymət və sifariş məsələlərində kömək et.", messages: chatHistory })
-    });
-    const data = await res.json();
-    const reply = data.content?.[0]?.text || "Bağışlayın, hal-hazırda cavab verə bilmirəm. Zəhmət olmasa operatora keçin.";
-    chatHistory.push({ role: "assistant", content: reply });
-    removeTyping(); addMsg('bot', reply);
-  } catch(e) { removeTyping(); addMsg('bot', 'Bağlantı xətası baş verdi. Zəhmət olmasa operatora keçin. 📞'); }
+  await loadInternalChat();
 }
 
 // ── CART ──────────────────────────────────────────────
@@ -1742,52 +1900,6 @@ async function updateCartBadge() {
     if (!el) return;
     el.textContent = total;
     el.style.display = total > 0 ? 'flex' : 'none';
-  });
-}
-
-async function addToCart(productId, name, price, btnEl) {
-  const card = btnEl.closest('.product-card');
-  const colorRow = card ? card.querySelector('.color-select-row') : null;
-  const color = colorRow ? (colorRow.dataset.selectedColor || colorRow.querySelector('.color-dot')?.dataset.colorName) : null;
-
-  const token = localStorage.getItem('token');
-
-  if (token) {
-    try {
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ productId, quantity: 1, color })
-      });
-      if (!res.ok) throw new Error();
-    } catch {
-      console.error('Səbətə əlavə edilmədi');
-      return;
-    }
-  } else {
-    const cart = getCart();
-    const existing = cart.find(i => i.id === productId && i.color === color);
-    if (existing) {
-      existing.qty += 1;
-    } else {
-      cart.push({ id: productId, name, price, qty: 1, color });
-    }
-    localStorage.setItem('essenCart', JSON.stringify(cart));
-  }
-
-  notifyCartChanged();
-  updateCartBadge();
-
-  document.querySelectorAll(`[data-cart-id="${productId}"]`).forEach(btn => {
-    btn.style.background = '#16a34a';
-    btn.innerHTML = `
-      <svg style="width:14px;height:14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-      </svg>
-      Səbətdə`;
   });
 }
 
