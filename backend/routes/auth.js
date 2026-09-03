@@ -3,8 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../lib/prisma');
-const authMiddleware = require('../middleware/auth');
-const crypto = require('crypto');
+const authMiddleware = require('../middleware/auth');const crypto = require('crypto');
+const { Client } = require('pg');
 const { sendOtpSms } = require('../lib/pg365');
 
 const OTP_TTL_MS = 5 * 60 * 1000;
@@ -14,8 +14,10 @@ let otpSchemaReady;
 
 function ensureOtpSchema() {
   if (!otpSchemaReady) {
-    otpSchemaReady = (async () => {
-      await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "OtpChallenge" (
+    otpSchemaReady = (async () => {      const client = new Client({ connectionString: process.env.DATABASE_URL });
+      await client.connect();
+      try {
+        await client.query(`CREATE TABLE IF NOT EXISTS "OtpChallenge" (
         "id" SERIAL PRIMARY KEY,
         "phone" TEXT NOT NULL,
         "codeHash" TEXT NOT NULL,
@@ -26,9 +28,10 @@ function ensureOtpSchema() {
         "consumedAt" TIMESTAMP(3),
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "userId" INTEGER REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
-      )`);
-      await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "OtpChallenge_phone_createdAt_idx" ON "OtpChallenge"("phone", "createdAt")');
-      await prisma.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "OtpChallenge_expiresAt_idx" ON "OtpChallenge"("expiresAt")');
+      )`);        await client.query('CREATE INDEX IF NOT EXISTS "OtpChallenge_phone_createdAt_idx" ON "OtpChallenge"("phone", "createdAt")');        await client.query('CREATE INDEX IF NOT EXISTS "OtpChallenge_expiresAt_idx" ON "OtpChallenge"("expiresAt")');
+      } finally {
+        await client.end();
+      }
     })().catch(error => {
       otpSchemaReady = null;
       throw error;
