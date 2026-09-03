@@ -4,6 +4,26 @@ const router = express.Router();
 const prisma = require('../lib/prisma');
 const auth = require('../middleware/auth');
 const adminCheck = require('../middleware/adminCheck');
+const { subscribe, publish } = require('../lib/chatEvents');
+
+function openStream(req, res, filter) {
+  res.set({
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-transform',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no'
+  });
+  res.flushHeaders();
+  res.write(': connected\n\n');
+  const unsubscribe = subscribe(event => {
+    if (filter(event)) res.write(`data: ${JSON.stringify(event)}\n\n`);
+  });
+  const heartbeat = setInterval(() => res.write(': keep-alive\n\n'), 20000);
+  req.on('close', () => { clearInterval(heartbeat); unsubscribe(); });
+}
+
+router.get('/stream', auth, (req, res) => openStream(req, res, event => event.userId === req.user.id));
+router.get('/admin/stream', auth, adminCheck, (_req, res) => openStream(_req, res, () => true));
 
 router.post('/session', auth, async (req, res) => {
   try {
@@ -31,6 +51,7 @@ router.post('/:id/messages', auth, async (req, res) => {
     if (!session) return res.status(404).json({ message: 'Çat tapılmadı' });
     const message = await prisma.chatMessage.create({ data: { sessionId: session.id, sender: 'user', text } });
     await prisma.chatSession.update({ where: { id: session.id }, data: { updatedAt: new Date() } });
+    publish({ type: 'message', userId: req.user.id, sessionId: session.id, message });
     res.status(201).json(message);
   } catch { res.status(500).json({ message: 'Mesaj göndərilmədi' }); }
 });
@@ -55,6 +76,8 @@ router.post('/admin/sessions/:id/messages', auth, adminCheck, async (req, res) =
     const sessionId = Number(req.params.id);
     const message = await prisma.chatMessage.create({ data: { sessionId, sender: 'admin', text } });
     await prisma.chatSession.update({ where: { id: sessionId }, data: { updatedAt: new Date() } });
+    const session = await prisma.chatSession.findUnique({ where: { id: sessionId }, select: { userId: true } });
+    publish({ type: 'message', userId: session?.userId, sessionId, message });
     res.status(201).json(message);
   } catch { res.status(500).json({ message: 'Cavab göndərilmədi' }); }
 });

@@ -112,6 +112,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 // ============== İSTİFADƏÇİ ÇATLARI ==============
 let activeChatId = null;
 let chatRefreshTimer = null;
+let adminChatStreamAbort = null;
 const productsTab = document.getElementById('productsTab');
 const chatsTab = document.getElementById('chatsTab');
 
@@ -119,13 +120,35 @@ productsTab.addEventListener('click', () => {
   productsTab.classList.add('active'); chatsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'block'; document.getElementById('chatView').style.display = 'none';
   clearInterval(chatRefreshTimer);
+  adminChatStreamAbort?.abort();
 });
 chatsTab.addEventListener('click', () => {
   chatsTab.classList.add('active'); productsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'none'; document.getElementById('chatView').style.display = 'block';
-  loadChatSessions(); clearInterval(chatRefreshTimer); chatRefreshTimer = setInterval(() => { loadChatSessions(false); if (activeChatId) loadChatRoom(activeChatId, false); }, 5000);
+  loadChatSessions(); connectAdminChatStream();
 });
 document.getElementById('refreshChatsBtn').addEventListener('click', () => loadChatSessions());
+
+async function connectAdminChatStream() {
+  adminChatStreamAbort?.abort();
+  adminChatStreamAbort = new AbortController();
+  try {
+    const response = await fetch(`${API}/api/chats/admin/stream`, { headers: authHeaders(), signal: adminChatStreamAbort.signal });
+    if (!response.ok || !response.body) throw new Error('stream unavailable');
+    const reader = response.body.getReader();
+    while (true) {
+      const { done } = await reader.read();
+      if (done) break;
+      await loadChatSessions(false);
+      if (activeChatId) await loadChatRoom(activeChatId, false);
+    }
+  } catch (error) {
+    if (error.name !== 'AbortError' && chatsTab.classList.contains('active')) {
+      clearTimeout(chatRefreshTimer);
+      chatRefreshTimer = setTimeout(connectAdminChatStream, 1500);
+    }
+  }
+}
 
 async function loadChatSessions(showError = true) {
   try {
