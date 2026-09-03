@@ -3,5 +3,6 @@ node_modules
 .env
 
 /src/generated/prisma
+/backend/generated/
 
 /src/generated/prisma
