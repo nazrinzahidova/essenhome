@@ -887,7 +887,7 @@
     if (phone.replace(/\D/g, '').length !== 12) { loginMessage.textContent = 'Telefon nömrəsini tam daxil edin.'; return; }
     loginMessage.textContent = 'Kod göndərilir...';
     try {
-      await authRequest('/otp/request', { phone });
+      await authRequest('/request-code', { phone });
       pendingOtpPhone = phone;
       document.getElementById('otpPhonePreview').textContent = phone;
       showAuthStep('otp'); startOtpTimer(); document.querySelector('.otp-box').focus();
@@ -924,7 +924,7 @@
   document.getElementById('otpResend').addEventListener('click', async () => {
     loginMessage.textContent = 'Kod yenidən göndərilir...';
     try {
-      await authRequest('/otp/request', { phone: pendingOtpPhone });
+      await authRequest('/request-code', { phone: pendingOtpPhone });
       document.querySelectorAll('.otp-box').forEach(input => input.value = '');
       loginMessage.textContent = ''; startOtpTimer(); document.querySelector('.otp-box').focus();
     } catch (error) { loginMessage.textContent = error.message; }
