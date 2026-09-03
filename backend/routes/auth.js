@@ -52,10 +52,10 @@ function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role };
 }
 
-router.post('/request-code', async (req, res) => {
+router.get('/request-code/:phone', async (req, res) => {
   try {
     await ensureOtpSchema();
-    const phone = normalizeAzPhone(req.body?.phone);
+    const phone = normalizeAzPhone(req.params.phone);
     if (!phone) return res.status(400).json({ message: 'Telefon nömrəsini düzgün daxil edin' });
     if (!process.env.JWT_SECRET) return res.status(500).json({ message: 'Server konfiqurasiyası tamamlanmayıb' });
 
