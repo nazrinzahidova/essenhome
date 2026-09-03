@@ -47,6 +47,18 @@ function normalizeAzPhone(value) {
   return digits;
 }
 
+function phoneVariants(phone) {
+  const canonical = normalizeAzPhone(phone);
+  if (!canonical) return [];
+  return [...new Set([canonical, `0${canonical.slice(3)}`, `+${canonical}`])];
+}
+
+async function findUserByPhone(phone) {
+  const variants = phoneVariants(phone);
+  if (!variants.length) return null;
+  return prisma.user.findFirst({ where: { phone: { in: variants } } });
+}
+
 function otpHash(phone, code) {
   return crypto.createHmac('sha256', process.env.OTP_HASH_SECRET || process.env.JWT_SECRET).update(`${phone}:${code}`).digest('hex');
 }
@@ -71,7 +83,7 @@ router.get('/request-code/:phone', async (req, res) => {
     if (hourlyCount >= OTP_MAX_PER_HOUR) return res.status(429).json({ message: 'SMS limiti dolub. Bir saat sonra yenidən cəhd edin' });
 
     const code = String(crypto.randomInt(100000, 1000000));
-    const user = await prisma.user.findFirst({ where: { phone } });
+    const user = await findUserByPhone(phone);
     const sent = await sendOtpSms(phone, code);
     await prisma.otpChallenge.create({ data: { phone, codeHash: otpHash(phone, code), providerId: sent.providerId, expiresAt: new Date(now.getTime() + OTP_TTL_MS), userId: user?.id } });
     res.json({ message: 'Kod SMS ilə göndərildi', expiresIn: 300, resendIn: 59, ...(sent.mocked && process.env.NODE_ENV !== 'production' ? { testCode: code } : {}) });
@@ -95,7 +107,9 @@ router.post(['/otp/verify', '/verify-code'], async (req, res) => {
       return res.status(400).json({ message: 'Təsdiq kodu yanlışdır' });
     }
     await prisma.otpChallenge.update({ where: { id: challenge.id }, data: { consumedAt: new Date() } });
-    const user = await prisma.user.findFirst({ where: { phone } });
+    const user = challenge.userId
+      ? await prisma.user.findUnique({ where: { id: challenge.userId } })
+      : await findUserByPhone(phone);
     if (user) {
       const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
       return res.json({ registrationRequired: false, token, user: publicUser(user) });
@@ -115,7 +129,12 @@ router.post(['/otp/register', '/complete-registration'], async (req, res) => {
     let verification;
     try { verification = jwt.verify(req.body?.registrationToken, process.env.JWT_SECRET); } catch { return res.status(401).json({ message: 'Təsdiq sessiyasının vaxtı bitib' }); }
     if (verification.type !== 'otp-registration') return res.status(401).json({ message: 'Təsdiq sessiyası etibarsızdır' });
-    if (await prisma.user.findFirst({ where: { OR: [{ email: { equals: email, mode: 'insensitive' } }, { phone: verification.phone }] } })) return res.status(409).json({ message: 'Bu e-mail və ya telefon artıq istifadə olunur' });
+    const existingPhoneUser = await findUserByPhone(verification.phone);
+    if (existingPhoneUser) {
+      const token = jwt.sign({ id: existingPhoneUser.id, role: existingPhoneUser.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      return res.json({ registrationRequired: false, token, user: publicUser(existingPhoneUser) });
+    }
+    if (await findUserByEmail(email)) return res.status(409).json({ message: 'Bu e-mail artıq istifadə olunur' });
     const placeholderPassword = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
     const user = await prisma.user.create({ data: { name: `İstifadəçi ${verification.phone.slice(-4)}`, email, phone: verification.phone, password: placeholderPassword } });
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
