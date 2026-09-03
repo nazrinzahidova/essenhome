@@ -823,7 +823,8 @@
   let pendingRegistrationToken = '';
 
   async function authRequest(path, body, method = 'POST') {
-    const response = await fetch(`/api/auth${path}`, {
+    const requestUrl = path.startsWith('/login-code') ? path : `/api/auth${path}`;
+    const response = await fetch(requestUrl, {
       method,
       ...(method !== 'GET' ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {})
     });
@@ -886,7 +887,7 @@
     if (phone.replace(/\D/g, '').length !== 12) { loginMessage.textContent = 'Telefon nömrəsini tam daxil edin.'; return; }
     loginMessage.textContent = 'Kod göndərilir...';
     try {
-      await authRequest(`/request-code/${encodeURIComponent(phone)}`, null, 'GET');
+      await authRequest(`/login-code/request-code/${encodeURIComponent(phone)}`, null, 'GET');
       pendingOtpPhone = phone;
       document.getElementById('otpPhonePreview').textContent = phone;
       showAuthStep('otp'); startOtpTimer(); document.querySelector('.otp-box').focus();
@@ -923,7 +924,7 @@
   document.getElementById('otpResend').addEventListener('click', async () => {
     loginMessage.textContent = 'Kod yenidən göndərilir...';
     try {
-      await authRequest(`/request-code/${encodeURIComponent(pendingOtpPhone)}`, null, 'GET');
+      await authRequest(`/login-code/request-code/${encodeURIComponent(pendingOtpPhone)}`, null, 'GET');
       document.querySelectorAll('.otp-box').forEach(input => input.value = '');
       loginMessage.textContent = ''; startOtpTimer(); document.querySelector('.otp-box').focus();
     } catch (error) { loginMessage.textContent = error.message; }
