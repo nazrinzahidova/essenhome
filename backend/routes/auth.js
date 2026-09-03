@@ -81,7 +81,7 @@ router.get('/request-code/:phone', async (req, res) => {
   }
 });
 
-router.post('/otp/verify', async (req, res) => {
+router.post(['/otp/verify', '/verify-code'], async (req, res) => {
   try {
     await ensureOtpSchema();
     const phone = normalizeAzPhone(req.body?.phone);
@@ -108,7 +108,7 @@ router.post('/otp/verify', async (req, res) => {
   }
 });
 
-router.post('/otp/register', async (req, res) => {
+router.post(['/otp/register', '/complete-registration'], async (req, res) => {
   try {
     const email = normalizeEmail(req.body?.email);
     if (!email || !/^\S+@\S+\.\S+$/.test(email)) return res.status(400).json({ message: 'E-mail ünvanını düzgün daxil edin' });

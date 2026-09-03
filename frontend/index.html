@@ -918,7 +918,7 @@
     if (code.length !== 6) { loginMessage.textContent = '6 rəqəmli kodu tam daxil edin.'; return; }
     loginMessage.textContent = 'Kod yoxlanılır...';
     try {
-      const data = await authRequest('/otp/verify', { phone: pendingOtpPhone, code });
+      const data = await authRequest('/login-code/verify-code', { phone: pendingOtpPhone, code });
       if (!data.registrationRequired) return completePhoneLogin(data);
       pendingRegistrationToken = data.registrationToken;
       showAuthStep('email'); document.getElementById('authEmail').focus();
@@ -928,7 +928,7 @@
     event.preventDefault();
     loginMessage.textContent = 'Hesab yaradılır...';
     try {
-      const data = await authRequest('/otp/register', { email: document.getElementById('authEmail').value, registrationToken: pendingRegistrationToken });
+      const data = await authRequest('/login-code/complete-registration', { email: document.getElementById('authEmail').value, registrationToken: pendingRegistrationToken });
       completePhoneLogin(data);
     } catch (error) { loginMessage.textContent = error.message; }
   });
