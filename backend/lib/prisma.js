@@ -1,13 +1,9 @@
 const { PrismaClient } = require('../generated/client-v3');
-const { PrismaPg } = require('@prisma/adapter-pg');
 
-// Bütün route-lar eyni Prisma bağlantı hovuzundan istifadə edir.
-// Bu, production bazasında bağlantı limitinin dolmasının qarşısını alır.
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = global.__essenPrisma || new PrismaClient({ adapter });
+// Reuse one Prisma client per process. The generated client reads DATABASE_URL
+// directly and manages its own connection pool.
+const prisma = global.__essenPrisma || new PrismaClient();
 
-if (process.env.NODE_ENV !== 'production') {
-  global.__essenPrisma = prisma;
-}
+global.__essenPrisma = prisma;
 
 module.exports = prisma;
