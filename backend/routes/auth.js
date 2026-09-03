@@ -52,7 +52,7 @@ function publicUser(user) {
   return { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role };
 }
 
-router.post('/otp/request', async (req, res) => {
+router.post('/request-code', async (req, res) => {
   try {
     await ensureOtpSchema();
     const phone = normalizeAzPhone(req.body?.phone);
