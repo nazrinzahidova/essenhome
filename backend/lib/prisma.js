@@ -1,3 +1,7 @@
+// Ignore a legacy Hostinger override left from the binary-engine deployment.
+// This release is generated for the JS driver adapter and must not spawn an engine.
+delete process.env.PRISMA_CLIENT_ENGINE_TYPE;
+
 const { PrismaClient } = require('../generated/client-v3');
 const { PrismaPg } = require('@prisma/adapter-pg');
 
