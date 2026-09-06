@@ -11,6 +11,9 @@ datasource db {
 
 model User {
   id        Int      @id @default(autoincrement())
+  firstName String?
+  lastName  String?
+  birthDate DateTime? @db.Date
   name      String
   email     String   @unique
   phone     String?  @unique
@@ -29,6 +32,8 @@ model User {
 model OtpChallenge {
   id             Int       @id @default(autoincrement())
   phone          String
+  status         String    @default("sent")
+  registrationUsedAt DateTime?
   codeHash       String
   purpose        String    @default("login")
   providerId     String?

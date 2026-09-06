@@ -1,7 +1,9 @@
 {
   "scripts": {
     "postinstall": "node scripts/generate-prisma.js",
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "test": "node --test backend/test/*.test.js",
+    "migrate:phone-auth": "node scripts/migrate-phone-auth.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^6.19.3",

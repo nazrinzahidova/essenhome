@@ -1,6 +1,7 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const tls = require('tls');
 
 const API_URL = (process.env.PG365_API_URL || 'https://api.poctgoyercini.com').replace(/\/$/, '');
 
@@ -22,7 +23,7 @@ function config() {
 
 const PG365_CA = fs.readFileSync(path.join(__dirname, 'certs', 'globalsign-root-r6.pem'), 'utf8');
 const agent = new https.Agent({
-  ca: PG365_CA,
+  ca: [...tls.rootCertificates, PG365_CA],
   rejectUnauthorized: true,
   keepAlive: true,
   maxSockets: 3,
@@ -39,44 +40,35 @@ function postJson(url, headers, body) {
     }, response => {
       let raw = '';
       response.setEncoding('utf8');
-      response.on('data', chunk => { raw += chunk; });
+      response.on('error', reject);
+      response.on('data', chunk => {
+        raw += chunk;
+        if (raw.length > 65536) request.destroy(Object.assign(new Error('PG365 response too large'), { code: 'PG365_INVALID_RESPONSE' }));
+      });
       response.on('end', () => {
         let payload = null;
         try { payload = JSON.parse(raw); } catch {}
         resolve({ statusCode: response.statusCode || 0, payload });
       });
     });
-    request.setTimeout(15000, () => {
+    const deadline = setTimeout(() => {
       const error = new Error('PG365 request timeout');
       error.code = 'PG365_TIMEOUT';
       request.destroy(error);
-    });
+    }, 15000);
+    deadline.unref();
+    request.on('close', () => clearTimeout(deadline));
     request.on('error', reject);
     request.end(body);
   });
 }
 
-function isRetryable(error) {
-  return ['ECONNRESET', 'ECONNREFUSED', 'EAI_AGAIN', 'ETIMEDOUT', 'PG365_TIMEOUT'].includes(error?.code);
-}
-
-async function postJsonWithRetry(url, headers, body) {
-  let lastError;
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      return await postJson(url, headers, body);
-    } catch (error) {
-      lastError = error;
-      if (!isRetryable(error) || attempt === 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-  }
-  throw lastError;
-}
-
 async function sendOtpSms(receiver, code) {
   const settings = config();
-  if (settings.mock) return { providerId: 'mock-' + Date.now(), mocked: true };
+  if (settings.mock) {
+    if (process.env.NODE_ENV === 'production') throw new Error('SMS mock is forbidden in production');
+    return { providerId: 'mock-' + Date.now(), mocked: true };
+  }
   if (!settings.publicKey || !settings.privateKey) {
     const error = new Error('PG365 açarları konfiqurasiya edilməyib');
     error.code = 'PG365_NOT_CONFIGURED';
@@ -94,7 +86,7 @@ async function sendOtpSms(receiver, code) {
     },
     Receivers: [{ Receiver: receiver }]
   });
-  const result = await postJsonWithRetry(
+  const result = await postJson(
     settings.apiUrl + '/gateway/api/sms/v1/message/send?publicKey=' + encodeURIComponent(settings.publicKey),
     { Authorization: 'Bearer ' + settings.privateKey, 'Content-Type': 'application/json' },
     body

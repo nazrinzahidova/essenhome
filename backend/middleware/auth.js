@@ -9,6 +9,9 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!Number.isInteger(decoded.id) || decoded.type || !decoded.role) {
+      return res.status(401).json({ error: 'Token etibarsızdır' });
+    }
     req.user = decoded;
     req.userId = decoded.id;
     next();
