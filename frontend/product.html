@@ -101,6 +101,7 @@
     }
   </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
+<script src="stock-status.js?v=20260907"></script>
 </head>
 <body>
   <header class="topbar">
@@ -198,6 +199,7 @@
           <section class="card details">
             <h1 id="productName"></h1>
             <div class="meta" id="meta"></div>
+            ${appleStockBadge(item)}
             <div class="price-line"><span class="price" id="price"></span><span class="old-price" id="oldPrice"></span><span class="discount" id="discount"></span></div>
             <div class="actions"><button class="action cart-btn" id="addCart" ${inStock ? '' : 'disabled'}><i class="fa-solid fa-cart-plus"></i> Səbətə əlavə et</button><button class="action buy-btn" id="buyNow" ${inStock ? '' : 'disabled'}>İndi al</button></div>
             ${clean(item.description) ? '<p class="description" id="description"></p>' : ''}

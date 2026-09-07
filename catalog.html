@@ -106,6 +106,7 @@
     }
   </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
+<script src="stock-status.js?v=20260907"></script>
 </head>
 <body>
   <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -811,6 +812,7 @@
             </div>
           </a>
           <div class="p-3 flex flex-col flex-1">
+            ${appleStockBadge(product)}
             <a href="product.html?id=${product.id}" class="font-medium leading-5 min-h-10 line-clamp-2 hover:text-red-600">
               ${escapeHtml(product.name)}
             </a>
@@ -834,7 +836,7 @@
                     </svg>
                   </button>
                 </div>
-                <button type="button" class="add-cart-btn bg-red-600 text-white rounded-lg px-2 py-2 text-sm hover:bg-red-700"
+                <button ${isAppleOutOfStock(product) ? 'disabled aria-disabled="true"' : ''} type="button" class="add-cart-btn bg-red-600 text-white rounded-lg px-2 py-2 text-sm hover:bg-red-700"
                   data-id="${product.id}" data-name="${escapeHtml(product.name)}" data-price="${Number(product.price)}" data-image="${escapeHtml(product.image || '')}">
                   Səbətə at
                 </button>
