@@ -13,7 +13,7 @@
     hours.textContent = String(Math.floor(totalMinutes / 60) % 24).padStart(2, '0');
     minutes.textContent = String(totalMinutes % 60).padStart(2, '0');
     if (remaining === 0) {
-      offer.querySelector('h2').textContent = 'Təklifin vaxtı bitdi';
+      offer.querySelector('[role=timer]').setAttribute('aria-label', 'Təklifin vaxtı bitdi');
       clearInterval(interval);
     }
   }
