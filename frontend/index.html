@@ -10,6 +10,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+    #hero-banner-wrap { display: flex; flex-direction: column; background: #fff; }
+    #hero-banner-wrap .bannerSwiper { flex: 1; min-height: 0; height: auto; }
+    .weekly-offer-header { flex: none; padding: 13px 8px 11px; text-align: center; border-bottom: 1px solid #eee; color: #111; }
+    .weekly-offer-header h2 { font-size: 16px; font-weight: 600; margin: 0 0 9px; }
+    .weekly-offer-countdown { display: flex; justify-content: center; gap: 0; }
+    .weekly-offer-unit { min-width: 58px; position: relative; }
+    .weekly-offer-unit + .weekly-offer-unit::before { content: ''; position: absolute; left: 0; top: 14px; height: 19px; border-left: 1px solid #e5e7eb; }
+    .weekly-offer-unit strong { display: block; color: #00b83f; font-size: 19px; line-height: 23px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .weekly-offer-unit span { display: block; font-size: 12px; line-height: 18px; }
+
     html, body {
       position: relative;
       font-family: 'Poppins', sans-serif !important;
@@ -688,10 +698,18 @@
   </div>
 
   <div class="w-[245px] h-[550px] border border-gray-300 rounded-xl shrink-0 overflow-hidden relative" id="hero-banner-wrap">
+    <div class="weekly-offer-header" id="weekly-offer" data-ends-at="2026-09-30T23:59:00+04:00">
+      <h2>Həftənin təklifləri</h2>
+      <div class="weekly-offer-countdown" role="timer" aria-label="Təklifin bitməsinə qalan vaxt">
+        <div class="weekly-offer-unit"><strong data-days>--</strong><span>gün</span></div>
+        <div class="weekly-offer-unit"><strong data-hours>--</strong><span>saat</span></div>
+        <div class="weekly-offer-unit"><strong data-minutes>--</strong><span>dəqiqə</span></div>
+      </div>
+    </div>
     <div class="swiper bannerSwiper w-full h-full">
       <div class="swiper-wrapper">
-        <div class="swiper-slide"><img src="img/promotions/lg-gn-502plgb-v2.png" alt="LG GN-502PLGB.APZQMER soyuducu — 1250 ₼" class="w-full h-full object-cover"/></div>
-        <div class="swiper-slide"><img src="img/promotions/premier-prm-350-trnfid-v2.png" alt="PREMIER PRM 350 TRNFID soyuducu — 780 ₼" class="w-full h-full object-cover"/></div>
+        <div class="swiper-slide"><img src="img/promotions/lg-gn-502plgb-v3.png" alt="LG GN-502PLGB.APZQMER soyuducu — 1250 ₼" class="w-full h-full object-cover"/></div>
+        <div class="swiper-slide"><img src="img/promotions/premier-prm-350-trnfid-v3.png" alt="PREMIER PRM 350 TRNFID soyuducu — 780 ₼" class="w-full h-full object-cover"/></div>
       </div>
     </div>
   </div>
@@ -2044,5 +2062,6 @@ openLoginModal.addEventListener("click", function() {
 
 </script>
 <!-- ===== ESSEN CHATBOT WIDGET END ===== -->
+<script src="weekly-offer.js?v=20260907"></script>
 </body>
 </html>
