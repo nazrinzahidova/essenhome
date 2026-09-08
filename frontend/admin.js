@@ -558,13 +558,13 @@ function collectPlacements() {
 document.getElementById('addPlacementBtn').addEventListener('click', () => addPlacementRow());
 
 document.getElementById('f_category').addEventListener('change', (e) => {
-  preservedProductSpecs = { ...preservedProductSpecs, ...collectCategorySpecs() };
+  preservedProductSpecs = mergeCategorySpecs();
   populateSubcategorySelect(e.target.value, '');
   renderCategorySpecs(preservedProductSpecs);
 });
 
 document.getElementById('f_subcategory').addEventListener('change', () => {
-  preservedProductSpecs = { ...preservedProductSpecs, ...collectCategorySpecs() };
+  preservedProductSpecs = mergeCategorySpecs();
   renderCategorySpecs(preservedProductSpecs);
 });
 
@@ -604,6 +604,9 @@ function activeSpecificationTemplate() {
   }
   if (subcategory === 'dispenserlər') {
     return { title: 'Dispenser xüsusiyyətləri', groups: DISPENSER_SPEC_GROUPS };
+  }
+  if (subcategory === 'dondurucular') {
+    return { title: 'Dondurucu xüsusiyyətləri', groups: FREEZER_SPEC_GROUPS };
   }
   if (subcategory === 'aspiratorlar') {
     return { title: 'Aspirator xüsusiyyətləri', groups: HOOD_SPEC_GROUPS };
@@ -741,12 +744,21 @@ function renderCategorySpecs(values = {}) {
   `).join('');
 }
 
+// Remove rendered keys first so clearing a field also clears its saved value.
+function mergeCategorySpecs() {
+  const specs = { ...preservedProductSpecs };
+  document.querySelectorAll('.category-spec-input, .category-spec-range').forEach(input => {
+    delete specs[input.dataset.specKey];
+  });
+  return { ...specs, ...collectCategorySpecs() };
+}
+
 function collectCategorySpecs() {
   const template = activeSpecificationTemplate();
-  if (!template) return {};
   const specs = {};
-  if (template.automaticType) specs['Növ'] = template.automaticType;
-  if (template.automaticProductType) specs['Məhsul növü'] = template.automaticProductType;
+  if (!template && !document.querySelector('.category-spec-input, .category-spec-range')) return specs;
+  if (template?.automaticType) specs['Növ'] = template.automaticType;
+  if (template?.automaticProductType) specs['Məhsul növü'] = template.automaticProductType;
   document.querySelectorAll('.category-spec-input').forEach(input => {
     const value = input.value.trim();
     if (value) specs[input.dataset.specKey] = value;
@@ -1058,7 +1070,7 @@ form.addEventListener('submit', async (e) => {
   fd.append('subcategory', document.getElementById('f_subcategory').value);
   fd.append('placements', JSON.stringify(collectPlacements()));
   fd.append('brand', document.getElementById('f_brand').value);
-  const collectedSpecs = { ...preservedProductSpecs, ...collectCategorySpecs() };
+  const collectedSpecs = mergeCategorySpecs();
   fd.append('specs', JSON.stringify(collectedSpecs));
   saveSpecsDraft(id || 'new', collectedSpecs);
   fd.append('stock', document.getElementById('f_stock').value);
