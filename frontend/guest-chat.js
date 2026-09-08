@@ -5,6 +5,15 @@ let guestSessionId = null;
 let chatPollTimer = null;
 let chatLoading = false;
 let chatSending = false;
+let guestHistoryReady=false;
+let latestOperatorMessage=0;
+let guestUnread=0;
+function clearGuestUnread() {
+  if (!chatOpen || !operatorChatOpen || document.hidden) return;
+  guestUnread=0;window.chatNotice.badge(document.getElementById('fab-btn'),0);
+  window.chatNotice.badge(document.getElementById('operator-chat-choice'),0);
+}
+document.addEventListener('visibilitychange',clearGuestUnread);
 const renderedChatMessageIds = new Set();
 const chatStatus = text => { document.getElementById('status-text').textContent = text; };
 
@@ -70,24 +79,33 @@ function renderChatMessage(message) {
 }
 
 async function loadGuestMessages() {
-  if (!chatOpen || !operatorChatOpen || chatLoading) return;
+  if ((!guestSessionPromise && !operatorChatOpen) || chatLoading) return;
   chatLoading=true;
   try {
     const messages=await guestRequest();
+    const incoming=messages.filter(message=>message.sender === 'admin' && message.id > latestOperatorMessage);
+    if (guestHistoryReady && incoming.length) {
+      window.chatNotice.sound();
+      if (!chatOpen || !operatorChatOpen || document.hidden) guestUnread+=incoming.length;
+    }
+    latestOperatorMessage=Math.max(latestOperatorMessage,...incoming.map(message=>message.id));
+    guestHistoryReady=true;
+    clearGuestUnread();
+    window.chatNotice.badge(document.getElementById('fab-btn'),guestUnread);
+    window.chatNotice.badge(document.getElementById('operator-chat-choice'),guestUnread);
     const currentIds=new Set(messages.map(message=>message.id));
     document.querySelectorAll('#chat-body [data-message-id]').forEach(row=>{
       const id=Number(row.dataset.messageId);
       if (!currentIds.has(id)) { row.remove(); renderedChatMessageIds.delete(id); }
     });
     messages.forEach(renderChatMessage);
-    chatStatus('Operatorla sayt üzərindən yazışma');
+    if (operatorChatOpen) chatStatus('Operatorla sayt üzərindən yazışma');
   } catch (error) { chatStatus(error.message); }
   finally { chatLoading=false; }
 }
 
 function showChatChoices() {
   operatorChatOpen=false;
-  clearInterval(chatPollTimer);
   document.getElementById('chat-choices').hidden=false;
   document.getElementById('chat-body').hidden=true;
   document.getElementById('chat-footer').hidden=true;
@@ -97,6 +115,7 @@ function showChatChoices() {
 
 function startOperatorChat() {
   operatorChatOpen=true;
+  clearGuestUnread();
   document.getElementById('chat-choices').hidden=true;
   document.getElementById('chat-body').hidden=false;
   document.getElementById('chat-footer').hidden=false;
@@ -115,7 +134,6 @@ function toggleChat() {
   document.getElementById('chat-window').classList.toggle('open',chatOpen);
   document.getElementById('fab-btn').setAttribute('aria-expanded',String(chatOpen));
   if (chatOpen) showChatChoices();
-  else clearInterval(chatPollTimer);
 }
 
 async function sendMessage() {

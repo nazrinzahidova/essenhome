@@ -464,7 +464,7 @@
   .chat-layout{display:grid;grid-template-columns:320px 1fr;min-height:560px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}.chat-list{border-right:1px solid var(--line);overflow:auto}.chat-person{padding:14px;border-bottom:1px solid var(--line);cursor:pointer}.chat-person:hover,.chat-person.active{background:#fff3f3}.chat-person strong,.chat-person span{display:block}.chat-person span{font-size:12px;color:#68707d;margin-top:3px}.chat-room{display:flex;flex-direction:column}.chat-room-head{padding:15px;border-bottom:1px solid var(--line);font-weight:700}.chat-messages{flex:1;padding:18px;overflow:auto;background:#f7f8fa}.chat-message{max-width:75%;padding:10px 12px;border-radius:12px;margin:8px 0;white-space:pre-wrap}.chat-delete{display:block;margin-top:8px;padding:3px 8px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font-size:12px;cursor:pointer}.chat-delete:disabled{opacity:.5}.chat-message.user{background:#fff;border:1px solid var(--line)}.chat-message.admin{background:#e8222e;color:#fff;margin-left:auto}.chat-reply{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}.chat-reply input{flex:1;padding:11px;border:1px solid var(--line);border-radius:8px}@media(max-width:760px){.chat-layout{grid-template-columns:1fr}.chat-list{max-height:220px;border-right:0;border-bottom:1px solid var(--line)}}
 </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
-</head>
+<style>.chat-unread-badge{display:inline-flex!important;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;border-radius:12px;background:#d50016;color:#fff;font:700 12px Arial;border:2px solid #fff;vertical-align:middle}.chat-unread-badge[hidden]{display:none!important}#fab-btn .chat-unread-badge{position:absolute;right:-4px;top:-4px;z-index:2}.chat-person.has-unread{border-left:4px solid #e8222e;background:#fff1f2}.chat-person.has-unread strong:after{content:" ●";color:#e8222e}</style></head>
 <body>
 
 <!-- LOGIN -->
@@ -733,6 +733,6 @@
 <script src="tv-specs.js?v=20260728-3"></script>
 <script src="washingmachine-specs.js?v=20260727-4"></script>
 <script src="fridge-specs.js?v=20260728-4"></script>
-<script src="admin.js?v=20260908-chat-delete-1"></script>
+<script src="chat-notifications.js?v=20260908-1"></script><script src="admin.js?v=20260908-notice-1"></script>
 </body>
 </html>

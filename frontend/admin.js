@@ -60,6 +60,7 @@ function showApp() {
   const user = getUser();
   document.getElementById('whoami').textContent = user ? `${user.name} (${user.email})` : '';
   loadProducts();
+  startChatNotices();
 }
 function showLogin() {
   document.getElementById('app').style.display = 'none';
@@ -119,20 +120,34 @@ let adminChatPollTimer = null;
 let adminChatStreamAbort = null;
 const productsTab = document.getElementById('productsTab');
 const chatsTab = document.getElementById('chatsTab');
+const seenChatMessages=new Map();
+const unreadChats=new Set();
+let chatNoticesReady=false;
+function startChatNotices() {
+  seenChatMessages.clear(); unreadChats.clear(); chatNoticesReady=false;
+  window.chatNotice.badge(chatsTab,0);
+  loadChatSessions(false);
+  clearInterval(adminChatPollTimer);
+  adminChatPollTimer=setInterval(async()=>{
+    if (!getToken()) return;
+    await loadChatSessions(false);
+    if (activeChatId && chatsTab.classList.contains('active')) await loadChatRoom(activeChatId,false);
+  },4000);
+}
+document.addEventListener('visibilitychange',()=>{
+  if (!document.hidden && getToken() && activeChatId && chatsTab.classList.contains('active')) loadChatRoom(activeChatId,false);
+});
 
 productsTab.addEventListener('click', () => {
   productsTab.classList.add('active'); chatsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'block'; document.getElementById('chatView').style.display = 'none';
   clearTimeout(chatRefreshTimer);
-  clearInterval(adminChatPollTimer);
   adminChatStreamAbort?.abort();
 });
 chatsTab.addEventListener('click', () => {
   chatsTab.classList.add('active'); productsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'none'; document.getElementById('chatView').style.display = 'block';
   loadChatSessions(); connectAdminChatStream();
-  clearInterval(adminChatPollTimer);
-  adminChatPollTimer=setInterval(async()=>{ await loadChatSessions(false); if(activeChatId) await loadChatRoom(activeChatId,false); },4000);
 });
 document.getElementById('refreshChatsBtn').addEventListener('click', () => loadChatSessions());
 
@@ -162,11 +177,26 @@ async function loadChatSessions(showError = true) {
     const response = await fetch(`${API}/api/chats/admin/sessions/list`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
     const sessions = await response.json();
+    if (!getToken()) return;
+    let newMessage=false;
+    for (const session of sessions) {
+      const latest=session.messages?.[0];
+      const previous=seenChatMessages.get(session.id) || 0;
+      if (chatNoticesReady && latest?.sender === 'user' && latest.id > previous) {
+        newMessage=true;
+        if (document.hidden || !chatsTab.classList.contains('active') || activeChatId !== session.id) unreadChats.add(session.id);
+      }
+      seenChatMessages.set(session.id,Math.max(previous,latest?.id || 0));
+    }
+    chatNoticesReady=true;
+    if (newMessage) window.chatNotice.sound();
+    window.chatNotice.badge(chatsTab,unreadChats.size);
     document.getElementById('chatCount').textContent = `${sessions.length} çat`;
     const list = document.getElementById('chatList');
     if (!sessions.length) { list.innerHTML = '<div class="empty-state">Hələ çat yoxdur.</div>'; return; }
     list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}${session.userId ? '' : ' #' + session.id}</strong><span>${session.phone ? '📞 ' + escapeHtml(session.phone) : 'Sayt ziyarətçisi'}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
     list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
+    list.querySelectorAll('[data-chat-id]').forEach(item=>item.classList.toggle('has-unread',unreadChats.has(Number(item.dataset.chatId))));
   } catch { if (showError) showToast('Çatlar yüklənmədi'); }
 }
 
@@ -175,6 +205,10 @@ async function loadChatRoom(id, showError = true) {
     const response = await fetch(`${API}/api/chats/admin/sessions/${id}`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
     const session = await response.json(); activeChatId = session.id;
+    if (!document.hidden && chatsTab.classList.contains('active')) {
+      unreadChats.delete(session.id);window.chatNotice.badge(chatsTab,unreadChats.size);
+      document.querySelector(`[data-chat-id="${session.id}"]`)?.classList.remove('has-unread');
+    }
     document.getElementById('chatRoomHead').textContent = `${session.name}${session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
     const messages = document.getElementById('chatMessages');
     messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}"><div>${escapeHtml(message.text)}</div><button type="button" class="chat-delete" data-session-id="${session.id}" data-message-id="${message.id}" aria-label="Mesajı sil">Sil</button></div>`).join('');
