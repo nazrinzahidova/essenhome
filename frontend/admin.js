@@ -120,6 +120,10 @@ let adminChatPollTimer = null;
 let adminChatStreamAbort = null;
 const productsTab = document.getElementById('productsTab');
 const chatsTab = document.getElementById('chatsTab');
+document.getElementById('chatSoundBtn').addEventListener('click',async()=>{
+  const played=await window.chatNotice.sound();
+  showToast(played ? 'Sınaq səsi çalındı. Eşidilmirsə, cihazın və brauzer vərəqinin səsini yoxlayın.' : 'Brauzer səsə icazə vermədi. Səhifəni yeniləyib bu düyməyə yenidən basın.');
+});
 const seenChatMessages=new Map();
 const unreadChats=new Set();
 let chatNoticesReady=false;
