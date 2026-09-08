@@ -177,12 +177,27 @@ async function loadChatRoom(id, showError = true) {
     const session = await response.json(); activeChatId = session.id;
     document.getElementById('chatRoomHead').textContent = `${session.name}${session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
     const messages = document.getElementById('chatMessages');
-    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}">${escapeHtml(message.text)}</div>`).join('');
+    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}"><div>${escapeHtml(message.text)}</div><button type="button" class="chat-delete" data-session-id="${session.id}" data-message-id="${message.id}" aria-label="Mesajı sil">Sil</button></div>`).join('');
     messages.scrollTop = messages.scrollHeight;
     document.getElementById('chatReplyInput').disabled = false; document.getElementById('chatReplyBtn').disabled = false;
     document.querySelectorAll('[data-chat-id]').forEach(item => item.classList.toggle('active', Number(item.dataset.chatId) === id));
   } catch { if (showError) showToast('Çat yüklənmədi'); }
 }
+
+document.getElementById('chatMessages').addEventListener('click', async event => {
+  const button=event.target.closest('.chat-delete');
+  if (!button || button.disabled) return;
+  const sessionId=Number(button.dataset.sessionId), messageId=Number(button.dataset.messageId);
+  if (!confirm('Bu mesaj həm admin, həm də ziyarətçinin söhbətindən silinəcək. Mesaj silinsin?')) return;
+  button.disabled=true;
+  try {
+    const response=await fetch(`${API}/api/chats/admin/sessions/${sessionId}/messages/${messageId}`,{method:'DELETE',headers:authHeaders()});
+    if (!response.ok && response.status !== 404) throw new Error();
+    if (activeChatId === sessionId) await loadChatRoom(sessionId,false);
+    await loadChatSessions(false);
+    showToast('Mesaj silindi');
+  } catch { button.disabled=false; showToast('Mesaj silinmədi. Yenidən cəhd edin.'); }
+});
 
 document.getElementById('chatReplyForm').addEventListener('submit', async event => {
   event.preventDefault(); const input = document.getElementById('chatReplyInput'); const text = input.value.trim();

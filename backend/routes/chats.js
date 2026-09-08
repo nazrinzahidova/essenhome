@@ -83,4 +83,19 @@ router.post('/admin/sessions/:id/messages', auth, adminCheck, async (req, res) =
   } catch { res.status(500).json({ message: 'Cavab göndərilmədi' }); }
 });
 
+router.delete('/admin/sessions/:id/messages/:messageId', auth, adminCheck, async (req, res) => {
+  const sessionId = Number(req.params.id), messageId = Number(req.params.messageId);
+  if (!Number.isSafeInteger(sessionId) || sessionId < 1 || !Number.isSafeInteger(messageId) || messageId < 1) {
+    return res.status(400).json({ message: 'Yanlış mesaj nömrəsi' });
+  }
+  try {
+    const session = await prisma.chatSession.findUnique({ where: { id: sessionId } });
+    if (!session) return res.status(404).json({ message: 'Çat tapılmadı' });
+    const result = await prisma.chatMessage.deleteMany({ where: { id: messageId, sessionId } });
+    if (!result.count) return res.status(404).json({ message: 'Mesaj tapılmadı' });
+    publish({ type: 'message-deleted', userId: session.userId, sessionId, messageId });
+    res.sendStatus(204);
+  } catch { res.status(500).json({ message: 'Mesaj silinmədi' }); }
+});
+
 module.exports = router;

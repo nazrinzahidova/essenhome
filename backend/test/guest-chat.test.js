@@ -16,6 +16,7 @@ test('guest chat: anonymous send, cookie resume, isolated histories, operator re
       findMany:async()=>sessions.map(row=>({...row,messages:messages.filter(m=>m.sessionId===row.id).slice(-1)}))
     },
     chatMessage:{
+      deleteMany:async({where})=>{let count=0;for(let i=messages.length-1;i>=0;i--)if(match(messages[i],where)){messages.splice(i,1);count++;}return {count};},
       findMany:async({where})=>messages.filter(row=>match(row,where)),
       create:async({data})=>{const row={id:messages.length+1,createdAt:new Date(),...data};messages.push(row);return row;}
     }
@@ -57,6 +58,17 @@ test('guest chat: anonymous send, cookie resume, isolated histories, operator re
   assert(!chunk.includes('Only B'));assert(chunk.includes('necə kömək'));
   streamAbort.abort();
   const history=await (await request('/guest/messages',{cookie})).json();assert.equal(history.length,2);assert.equal(history[1].sender,'admin');
+  const deleteUrl='/admin/sessions/'+a.id+'/messages/'+history[1].id;
+  assert.equal((await request(deleteUrl,{method:'DELETE',cookie})).status,401);
+  assert.equal((await request(deleteUrl,{method:'DELETE',token:userToken})).status,403);
+  assert.equal((await request('/admin/sessions/'+b.id+'/messages/'+history[1].id,{method:'DELETE',token:adminToken})).status,404);
+  assert.equal((await request('/admin/sessions/'+a.id+'/messages/nope',{method:'DELETE',token:adminToken})).status,400);
+  assert.equal((await request(deleteUrl,{method:'DELETE',token:adminToken})).status,204);
+  assert.equal((await request(deleteUrl,{method:'DELETE',token:adminToken})).status,404);
+  const afterDelete=await (await request('/guest/messages',{cookie})).json();assert.equal(afterDelete.length,1);assert.equal(afterDelete[0].text,visitorText);
+  const adminAfter=await (await request('/admin/sessions/'+a.id,{token:adminToken})).json();assert.equal(adminAfter.messages.length,1);
+  assert.equal((await request('/admin/sessions/'+a.id+'/messages/'+history[0].id,{method:'DELETE',token:adminToken})).status,204);
+  assert.equal((await (await request('/admin/sessions/'+a.id,{token:adminToken})).json()).messages.length,0);
   assert.equal((await request('/guest/session',{method:'POST',headers:{Origin:'https://unrelated.example'}})).status,403);
   const forged='essen_guest_chat='+sessions[0].chatKey.replace('guest:','');
   assert.equal((await request('/guest/messages',{cookie:forged})).status,401);

@@ -45,6 +45,7 @@ function renderChatMessage(message) {
   renderedChatMessageIds.add(message.id);
   const body=document.getElementById('chat-body');
   const row=document.createElement('div');
+  row.dataset.messageId=String(message.id);
   row.className='msg '+(message.sender === 'user' ? 'user' : 'op');
   const content=document.createElement('div');
   const label=document.createElement('div'); label.className='msg-time';
@@ -61,6 +62,11 @@ async function loadGuestMessages() {
   chatLoading=true;
   try {
     const messages=await guestRequest();
+    const currentIds=new Set(messages.map(message=>message.id));
+    document.querySelectorAll('#chat-body [data-message-id]').forEach(row=>{
+      const id=Number(row.dataset.messageId);
+      if (!currentIds.has(id)) { row.remove(); renderedChatMessageIds.delete(id); }
+    });
     messages.forEach(renderChatMessage);
     chatStatus('Operatorla sayt üzərindən yazışma');
   } catch (error) { chatStatus(error.message); }
