@@ -22,6 +22,7 @@ function openStream(req, res, filter) {
   req.on('close', () => { clearInterval(heartbeat); unsubscribe(); });
 }
 
+router.use('/guest', require('../lib/guestChat')(prisma, publish, openStream));
 router.get('/stream', auth, (req, res) => openStream(req, res, event => event.userId === req.user.id));
 router.get('/admin/stream', auth, adminCheck, (_req, res) => openStream(_req, res, () => true));
 

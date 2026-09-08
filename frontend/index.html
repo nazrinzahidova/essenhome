@@ -1578,6 +1578,17 @@ document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
 
 <!-- ===== ESSEN CHATBOT WIDGET ===== -->
 <style>
+  #chat-window [hidden] { display:none !important; }
+  #chat-choices { padding:20px; background:#fafafa; }
+  #chat-choices p { margin:0 0 16px; color:#555; font-size:14px; }
+  #chat-choices button, #chat-choices a { display:block; width:100%; text-align:left; padding:16px; margin:12px 0; border:1px solid #e3e3e3; border-radius:12px; background:#fff; cursor:pointer; text-decoration:none; color:#222; }
+  #chat-choices strong, #chat-choices span { display:block; }
+  #chat-choices span { font-size:12px; color:#666; margin-top:6px; }
+  #chat-choices #operator-chat-choice { border-color:#e8222e; }
+  #chat-choices #whatsapp-chat-choice { border-color:#25d366; }
+  #chat-back { padding:10px 14px; text-align:left; color:#555; background:#fff; border:0; border-bottom:1px solid #eee; cursor:pointer; }
+  #chat-body .msg-bubble { white-space:pre-wrap; overflow-wrap:anywhere; }
+  #chat-send:disabled { opacity:.5; }
   #chat-fab {
     position: fixed; bottom: 24px; right: 24px; z-index: 99999;
     display: flex; flex-direction: column; align-items: flex-end; gap: 12px;
@@ -1658,120 +1669,33 @@ document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
         <div class="chat-avatar"><i class="fa-regular fa-comment-dots"></i></div>
         <div>
           <div class="chat-title">Essen Dəstək</div>
-          <div class="chat-subtitle" id="status-text">🟢 Sayt operatoru aktivdir</div>
+          <div class="chat-subtitle" id="status-text">Əlaqə üsulunu seçin</div>
         </div>
       </div>
       <button class="chat-close" id="close-btn">&times;</button>
     </div>
-    <div class="chat-body" id="chat-body"></div>
-    <div class="chat-footer">
-      <input class="chat-input" id="chat-input" placeholder="Mesaj yazın..."/>
-      <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    <div id="chat-choices">
+      <p>Sizə necə kömək edə bilərik?</p>
+      <button type="button" id="operator-chat-choice"><strong>Saytda operatorla yazış</strong><span>Giriş və qeydiyyat tələb olunmur</span></button>
+      <a id="whatsapp-chat-choice" href="https://wa.me/994102414782" target="_blank" rel="noopener noreferrer"><strong>WhatsApp ilə əlaqə</strong><span>WhatsApp-da söhbətə davam et</span></a>
+    </div>
+    <button type="button" id="chat-back" hidden>← Əlaqə üsullarına qayıt</button>
+    <div class="chat-body" id="chat-body" role="log" aria-live="polite" hidden></div>
+    <div class="chat-footer" id="chat-footer" hidden>
+      <input class="chat-input" id="chat-input" maxlength="2000" aria-label="Operatora mesaj" placeholder="Mesaj yazın..."/>
+      <button type="button" class="send-btn" id="chat-send" aria-label="Mesajı göndər" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
   </div>
-  <button class="wave-btn" id="fab-btn" onclick="toggleChat()">
+  <button class="wave-btn" id="fab-btn" aria-label="Bizimlə əlaqə" aria-expanded="false" onclick="toggleChat()">
     <div class="wave"></div><div class="wave"></div><div class="wave"></div>
     <i class="fa-regular fa-comment-dots" style="position:relative;z-index:1;"></i>
   </button>
 </div>
 
 <script>
-let chatOpen = false;
-let internalChatId = null;
-let renderedChatMessageIds = new Set();
-let chatStreamAbort = null;
-async function ensureInternalChat() {
-  const token = localStorage.getItem('token');
-  if (!token) return null;
-  if (internalChatId) return internalChatId;
-  const response = await fetch('/api/chats/session', { method:'POST', headers:{ Authorization:`Bearer ${token}` } });
-  if (!response.ok) return null;
-  const session = await response.json();
-  internalChatId = session.id;
-  return internalChatId;
-}
-async function sendInternalChat(text) {
-  const token = localStorage.getItem('token');
-  const sessionId = await ensureInternalChat();
-  if (!token || !sessionId) return false;
-  const response = await fetch(`/api/chats/${sessionId}/messages`, { method:'POST', headers:{ 'Content-Type':'application/json', Authorization:`Bearer ${token}` }, body:JSON.stringify({ text }) });
-  return response.ok;
-}
-async function loadInternalChat() {
-  if (!chatOpen) return;
-  const token = localStorage.getItem('token');
-  const sessionId = await ensureInternalChat().catch(() => null);
-  if (!token || !sessionId) return;
-  try {
-    const response = await fetch(`/api/chats/${sessionId}/messages`, { headers:{ Authorization:`Bearer ${token}` } });
-    if (!response.ok) return;
-    const messages = await response.json();
-    messages.forEach(message => renderChatMessage(message));
-  } catch {}
-}
-async function connectChatStream() {
-  chatStreamAbort?.abort();
-  const token = localStorage.getItem('token');
-  if (!token || !chatOpen) return;
-  chatStreamAbort = new AbortController();
-  try {
-    const response = await fetch('/api/chats/stream', { headers: { Authorization: `Bearer ${token}` }, signal: chatStreamAbort.signal });
-    if (!response.ok || !response.body) return;
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    while (chatOpen) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split('\n\n'); buffer = events.pop() || '';
-      events.forEach(block => {
-        const dataLine = block.split('\n').find(line => line.startsWith('data: '));
-        if (!dataLine) return;
-        try { const payload = JSON.parse(dataLine.slice(6)); if (payload.message) renderChatMessage(payload.message); } catch {}
-      });
-    }
-  } catch (error) { if (error.name !== 'AbortError' && chatOpen) setTimeout(connectChatStream, 1500); }
-}
-function now() { return new Date().toLocaleTimeString('az-AZ', {hour:'2-digit', minute:'2-digit'}); }
-function toggleChat() {
-  chatOpen = !chatOpen;
-  const win = document.getElementById('chat-window');
-  if (chatOpen) {
-    win.classList.add('open');
-    if (!localStorage.getItem('token')) { chatOpen = false; win.classList.remove('open'); openModal(); return; }
-    loadInternalChat(); connectChatStream();
-  } else { win.classList.remove('open'); chatStreamAbort?.abort(); }
-}
-document.getElementById('close-btn').onclick = () => { chatOpen = false; chatStreamAbort?.abort(); document.getElementById('chat-window').classList.remove('open'); };
-document.getElementById('chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
-function renderChatMessage(message) {
-  if (!message?.id || renderedChatMessageIds.has(message.id)) return;
-  renderedChatMessageIds.add(message.id);
-  addMsg(message.sender === 'user' ? 'user' : 'op', message.text);
-}
-function addMsg(role, text) {
-  const body = document.getElementById('chat-body');
-  const wrap = document.createElement('div');
-  wrap.className = `msg ${role === 'user' ? 'user' : role}`;
-  const avatarClass = role === 'bot' ? 'op' : role === 'op' ? 'op' : 'user-av';
-  const avatarIcon = role === 'bot' || role === 'op' ? '<i class="fa-solid fa-headset"></i>' : '<i class="fa-solid fa-user"></i>';
-  wrap.innerHTML = `<div class="msg-avatar ${avatarClass}">${avatarIcon}</div><div><div class="msg-bubble">${text}</div><div class="msg-time">${now()}</div></div>`;
-  body.appendChild(wrap); body.scrollTop = body.scrollHeight;
-}
-async function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  const delivered = await sendInternalChat(text).catch(() => false);
-  if (!delivered) {
-    openModal();
-    return;
-  }
-  await loadInternalChat();
-}
-
+</script>
+<script src="guest-chat.js?v=20260908-1"></script>
+<script>
 // ── CART ──────────────────────────────────────────────
 function getCart() {
   try { return JSON.parse(localStorage.getItem('essenCart')) || []; } catch { return []; }

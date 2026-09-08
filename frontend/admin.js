@@ -105,6 +105,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
+  clearTimeout(chatRefreshTimer);
+  clearInterval(adminChatPollTimer);
+  adminChatStreamAbort?.abort();
   clearSession();
   showLogin();
 });
@@ -112,6 +115,7 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
 // ============== İSTİFADƏÇİ ÇATLARI ==============
 let activeChatId = null;
 let chatRefreshTimer = null;
+let adminChatPollTimer = null;
 let adminChatStreamAbort = null;
 const productsTab = document.getElementById('productsTab');
 const chatsTab = document.getElementById('chatsTab');
@@ -119,13 +123,16 @@ const chatsTab = document.getElementById('chatsTab');
 productsTab.addEventListener('click', () => {
   productsTab.classList.add('active'); chatsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'block'; document.getElementById('chatView').style.display = 'none';
-  clearInterval(chatRefreshTimer);
+  clearTimeout(chatRefreshTimer);
+  clearInterval(adminChatPollTimer);
   adminChatStreamAbort?.abort();
 });
 chatsTab.addEventListener('click', () => {
   chatsTab.classList.add('active'); productsTab.classList.remove('active');
   document.getElementById('productView').style.display = 'none'; document.getElementById('chatView').style.display = 'block';
   loadChatSessions(); connectAdminChatStream();
+  clearInterval(adminChatPollTimer);
+  adminChatPollTimer=setInterval(async()=>{ await loadChatSessions(false); if(activeChatId) await loadChatRoom(activeChatId,false); },4000);
 });
 document.getElementById('refreshChatsBtn').addEventListener('click', () => loadChatSessions());
 
@@ -158,7 +165,7 @@ async function loadChatSessions(showError = true) {
     document.getElementById('chatCount').textContent = `${sessions.length} çat`;
     const list = document.getElementById('chatList');
     if (!sessions.length) { list.innerHTML = '<div class="empty-state">Hələ çat yoxdur.</div>'; return; }
-    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}</strong><span>📞 ${escapeHtml(session.phone)}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
+    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}${session.userId ? '' : ' #' + session.id}</strong><span>${session.phone ? '📞 ' + escapeHtml(session.phone) : 'Sayt ziyarətçisi'}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
     list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
   } catch { if (showError) showToast('Çatlar yüklənmədi'); }
 }
@@ -168,7 +175,7 @@ async function loadChatRoom(id, showError = true) {
     const response = await fetch(`${API}/api/chats/admin/sessions/${id}`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
     const session = await response.json(); activeChatId = session.id;
-    document.getElementById('chatRoomHead').textContent = `${session.name} — ${session.phone}`;
+    document.getElementById('chatRoomHead').textContent = `${session.name}${session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
     const messages = document.getElementById('chatMessages');
     messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}">${escapeHtml(message.text)}</div>`).join('');
     messages.scrollTop = messages.scrollHeight;
