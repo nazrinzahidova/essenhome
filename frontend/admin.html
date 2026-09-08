@@ -544,6 +544,7 @@
     </div>
     <section id="chatView" style="display:none;">
       <div class="panel-header"><div><h2>İstifadəçi çatları</h2><span class="count" id="chatCount"></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-ghost" id="chatSoundBtn" aria-pressed="true">🔊 Bildiriş səsi: Açıq</button><button class="btn-ghost" id="refreshChatsBtn">Yenilə</button></div></div>
+      <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><label><input type="checkbox" id="selectAllChats"> Hamısını seç</label><button type="button" class="btn-ghost" id="deleteSelectedChats" disabled>Seçilmiş çatları sil</button></div>
       <div class="chat-layout">
         <aside class="chat-list" id="chatList"><div class="empty-state">Hələ çat yoxdur.</div></aside>
         <div class="chat-room">
@@ -733,6 +734,6 @@
 <script src="tv-specs.js?v=20260728-3"></script>
 <script src="washingmachine-specs.js?v=20260727-4"></script>
 <script src="fridge-specs.js?v=20260728-4"></script>
-<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin.js?v=20260908-sound-toggle-1"></script>
+<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin.js?v=20260908-bulk-chats-1"></script>
 </body>
 </html>

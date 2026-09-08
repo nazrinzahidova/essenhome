@@ -9,6 +9,7 @@ test('guest chat: anonymous send, cookie resume, isolated histories, operator re
   const match=(row,where)=>Object.entries(where).every(([key,value])=>row[key]===value);
   const prisma={
     chatSession:{
+      deleteMany:async({where})=>{const ids=where.id.in;let count=0;for(let i=sessions.length-1;i>=0;i--)if(ids.includes(sessions[i].id)){sessions.splice(i,1);count++;}for(let i=messages.length-1;i>=0;i--)if(ids.includes(messages[i].sessionId))messages.splice(i,1);return {count};},
       findFirst:async({where})=>sessions.find(row=>match(row,where))||null,
       create:async({data})=>{const row={id:sessions.length+1,status:'open',createdAt:new Date(),updatedAt:new Date(),...data};sessions.push(row);return row;},
       update:async({where,data})=>Object.assign(sessions.find(row=>match(row,where)),data),
@@ -72,4 +73,11 @@ test('guest chat: anonymous send, cookie resume, isolated histories, operator re
   assert.equal((await request('/guest/session',{method:'POST',headers:{Origin:'https://unrelated.example'}})).status,403);
   const forged='essen_guest_chat='+sessions[0].chatKey.replace('guest:','');
   assert.equal((await request('/guest/messages',{cookie:forged})).status,401);
+  assert.equal((await request('/admin/sessions',{method:'DELETE',body:{ids:[b.id]}})).status,401);
+  assert.equal((await request('/admin/sessions',{method:'DELETE',token:userToken,body:{ids:[b.id]}})).status,403);
+  assert.equal((await request('/admin/sessions',{method:'DELETE',token:adminToken,body:{ids:[]}})).status,400);
+  assert.equal((await request('/admin/sessions',{method:'DELETE',token:adminToken,body:{ids:['1']}})).status,400);
+  const deleted=await request('/admin/sessions',{method:'DELETE',token:adminToken,body:{ids:[b.id,b.id]}});
+  assert.equal((await deleted.json()).count,1);assert.equal(sessions.length,1);assert.equal(sessions[0].id,a.id);
+  assert(!messages.some(message=>message.sessionId===b.id));
 });

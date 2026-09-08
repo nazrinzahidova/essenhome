@@ -98,4 +98,17 @@ router.delete('/admin/sessions/:id/messages/:messageId', auth, adminCheck, async
   } catch { res.status(500).json({ message: 'Mesaj silinmədi' }); }
 });
 
+router.delete('/admin/sessions', auth, adminCheck, async (req, res) => {
+  const ids=req.body?.ids;
+  if (!Array.isArray(ids) || !ids.length || ids.some(id=>!Number.isSafeInteger(id) || id < 1)) {
+    return res.status(400).json({message:'Silinəcək çatları seçin'});
+  }
+  try {
+    // The foreign key cascades deletion to the selected sessions' messages.
+    const result=await prisma.chatSession.deleteMany({where:{id:{in:[...new Set(ids)]}}});
+    publish({type:'sessions-deleted',sessionIds:ids});
+    res.json({count:result.count});
+  } catch { res.status(500).json({message:'Çatlar silinmədi'}); }
+});
+
 module.exports = router;

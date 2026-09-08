@@ -35,6 +35,8 @@ async function ensureGuestSession() {
       const response = await fetch('/api/chats/guest/session', {method:'POST',credentials:'same-origin'});
       if (!response.ok) throw new Error('Çat açıla bilmədi. Yenidən cəhd edin.');
       const session = await response.json();
+      clearInterval(chatPollTimer);
+      chatPollTimer=setInterval(loadGuestMessages,3000);
       if (guestSessionId !== session.id) {
         guestSessionId = session.id;
         renderedChatMessageIds.clear();
@@ -51,6 +53,11 @@ async function guestRequest(options = {}) {
   let response = await fetch('/api/chats/guest/messages', {...options,credentials:'same-origin'});
   if (response.status === 401) {
     guestSessionPromise=null;
+    if (options.method !== 'POST') {
+      clearInterval(chatPollTimer);
+      guestHistoryReady=false;latestOperatorMessage=0;guestUnread=0;
+      return [];
+    }
     await ensureGuestSession();
     response=await fetch('/api/chats/guest/messages', {...options,credentials:'same-origin'});
   }

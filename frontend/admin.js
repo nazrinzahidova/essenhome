@@ -138,6 +138,34 @@ window.addEventListener('storage',event=>{
 });
 const seenChatMessages=new Map();
 const unreadChats=new Set();
+const selectedChats=new Set();
+let listedChatIds=[];
+let deletingChats=false;
+function updateChatSelection() {
+  const all=document.getElementById('selectAllChats');
+  all.checked=listedChatIds.length > 0 && selectedChats.size === listedChatIds.length;
+  all.indeterminate=selectedChats.size > 0 && !all.checked;
+  document.getElementById('deleteSelectedChats').disabled=deletingChats || !selectedChats.size;
+  document.getElementById('deleteSelectedChats').textContent=`Seçilmiş çatları sil${selectedChats.size ? ' ('+selectedChats.size+')' : ''}`;
+}
+document.getElementById('selectAllChats').addEventListener('change',event=>{
+  selectedChats.clear();
+  if(event.target.checked) listedChatIds.forEach(id=>selectedChats.add(id));
+  document.querySelectorAll('.chat-select').forEach(box=>{box.checked=selectedChats.has(Number(box.dataset.id));});
+  updateChatSelection();
+});
+document.getElementById('deleteSelectedChats').addEventListener('click',async()=>{
+  const ids=[...selectedChats];
+  if (!ids.length || deletingChats || !confirm(`${ids.length} çat bütün mesajları ilə silinsin? Bu əməliyyat geri qaytarılmır.`)) return;
+  deletingChats=true;updateChatSelection();
+  try {
+    const response=await fetch(`${API}/api/chats/admin/sessions`,{method:'DELETE',headers:{...authHeaders(),'Content-Type':'application/json'},body:JSON.stringify({ids})});
+    if(!response.ok) throw new Error();
+    ids.forEach(id=>{selectedChats.delete(id);unreadChats.delete(id);});
+    await loadChatSessions(false);showToast('Seçilmiş çatlar silindi');
+  } catch {showToast('Çatlar silinmədi. Yenidən cəhd edin.');}
+  finally {deletingChats=false;updateChatSelection();}
+});
 let chatNoticesReady=false;
 function startChatNotices() {
   seenChatMessages.clear(); unreadChats.clear(); chatNoticesReady=false;
@@ -193,6 +221,19 @@ async function loadChatSessions(showError = true) {
     const response = await fetch(`${API}/api/chats/admin/sessions/list`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
     const sessions = await response.json();
+    listedChatIds=sessions.map(session=>session.id);
+    for(const id of selectedChats) if(!listedChatIds.includes(id)) selectedChats.delete(id);
+    for(const id of unreadChats) if(!listedChatIds.includes(id)) unreadChats.delete(id);
+    updateChatSelection();
+    if(activeChatId && !listedChatIds.includes(activeChatId)) {
+      activeChatId=null;
+      document.getElementById('chatRoomHead').textContent='Çat seçin';
+      document.getElementById('chatMessages').replaceChildren();
+      document.getElementById('chatReplyInput').value='';
+      document.getElementById('chatReplyInput').disabled=true;
+      document.getElementById('chatReplyBtn').disabled=true;
+    }
+
     if (!getToken()) return;
     let newMessage=false;
     for (const session of sessions) {
@@ -213,6 +254,14 @@ async function loadChatSessions(showError = true) {
     list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}${session.userId ? '' : ' #' + session.id}</strong><span>${session.phone ? '📞 ' + escapeHtml(session.phone) : 'Sayt ziyarətçisi'}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
     list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
     list.querySelectorAll('[data-chat-id]').forEach(item=>item.classList.toggle('has-unread',unreadChats.has(Number(item.dataset.chatId))));
+    list.querySelectorAll('[data-chat-id]').forEach(item=>{
+      const box=document.createElement('input');box.type='checkbox';box.className='chat-select';
+      box.dataset.id=item.dataset.chatId;box.checked=selectedChats.has(Number(item.dataset.chatId));
+      box.setAttribute('aria-label','Çatı seç');box.style.cssText='float:right;width:18px;height:18px;margin:4px';
+      box.addEventListener('click',event=>event.stopPropagation());
+      box.addEventListener('change',()=>{const id=Number(box.dataset.id);if(box.checked)selectedChats.add(id);else selectedChats.delete(id);updateChatSelection();});
+      item.prepend(box);
+    });
   } catch { if (showError) showToast('Çatlar yüklənmədi'); }
 }
 
