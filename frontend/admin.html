@@ -499,7 +499,7 @@
   </header>
 
   <main>
-    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="chatsTab">Çatlar</button><button type="button" class="admin-tab" id="chatSoundBtn">🔊 Səsi aktiv et / yoxla</button></div>
+    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="chatsTab">Çatlar</button></div>
     <div id="productView">
     <div class="panel-header">
       <div>
@@ -543,7 +543,7 @@
     <div class="empty-state" id="emptyState" style="display:none;">Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.</div>
     </div>
     <section id="chatView" style="display:none;">
-      <div class="panel-header"><div><h2>İstifadəçi çatları</h2><span class="count" id="chatCount"></span></div><button class="btn-ghost" id="refreshChatsBtn">Yenilə</button></div>
+      <div class="panel-header"><div><h2>İstifadəçi çatları</h2><span class="count" id="chatCount"></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-ghost" id="chatSoundBtn" aria-pressed="true">🔊 Bildiriş səsi: Açıq</button><button class="btn-ghost" id="refreshChatsBtn">Yenilə</button></div></div>
       <div class="chat-layout">
         <aside class="chat-list" id="chatList"><div class="empty-state">Hələ çat yoxdur.</div></aside>
         <div class="chat-room">
@@ -733,6 +733,6 @@
 <script src="tv-specs.js?v=20260728-3"></script>
 <script src="washingmachine-specs.js?v=20260727-4"></script>
 <script src="fridge-specs.js?v=20260728-4"></script>
-<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin.js?v=20260908-sound-2"></script>
+<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin.js?v=20260908-sound-toggle-1"></script>
 </body>
 </html>

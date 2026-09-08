@@ -120,9 +120,21 @@ let adminChatPollTimer = null;
 let adminChatStreamAbort = null;
 const productsTab = document.getElementById('productsTab');
 const chatsTab = document.getElementById('chatsTab');
-document.getElementById('chatSoundBtn').addEventListener('click',async()=>{
-  const played=await window.chatNotice.sound();
-  showToast(played ? 'Sınaq səsi çalındı. Eşidilmirsə, cihazın və brauzer vərəqinin səsini yoxlayın.' : 'Brauzer səsə icazə vermədi. Səhifəni yeniləyib bu düyməyə yenidən basın.');
+let chatSoundEnabled=true;
+try { chatSoundEnabled=localStorage.getItem('essenAdminChatSound') !== 'off'; } catch {}
+const chatSoundBtn=document.getElementById('chatSoundBtn');
+function renderChatSound() {
+  chatSoundBtn.textContent=chatSoundEnabled ? '🔊 Bildiriş səsi: Açıq' : '🔇 Bildiriş səsi: Bağlı';
+  chatSoundBtn.setAttribute('aria-pressed',String(chatSoundEnabled));
+}
+renderChatSound();
+chatSoundBtn.addEventListener('click',()=>{
+  chatSoundEnabled=!chatSoundEnabled;
+  try { localStorage.setItem('essenAdminChatSound',chatSoundEnabled ? 'on' : 'off'); } catch {}
+  renderChatSound();
+});
+window.addEventListener('storage',event=>{
+  if (event.key === 'essenAdminChatSound') { chatSoundEnabled=event.newValue !== 'off';renderChatSound(); }
 });
 const seenChatMessages=new Map();
 const unreadChats=new Set();
@@ -193,7 +205,7 @@ async function loadChatSessions(showError = true) {
       seenChatMessages.set(session.id,Math.max(previous,latest?.id || 0));
     }
     chatNoticesReady=true;
-    if (newMessage) window.chatNotice.sound();
+    if (newMessage && chatSoundEnabled) window.chatNotice.sound();
     window.chatNotice.badge(chatsTab,unreadChats.size);
     document.getElementById('chatCount').textContent = `${sessions.length} çat`;
     const list = document.getElementById('chatList');
