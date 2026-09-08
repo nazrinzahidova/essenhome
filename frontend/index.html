@@ -1121,11 +1121,16 @@
   const track = document.getElementById('track');
   const wrapper = document.getElementById('trackWrapper');
   allBrands.forEach((b) => {
-    const card = document.createElement('div');
+    const key=b.image.split('/').pop().replace('.png','');
+    const brandName=({karcher:'Kärcher',schaffer:'Schafer',delonghi:'DeLonghi',berghoff:'BergHOFF'})[key] || key.toUpperCase();
+    const card = document.createElement('a');
+    card.href=`catalog.html?brand=${encodeURIComponent(brandName)}`;
+    card.setAttribute('aria-label',`${brandName} məhsulları`);
     card.className = 'brand-card h-16 border border-gray-200 rounded-xl flex items-center justify-center cursor-pointer hover:border-gray-300 hover:bg-gray-50 bg-white';
     card.style.transition = 'background 0.15s, border-color 0.15s';
-    card.innerHTML = b.image ? `<img src="${b.image}" alt="brand" style="width:100%;height:100%;object-fit:contain;" />` : '';
-    card.addEventListener('click', () => { if (!wasDragging) window.open('https://kontakt.az', '_blank'); });
+    card.innerHTML = b.image ? `<img src="${b.image}" alt="${brandName}" draggable="false" style="width:100%;height:100%;object-fit:contain;" />` : '';
+    card.draggable=false;
+    card.addEventListener('click', event => { if (wasDragging) event.preventDefault(); });
     track.appendChild(card);
   });
   function getCardWidth() { const c = track.querySelector('.brand-card'); return c ? c.offsetWidth + GAP : 142; }

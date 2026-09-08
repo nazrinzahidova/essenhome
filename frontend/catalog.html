@@ -243,12 +243,18 @@
     const selectedCategory = params.get('category') || '';
     const selectedSubcategory = params.get('subcategory') || '';
     const searchQuery = params.get('search') || '';
+    const selectedBrand = params.get('brand') || '';
+    function brandKey(value) {
+      const key=String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+      return key === 'schaffer' ? 'schafer' : key;
+    }
 
     function catalogUrl(category = '', subcategory = '', search = '') {
       const query = new URLSearchParams();
       if (category) query.set('category', category);
       if (subcategory) query.set('subcategory', subcategory);
       if (search) query.set('search', search);
+      if (selectedBrand) query.set('brand', selectedBrand);
       return `catalog.html${query.toString() ? `?${query.toString()}` : ''}`;
     }
 
@@ -361,13 +367,13 @@
     }
 
     function updateHeading() {
-      const title = selectedSubcategory || selectedCategory ||
-        (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar');
+      const title = (selectedBrand ? selectedBrand + ' — ' : '') + (selectedSubcategory || selectedCategory ||
+        (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
       document.getElementById('catalogTitle').textContent = title;
       document.getElementById('breadcrumbCurrent').textContent = title;
       document.title = `${title} — Essen Home`;
       document.getElementById('catalogSearch').value = searchQuery;
-      document.getElementById('clearFilter').classList.toggle('hidden', !selectedCategory && !selectedSubcategory && !searchQuery);
+      document.getElementById('clearFilter').classList.toggle('hidden', !selectedCategory && !selectedSubcategory && !searchQuery && !selectedBrand);
     }
 
     function productMatchesPlacement(product, category, subcategory) {
@@ -383,6 +389,7 @@
     function filteredProducts(products) {
       return products.filter(product => {
         if (!productMatchesPlacement(product, selectedCategory, selectedSubcategory)) return false;
+        if (selectedBrand && !splitValues(product.brand).some(value=>brandKey(value) === brandKey(selectedBrand))) return false;
         if (searchQuery) {
           const needle = searchQuery.toLocaleLowerCase('az');
           const haystack = [
