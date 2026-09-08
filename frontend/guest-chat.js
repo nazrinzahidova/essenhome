@@ -8,6 +8,18 @@ let chatSending = false;
 const renderedChatMessageIds = new Set();
 const chatStatus = text => { document.getElementById('status-text').textContent = text; };
 
+// Keep the mobile composer inside the visible area when the keyboard opens.
+function updateChatViewport() {
+  const viewport=window.visualViewport;
+  const panel=document.getElementById('chat-window');
+  panel.style.setProperty('--chat-viewport-height',`${viewport ? viewport.height : window.innerHeight}px`);
+  panel.style.setProperty('--chat-viewport-top',`${viewport ? viewport.offsetTop : 0}px`);
+}
+window.visualViewport?.addEventListener('resize',updateChatViewport);
+window.visualViewport?.addEventListener('scroll',updateChatViewport);
+window.addEventListener('resize',updateChatViewport);
+updateChatViewport();
+
 async function ensureGuestSession() {
   if (!guestSessionPromise) {
     guestSessionPromise = (async () => {
@@ -98,6 +110,7 @@ function startOperatorChat() {
 }
 
 function toggleChat() {
+  updateChatViewport();
   chatOpen=!chatOpen;
   document.getElementById('chat-window').classList.toggle('open',chatOpen);
   document.getElementById('fab-btn').setAttribute('aria-expanded',String(chatOpen));

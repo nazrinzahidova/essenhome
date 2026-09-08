@@ -1619,7 +1619,11 @@ document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
   #chat-window.open { display: flex; }
   @media (max-width: 480px) {
     #chat-fab { bottom: 16px; right: 16px; }
-    #chat-window { position: fixed; bottom: 0; right: 0; left: 0; top: 0; width: 100%; height: 100%; border-radius: 0; border: none; }
+    #chat-window { position: fixed; bottom: auto; right: 0; left: 0; top: var(--chat-viewport-top, 0px); width: 100%; height: 100dvh; height: var(--chat-viewport-height, 100dvh); border-radius: 0; border: none; }
+    #chat-window.open ~ #fab-btn { display: none; }
+    #chat-window .chat-footer { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+    #chat-window .chat-input { min-width: 0; font-size: 16px; }
+    #chat-window .send-btn { width: 44px; height: 44px; }
     .wave-btn { width: 52px; height: 52px; font-size: 20px; }
   }
   .chat-header { background: #e8222e; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -1632,7 +1636,7 @@ document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
   .mode-tabs { display: flex; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
   .mode-tab { flex: 1; padding: 9px 0; text-align: center; font-size: 12.5px; color: #888; cursor: pointer; border: none; background: none; border-bottom: 2.5px solid transparent; transition: all 0.15s; font-family: 'Poppins', sans-serif; }
   .mode-tab.active { color: #e8222e; border-bottom-color: #e8222e; font-weight: 600; }
-  .chat-body { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+  .chat-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
   .chat-body::-webkit-scrollbar { width: 4px; }
   .chat-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
   .msg { display: flex; gap: 8px; max-width: 88%; }
@@ -1694,7 +1698,7 @@ document.addEventListener('DOMContentLoaded', () => refreshHomepageCartBadge());
 
 <script>
 </script>
-<script src="guest-chat.js?v=20260908-delete-1"></script>
+<script src="guest-chat.js?v=20260908-mobile-1"></script>
 <script>
 // ── CART ──────────────────────────────────────────────
 function getCart() {
