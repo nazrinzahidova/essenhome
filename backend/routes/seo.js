@@ -12,8 +12,8 @@ const xml = (root, body) => `<?xml version="1.0" encoding="UTF-8"?><${root} xmln
 function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item.id);
-  const title = `${item.name} | Essen Home`;
-  const description = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
+  const title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
+  const description = item.seoDescription?.trim() || `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
   let image;
   try {
     const parsed = new URL(item.image, ORIGIN);
@@ -28,10 +28,10 @@ function renderProduct(template, product) {
       availability: `https://schema.org/${Number(item.stock) > 0 ? 'InStock' : 'OutOfStock'}`,
       seller: { '@type': 'Organization', name: 'Essen Home', url: ORIGIN } }
   };
-  const metadata = `<meta name="description" content="${escape(description.slice(0, 170))}">
+  const metadata = `<meta name="description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
 <link rel="canonical" href="${escape(url)}">
 <meta property="og:type" content="product"><meta property="og:site_name" content="Essen Home">
-<meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description.slice(0, 170))}">
+<meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
 <meta property="og:url" content="${escape(url)}">${image ? `<meta property="og:image" content="${escape(image)}">` : ''}
 <script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
   const content = `<article class="card" style="padding:24px"><h1>${escape(item.name)}</h1>

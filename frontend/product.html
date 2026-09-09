@@ -319,7 +319,7 @@
       const model = modelValue(item);
       const discount = discountText(item);
       const inStock = Number(item.stock) > 0;
-      document.title = `${item.name} | Essen Home`;
+      document.title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
       document.getElementById('crumbs').innerHTML = `<a href="index.html">Ana səhifə</a><span>›</span><a href="catalog.html">Kataloq</a><span>›</span><span id="crumbName"></span>`;
       view.innerHTML = `
         <div class="product-layout">

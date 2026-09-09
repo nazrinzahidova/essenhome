@@ -1127,6 +1127,8 @@ function openEdit(id) {
   document.getElementById('modalTitle').textContent = 'Məhsulu redaktə et';
   document.getElementById('f_name').value = p.name;
   document.getElementById('f_nameRu').value = p.nameRu;
+  document.getElementById('f_seoTitle').value = p.seoTitle || '';
+  document.getElementById('f_seoDescription').value = p.seoDescription || '';
   document.getElementById('f_description').value = p.description;
   document.getElementById('f_descRu').value = p.descRu;
   document.getElementById('f_price').value = p.price;
@@ -1196,6 +1198,8 @@ form.addEventListener('submit', async (e) => {
   const saveBtn = document.getElementById('saveBtn');
 
   const fd = new FormData();
+  fd.append('seoTitle', document.getElementById('f_seoTitle').value);
+  fd.append('seoDescription', document.getElementById('f_seoDescription').value);
   fd.append('name', document.getElementById('f_name').value);
   fd.append('nameRu', document.getElementById('f_nameRu').value);
   fd.append('description', document.getElementById('f_description').value);

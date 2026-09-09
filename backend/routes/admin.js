@@ -104,6 +104,13 @@ const adminCheck = (req, res, next) => {
 router.post('/products', authMiddleware, adminCheck, upload.array('images', 10), async (req, res) => {
   try {
     const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, placements, primaryImageKey } = req.body;
+    const seo = {};
+    for (const [key, max] of [['seoTitle', 200], ['seoDescription', 500]]) {
+      if (req.body[key] !== undefined) {
+        if (typeof req.body[key] !== 'string' || req.body[key].trim().length > max) return res.status(400).json({ message: 'SEO sahəsi çox uzundur.' });
+        seo[key] = req.body[key].trim() || null;
+      }
+    }
     const placementRows = parsePlacements(placements, category, subcategory);
     const files = req.files || [];
     const newRows = imageRows(files, parseJsonArray(req.body.newImageKeys));
@@ -121,6 +128,7 @@ router.post('/products', authMiddleware, adminCheck, upload.array('images', 10),
           category,
           subcategory: subcategory?.trim() || null,
           brand: brand?.trim() || null,
+          ...seo,
           specs: parseSpecs(specs),
           stock: parseInt(stock),
           image: null,
@@ -159,6 +167,13 @@ router.delete('/products/:id', authMiddleware, adminCheck, async (req, res) => {
 router.put('/products/:id', authMiddleware, adminCheck, upload.array('images', 10), async (req, res) => {
   try {
     const { name, nameRu, description, descRu, price, oldPrice, discount, installment, colors, category, subcategory, brand, stock, specs, placements, primaryImageKey } = req.body;
+    const seo = {};
+    for (const [key, max] of [['seoTitle', 200], ['seoDescription', 500]]) {
+      if (req.body[key] !== undefined) {
+        if (typeof req.body[key] !== 'string' || req.body[key].trim().length > max) return res.status(400).json({ message: 'SEO sahəsi çox uzundur.' });
+        seo[key] = req.body[key].trim() || null;
+      }
+    }
     const placementRows = parsePlacements(placements, category, subcategory);
 
     const productId = parseInt(req.params.id);
@@ -199,6 +214,7 @@ router.put('/products/:id', authMiddleware, adminCheck, upload.array('images', 1
           category,
           subcategory: subcategory?.trim() || null,
           brand: brand?.trim() || null,
+          ...seo,
           specs: parseSpecs(specs),
           stock: parseInt(stock)
         }
