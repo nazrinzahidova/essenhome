@@ -11,6 +11,8 @@ let server;
 app.use(cors());
 app.use(express.json());
 
+app.use(require('./routes/seo').createSeoRouter(require('./lib/prisma')));
+
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 app.use('/img',
