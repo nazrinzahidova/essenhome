@@ -33,6 +33,7 @@ app.post('/api/auth/test', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/login-code', authRouter);
 app.use('/api/product-images', require('./routes/productImages'));
+app.use('/api/home-sections', require('./routes/homeSections').createHomeSectionsRouter(require('./lib/prisma')));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/admin', require('./routes/admin'));

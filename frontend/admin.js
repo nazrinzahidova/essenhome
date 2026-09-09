@@ -442,6 +442,7 @@ function renderProducts() {
       <td>${stockTag(p.stock)}</td>
       <td>
         <div class="row-actions">
+          <button class="icon-btn" title="Ana səhifə bölmələrinə əlavə et" aria-label="Ana səhifə bölmələrinə əlavə et" onclick="openHomeMembership(${p.id})">+</button>
           <button class="icon-btn" title="Kopyala" onclick="openCopy(${p.id})">⧉</button>
           <button class="icon-btn" title="Redaktə et" onclick="openEdit(${p.id})">✎</button>
           <button class="icon-btn danger" title="Sil" onclick="deleteProduct(${p.id})">🗑</button>

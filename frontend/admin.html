@@ -464,7 +464,8 @@
   .chat-layout{display:grid;grid-template-columns:320px 1fr;min-height:560px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}.chat-list{border-right:1px solid var(--line);overflow:auto}.chat-person{padding:14px;border-bottom:1px solid var(--line);cursor:pointer}.chat-person:hover,.chat-person.active{background:#fff3f3}.chat-person strong,.chat-person span{display:block}.chat-person span{font-size:12px;color:#68707d;margin-top:3px}.chat-room{display:flex;flex-direction:column}.chat-room-head{padding:15px;border-bottom:1px solid var(--line);font-weight:700}.chat-messages{flex:1;padding:18px;overflow:auto;background:#f7f8fa}.chat-message{max-width:75%;padding:10px 12px;border-radius:12px;margin:8px 0;white-space:pre-wrap}.chat-delete{display:block;margin-top:8px;padding:3px 8px;border:1px solid currentColor;border-radius:5px;background:transparent;color:inherit;font-size:12px;cursor:pointer}.chat-delete:disabled{opacity:.5}.chat-message.user{background:#fff;border:1px solid var(--line)}.chat-message.admin{background:#e8222e;color:#fff;margin-left:auto}.chat-reply{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}.chat-reply input{flex:1;padding:11px;border:1px solid var(--line);border-radius:8px}@media(max-width:760px){.chat-layout{grid-template-columns:1fr}.chat-list{max-height:220px;border-right:0;border-bottom:1px solid var(--line)}}
 </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
-<style>.chat-unread-badge{display:inline-flex!important;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;border-radius:12px;background:#d50016;color:#fff;font:700 12px Arial;border:2px solid #fff;vertical-align:middle}.chat-unread-badge[hidden]{display:none!important}#fab-btn .chat-unread-badge{position:absolute;right:-4px;top:-4px;z-index:2}.chat-person.has-unread{border-left:4px solid #e8222e;background:#fff1f2}.chat-person.has-unread strong:after{content:" ●";color:#e8222e}</style></head>
+<style>.chat-unread-badge{display:inline-flex!important;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;border-radius:12px;background:#d50016;color:#fff;font:700 12px Arial;border:2px solid #fff;vertical-align:middle}.chat-unread-badge[hidden]{display:none!important}#fab-btn .chat-unread-badge{position:absolute;right:-4px;top:-4px;z-index:2}.chat-person.has-unread{border-left:4px solid #e8222e;background:#fff1f2}.chat-person.has-unread strong:after{content:" ●";color:#e8222e}</style><style>.admin-tabs{flex-wrap:wrap}.home-section-edit{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid #ddd}.home-section-edit input[type=text]{flex:1;min-width:160px}#homeSectionsView input{padding:10px;border:1px solid #ddd;border-radius:8px}#homeMembershipDialog::backdrop{background:#0006}</style>
+</head>
 <body>
 
 <!-- LOGIN -->
@@ -499,7 +500,7 @@
   </header>
 
   <main>
-    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="chatsTab">Çatlar</button></div>
+    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="homeSectionsTab">Ana səhifə bölmələri</button><button class="admin-tab" id="chatsTab">Çatlar</button></div>
     <div id="productView">
     <div class="panel-header">
       <div>
@@ -542,6 +543,16 @@
     </table>
     <div class="empty-state" id="emptyState" style="display:none;">Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.</div>
     </div>
+    <section id="homeSectionsView" style="display:none">
+      <div class="panel-header"><h2>Ana səhifə bölmələri</h2><button class="btn-ghost" id="reloadHomeSections">Yenilə</button></div>
+      <form id="newHomeSection" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><input aria-label="Bölmə adı" id="homeSectionName" maxlength="120" placeholder="Bölmə adı" required><button class="btn-accent">+ Bölmə yarat</button></form>
+      <p>Yalnız aktiv və məhsul əlavə edilmiş bölmələr ana səhifədə görünür.</p>
+      <div id="homeSectionList"></div>
+    </section>
+    <dialog id="homeMembershipDialog" style="padding:24px;border:1px solid #ddd;border-radius:16px;max-width:480px;width:90%;max-height:80vh;margin:auto">
+      <h3 id="homeMembershipTitle"></h3><div id="homeMembershipOptions" style="margin:20px 0"></div>
+      <button class="btn-ghost" onclick="document.getElementById('homeMembershipDialog').close()">Bağla</button>
+    </dialog>
     <section id="chatView" style="display:none;">
       <div class="panel-header"><div><h2>İstifadəçi çatları</h2><span class="count" id="chatCount"></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn-ghost" id="chatSoundBtn" aria-pressed="true">🔊 Bildiriş səsi: Açıq</button><button class="btn-ghost" id="refreshChatsBtn">Yenilə</button></div></div>
       <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px;flex-wrap:wrap"><label><input type="checkbox" id="selectAllChats"> Hamısını seç</label><button type="button" class="btn-ghost" id="deleteSelectedChats" disabled>Seçilmiş çatları sil</button></div>
@@ -734,6 +745,7 @@
 <script src="tv-specs.js?v=20260728-3"></script>
 <script src="washingmachine-specs.js?v=20260909-1"></script>
 <script src="fridge-specs.js?v=20260909-1"></script>
-<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin-chat-read.js?v=20260909-1"></script><script src="admin.js?v=20260909-appliances-1"></script>
+<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin-chat-read.js?v=20260909-1"></script><script src="admin.js?v=20260909-home-sections-1"></script>
+<script src="admin-home-sections.js?v=20260909-1"></script>
 </body>
 </html>

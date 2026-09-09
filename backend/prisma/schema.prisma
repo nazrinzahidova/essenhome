@@ -99,6 +99,7 @@ model Product {
   carts      Cart[]
   favourites Favourite[]
   compares   Compare[]
+  homeSections HomeSectionProduct[]
   placements ProductPlacement[]
   images     ProductImage[]
 }
@@ -185,4 +186,22 @@ model Compare {
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([userId, productId])
+}
+
+model HomeSection {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(120)
+  active Boolean @default(true)
+  position Int @default(0)
+  products HomeSectionProduct[]
+  @@index([position, id])
+}
+
+model HomeSectionProduct {
+  sectionId Int
+  productId Int
+  section HomeSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  @@id([sectionId, productId])
+  @@index([productId])
 }

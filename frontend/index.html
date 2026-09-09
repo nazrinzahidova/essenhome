@@ -163,10 +163,10 @@
       line-height: 1.45;
       margin-bottom: 5px;
     }
-    #scrollRow::-webkit-scrollbar { height: 6px; }
-    #scrollRow::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-    #scrollRow::-webkit-scrollbar-thumb { background: #e8222e; border-radius: 10px; }
-    #scrollRow::-webkit-scrollbar-thumb:hover { background: #c0000a; }
+    :is(#scrollRow, .home-product-row)::-webkit-scrollbar { height: 6px; }
+    :is(#scrollRow, .home-product-row)::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+    :is(#scrollRow, .home-product-row)::-webkit-scrollbar-thumb { background: #e8222e; border-radius: 10px; }
+    :is(#scrollRow, .home-product-row)::-webkit-scrollbar-thumb:hover { background: #c0000a; }
     .scrollbar-hide::-webkit-scrollbar { display: none; }
     .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -222,7 +222,7 @@
       .catalog-group-columns { grid-template-columns: 1fr; }
     }
     @media (max-width: 500px) {
-      #scrollRow { gap: 10px; }
+      :is(#scrollRow, .home-product-row) { gap: 10px; }
     }
 
     #catSidebar::-webkit-scrollbar { width: 6px; }
@@ -771,7 +771,8 @@
       <button onclick="setActive(this)" class="tab-btn">Qab-qacaq</button>
     </div>
     <br />
-    <h2 id="productsTitle" class="text-black font-semibold text-xl">Fürsətlər</h2>
+    <div id="homeSections"></div>
+    <h2 hidden id="productsTitle" class="text-black font-semibold text-xl">Fürsətlər</h2>
     <div class="relative">
       <div id="scrollRow" class="flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth pb-4"></div>
     </div>
@@ -1255,53 +1256,7 @@ function productTopBadge(product) {
     ? `<div style="position:absolute;top:10px;right:10px;background:#e8222e;color:#fff;font-size:11px;font-weight:600;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:10;">${product.discount}</div>`
     : '';
 }
-  // ── BACKEND-DƏN MƏHSULLAR ──
-  async function loadProducts() {
-    try {
-      const filter = currentProductFilter();
-      const query = new URLSearchParams();
-      if (filter.category) query.set('category', filter.category);
-      if (filter.subcategory) query.set('subcategory', filter.subcategory);
-      if (filter.search) query.set('search', filter.search);
-
-      const res = await fetch(`/api/products?${query.toString()}`);
-      if (!res.ok) throw new Error('Məhsullar yüklənmədi');
-      let products = await res.json();
-
-      // Server hələ yenidən başladılmayıbsa belə seçim dərhal işləsin.
-      products = products.filter(product => {
-        const placements = Array.isArray(product.placements) && product.placements.length
-          ? product.placements
-          : [{ category: product.category, subcategory: product.subcategory }];
-        const matchesPlacement = placements.some(placement =>
-          (!filter.category || placement.category === filter.category) &&
-          (!filter.subcategory || placement.subcategory === filter.subcategory)
-        );
-        if (!matchesPlacement) return false;
-        if (filter.search) {
-          const needle = filter.search.toLocaleLowerCase('az');
-          const searchable = [
-            product.name,
-            product.nameRu,
-            product.category,
-            product.subcategory,
-            ...placements.flatMap(placement => [placement.category, placement.subcategory]),
-            product.brand
-          ].filter(Boolean).join(' ').toLocaleLowerCase('az');
-          if (!searchable.includes(needle)) return false;
-        }
-        return true;
-      });
-
-      const row = document.getElementById("scrollRow");
-      const title = document.getElementById('productsTitle');
-      title.textContent = categoryDisplayName(filter.subcategory || filter.category) ||
-        (filter.search ? `"${filter.search}" üçün nəticələr` : 'Fürsətlər');
-      row.innerHTML = "";
-      if (products.length === 0) {
-        row.innerHTML = '<p class="text-gray-400 text-sm p-4">Bu seçim üzrə məhsul tapılmadı.</p>';
-        return;
-      }
+  function renderHomeProductCards(products, row) {
       products.forEach(p => {
         const wrapper = document.createElement("div");
         wrapper.className = "product-card-wrapper";
@@ -1366,6 +1321,82 @@ function productTopBadge(product) {
         wrapper.appendChild(card);
         row.appendChild(wrapper);
       });
+  }
+
+  async function loadHomeSections() {
+    const host = document.getElementById('homeSections');
+    host.replaceChildren();
+    document.getElementById('productsTitle').hidden = true;
+    document.getElementById('scrollRow').replaceChildren();
+    const response = await fetch('/api/home-sections', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Bölmələr yüklənmədi');
+    const sections = await response.json();
+    for (const section of sections) {
+      if (!section.products.length) continue;
+      const block = document.createElement('section');
+      block.style.marginBottom = '28px';
+      const title = document.createElement('h2');
+      title.className = 'text-black font-semibold text-xl';
+      title.style.marginBottom = '16px';
+      title.textContent = section.name;
+      const row = document.createElement('div');
+      row.className = 'home-product-row flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth pb-4';
+      renderHomeProductCards(section.products, row);
+      block.append(title, row); host.append(block);
+    }
+    initFavButtons(); initCompareButtons();
+  }
+  // ── BACKEND-DƏN MƏHSULLAR ──
+  async function loadProducts() {
+    try {
+      const filter = currentProductFilter();
+      if (!filter.category && !filter.subcategory && !filter.search) { await loadHomeSections(); return; }
+      document.getElementById('homeSections').replaceChildren();
+      document.getElementById('productsTitle').hidden = false;
+      const query = new URLSearchParams();
+      if (filter.category) query.set('category', filter.category);
+      if (filter.subcategory) query.set('subcategory', filter.subcategory);
+      if (filter.search) query.set('search', filter.search);
+
+      const res = await fetch(`/api/products?${query.toString()}`);
+      if (!res.ok) throw new Error('Məhsullar yüklənmədi');
+      let products = await res.json();
+
+      // Server hələ yenidən başladılmayıbsa belə seçim dərhal işləsin.
+      products = products.filter(product => {
+        const placements = Array.isArray(product.placements) && product.placements.length
+          ? product.placements
+          : [{ category: product.category, subcategory: product.subcategory }];
+        const matchesPlacement = placements.some(placement =>
+          (!filter.category || placement.category === filter.category) &&
+          (!filter.subcategory || placement.subcategory === filter.subcategory)
+        );
+        if (!matchesPlacement) return false;
+        if (filter.search) {
+          const needle = filter.search.toLocaleLowerCase('az');
+          const searchable = [
+            product.name,
+            product.nameRu,
+            product.category,
+            product.subcategory,
+            ...placements.flatMap(placement => [placement.category, placement.subcategory]),
+            product.brand
+          ].filter(Boolean).join(' ').toLocaleLowerCase('az');
+          if (!searchable.includes(needle)) return false;
+        }
+        return true;
+      });
+
+      const row = document.getElementById("scrollRow");
+      const title = document.getElementById('productsTitle');
+      title.textContent = categoryDisplayName(filter.subcategory || filter.category) ||
+        (filter.search ? `"${filter.search}" üçün nəticələr` : 'Fürsətlər');
+      row.innerHTML = "";
+      if (products.length === 0) {
+        row.innerHTML = '<p class="text-gray-400 text-sm p-4">Bu seçim üzrə məhsul tapılmadı.</p>';
+        return;
+      }
+      renderHomeProductCards(products, row);
       initFavButtons();
       initCompareButtons();
     } catch(err) {
