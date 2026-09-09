@@ -734,6 +734,391 @@ const APPLIANCE_SPEC_SCHEMAS = [
         ]
       }
     ]
+  },
+  {
+    "category": "Sendviç və vafli hazırlayan",
+    "rows": 7,
+    "keys": [
+      "Brend",
+      "Növ",
+      "Qızdırıcı səthin növü",
+      "Qızdırıcı səthin sayı",
+      "Güc",
+      "Qızdırıcı səthin materialı",
+      "Displey",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "İdarəetmə növü",
+      "Korpusun materialı",
+      "Ölçülər (H × E × D)",
+      "Rəng",
+      "Xüsusiyyətlər",
+      "Zəmanət"
+    ],
+    "title": "Sendviç və vafli hazırlayan — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qızdırıcı səthin növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qızdırıcı səthin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "məs: 700 Vt"
+          },
+          {
+            "key": "Qızdırıcı səthin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Xüsusiyyətlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "məs: 24 ay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Tikiş maşınları",
+    "rows": 8,
+    "keys": [
+      "Brend",
+      "İdarəetmə növü",
+      "Güc",
+      "Tikişin maksimal eni",
+      "Tikişin maksimal uzunluğu",
+      "Tikiş növləri",
+      "Revers",
+      "Tikiş funksiyasının növü",
+      "Tikiş sürəti",
+      "Tikiş əməliyyatların sayı",
+      "Displey",
+      "Rəng",
+      "Zəmanət",
+      "Quraşdırılmış iplik taxma",
+      "Quraşdırılmış ip kəsici"
+    ],
+    "title": "Tikiş maşınları — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "məs: 700 Vt"
+          },
+          {
+            "key": "Tikişin maksimal eni",
+            "placeholder": "məs: 5 mm"
+          },
+          {
+            "key": "Tikişin maksimal uzunluğu",
+            "placeholder": "məs: 4 mm"
+          },
+          {
+            "key": "Tikiş növləri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Revers",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Tikiş funksiyasının növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Tikiş sürəti",
+            "placeholder": "məs: 750 tikiş/dəq"
+          },
+          {
+            "key": "Tikiş əməliyyatların sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "məs: 24 ay"
+          },
+          {
+            "key": "Quraşdırılmış iplik taxma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Quraşdırılmış ip kəsici",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Buxarlı generatorlar",
+    "rows": 11,
+    "keys": [
+      "Brend",
+      "Şaquli buxarlanma",
+      "Avtomatik sönmə",
+      "Damcılama əleyhinə sistem",
+      "Naqilin uzunluğu",
+      "Davamlı buxar",
+      "Çəki",
+      "İşə başlama indikatoru",
+      "Buxarın ötürülmə tənzimlənməsi",
+      "Ölçülər (H × E × U)",
+      "Güc",
+      "Su qabının həcmi",
+      "Buxarın ötürülmə sürəti",
+      "Buxarın püsgürmə sürəti",
+      "Xüsusiyyətlər",
+      "Altlığın materialı",
+      "Özünü təmizləmə sistemi",
+      "Rəng",
+      "Naqilin avtomatik yığılması",
+      "Komplektasiya",
+      "Maksimal təzyiq",
+      "Zəmanət"
+    ],
+    "title": "Buxarlı generatorlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Şaquli buxarlanma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik sönmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Damcılama əleyhinə sistem",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "məs: 1.8 m"
+          },
+          {
+            "key": "Davamlı buxar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "məs: 4.2 kq"
+          },
+          {
+            "key": "İşə başlama indikatoru",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Buxarın ötürülmə tənzimlənməsi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × U)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "məs: 700 Vt"
+          },
+          {
+            "key": "Su qabının həcmi",
+            "placeholder": "məs: 1200 ml"
+          },
+          {
+            "key": "Buxarın ötürülmə sürəti",
+            "placeholder": "məs: 110 q/dəq"
+          },
+          {
+            "key": "Buxarın püsgürmə sürəti",
+            "placeholder": "məs: 200 q/dəq"
+          },
+          {
+            "key": "Xüsusiyyətlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Altlığın materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Özünü təmizləmə sistemi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin avtomatik yığılması",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Komplektasiya",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal təzyiq",
+            "placeholder": "məs: 5.5 bar"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "məs: 24 ay"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Yuyucu tozsoranlar",
+    "rows": 9,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Güc",
+      "Çəki",
+      "Təmizləmə növü",
+      "Toz qabının növü",
+      "Toz qabının həcmi",
+      "Güc tənzimləyicisi",
+      "Başlıqlar",
+      "Çıxış filtri",
+      "Yuyucu vasitələr üçün qabın həcmi",
+      "Naqilin uzunluğu",
+      "Ölçülər (H × E × D)",
+      "Səs səviyyəsi",
+      "Rəng",
+      "Xüsusiyyətlər",
+      "Təmizləmə sahəsi",
+      "Zəmanət"
+    ],
+    "title": "Yuyucu tozsoranlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "məs: 700 Vt"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "məs: 4.2 kq"
+          },
+          {
+            "key": "Təmizləmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Toz qabının növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Toz qabının həcmi",
+            "placeholder": "məs: 0.5 lt"
+          },
+          {
+            "key": "Güc tənzimləyicisi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çıxış filtri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Yuyucu vasitələr üçün qabın həcmi",
+            "placeholder": "məs: 0.78 lt"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "məs: 1.8 m"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Səs səviyyəsi",
+            "placeholder": "məs: 80 dB"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Xüsusiyyətlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Təmizləmə sahəsi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "məs: 24 ay"
+          }
+        ]
+      }
+    ]
   }
 ];
 function applianceSpecification(item) {

@@ -1,7 +1,11 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),vm=require('vm'),path=require('path');
 const read=name=>fs.readFileSync(path.join(__dirname,'../../frontend',name),'utf8');
 for(const [file,category,fn,count,split] of [
-['appliance','Qabyuyan maşınlar','applianceSpecEntries',35,'Dərinlik'],['appliance','Dispenserlər','applianceSpecEntries',18,'Növ'],['appliance','Ətçəkən maşınlar','applianceSpecEntries',15,'Korpusun materialı'],['appliance','Mikserlər','applianceSpecEntries',15,'Turbo rejim'],['appliance','Tosterlər','applianceSpecEntries',13,'Bölmələrin sayı'],['appliance','Fritoz','applianceSpecEntries',16,'İstehsalçı ölkə'],['appliance','Ütülər','applianceSpecEntries',21,'Su qabının həcmi']])test(category+' fields and edit round trip',()=>{
+['appliance','Qabyuyan maşınlar','applianceSpecEntries',35,'Dərinlik'],['appliance','Dispenserlər','applianceSpecEntries',18,'Növ'],['appliance','Ətçəkən maşınlar','applianceSpecEntries',15,'Korpusun materialı'],['appliance','Mikserlər','applianceSpecEntries',15,'Turbo rejim'],['appliance','Tosterlər','applianceSpecEntries',13,'Bölmələrin sayı'],['appliance','Fritoz','applianceSpecEntries',16,'İstehsalçı ölkə'],['appliance','Ütülər','applianceSpecEntries',21,'Su qabının həcmi'],
+["appliance","Sendviç və vafli hazırlayan","applianceSpecEntries",14,"Həddindən artıq qızmaya qarşı qorunma"],
+["appliance","Tikiş maşınları","applianceSpecEntries",15,"Tikiş sürəti"],
+["appliance","Buxarlı generatorlar","applianceSpecEntries",22,"Su qabının həcmi"],
+["appliance","Yuyucu tozsoranlar","applianceSpecEntries",18,"Çıxış filtri"]])test(category+' fields and edit round trip',()=>{
  let selected=category,visible=false,inputs=[];
  const nodes={f_subcategory:{get value(){return selected}},categorySpecsPanel:{classList:{toggle:(_key,v)=>visible=v}},categorySpecsTitle:{},categorySpecsFields:{}};
  const ctx=vm.createContext({document:{getElementById:id=>nodes[id],querySelectorAll:s=>s==='.category-spec-range'?[]:inputs},escapeHtml:x=>String(x),preservedProductSpecs:{SKU:'keep'}});
