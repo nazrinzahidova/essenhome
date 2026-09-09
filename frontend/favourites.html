@@ -204,20 +204,64 @@
     }
   </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
+<link rel="stylesheet" href="/store-header.css?v=20260909-1">
 </head>
 <body>
 
-<nav class="top-nav">
-  <a href="index.html" class="nav-back">
-    <i class="fa-solid fa-arrow-left" style="font-size:20px;"></i>
-    Alış-verişə davam et
-  </a>
-  
-  <button class="nav-cart-btn" onclick="window.location.href='cart.html'">
-    <i class="fa-solid fa-cart-shopping" style="font-size:17px;"></i>
-    <span id="nav-cart-count" class="cart-badge" style="display:none;">0</span>
-  </button>
-</nav>
+<header class="eh-header"><div class="eh-top"><a href="/index.html" aria-label="Essen Home ana səhifə"><img src="/img/logo.png" alt="Essen Home"></a><div class="eh-account"><button class="eh-monthly" type="button">Aylıq Ödəniş</button><details class="eh-language"><summary><span class="eh-language-label">AZ</span> ⌄</summary><div><a href="/index.html" data-language="az">AZ</a><a href="/ru/index.html" data-language="ru">RU</a></div></details><button id="openLoginModal" type="button" aria-label="Hesab"><i class="fa-regular fa-circle-user"></i></button></div></div><div class="eh-bar"><button class="eh-catalog-toggle" type="button" aria-expanded="false" aria-controls="eh-catalog"><svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+    </svg><span>Kataloq</span></button><form class="eh-search" action="/catalog.html" autocomplete="off"><input name="search" type="search" placeholder="Axtarış..." aria-label="Məhsul axtar"><button aria-label="Axtar" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button><div class="eh-results" hidden></div></form><nav class="eh-actions" aria-label="Alış-veriş"><a href="/compare.html" aria-label="Müqayisə"><svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+      </svg></a><a href="/favourites.html" aria-label="Sevimlilər"><svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg></a><a href="/cart.html" aria-label="Səbət"><svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 0a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg><span class="eh-badge" id="nav-cart-count" style="display:none">0</span></a></nav></div><div id="eh-catalog" hidden><a href="/catalog.html">Bütün məhsullar</a><div class="eh-category-list"></div></div></header><div id="loginModal" class="essen-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="essen-auth-card">
+    <button id="closeLoginModal" class="essen-auth-close" type="button" aria-label="Bağla">&times;</button>
+    <img src="img/logo.png" alt="Essen Home" class="essen-auth-logo">
+    <section class="essen-auth-step active" data-auth-step="phone">
+      <h2 id="authTitle">Giriş</h2>
+      <p class="essen-auth-lead">Hesabınıza təhlükəsiz daxil olmaq üçün telefon nömrənizi qeyd edin.</p>
+      <form id="phoneDesignForm">
+        <label class="essen-auth-label" for="authPhone">Telefon nömrəsi</label>
+        <input id="authPhone" class="essen-auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+994 (50) 123 45 67" maxlength="19" required>
+        <button class="essen-auth-primary" type="submit">Kodu əldə et</button>
+      </form>
+    </section>
+    <section class="essen-auth-step" data-auth-step="otp">
+      <h2>Təsdiq kodu</h2>
+      <p class="essen-auth-lead"><span id="otpPhonePreview"></span> nömrəsinə göndərilən 6 rəqəmli kodu daxil edin.</p>
+      <form id="otpDesignForm">
+        <div class="otp-row" aria-label="6 rəqəmli təsdiq kodu">
+          <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="1-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="2-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="3-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="4-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="5-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="6-cı rəqəm">
+        </div>
+        <div class="otp-meta"><span id="otpTimer"></span><button id="otpResend" class="otp-resend" type="button" disabled>Kodu yenidən göndər</button></div>
+        <button class="essen-auth-primary" type="submit">Kodu təsdiqlə</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
+    </section>
+    <section class="essen-auth-step" data-auth-step="email">
+      <h2>Hesabı tamamlayın</h2>
+      <p class="essen-auth-lead">İlk qeydiyyat üçün məlumatlarınızı daxil edin.</p>
+      <form id="emailDesignForm">
+        <label class="essen-auth-label" for="authFirstName">Ad</label>
+        <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
+        <label class="essen-auth-label" for="authLastName">Soyad</label>
+        <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
+        <label class="essen-auth-label" for="authBirthDate">Doğum tarixi</label>
+        <input id="authBirthDate" class="essen-auth-input" inputmode="numeric" placeholder="GG/AA/İİİİ" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" maxlength="10" required>
+        <label class="essen-auth-label" for="authEmail">Gmail / E-mail</label>
+        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email" placeholder="adiniz@gmail.com" required>
+        <button class="essen-auth-primary" type="submit">Hesab yarat</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
+    </section>
+    <p id="loginMessage" class="essen-auth-note" aria-live="polite"></p>
+  </div>
+</div>
+
+<dialog class="eh-payment"><button type="button" aria-label="Bağla">×</button><h2>Aylıq Ödəniş</h2><p>Aylıq ödəniş barədə məlumat üçün bizimlə əlaqə saxlayın.</p><a href="tel:+994102414782">010 241 47 82</a></dialog>
 
 <div class="main-wrap">
   <div class="page-head">
@@ -522,5 +566,6 @@
   window.addEventListener('pageshow', updateCartBadge);
   init();
 </script>
+<script src="/categories.js"></script><script src="/phone-auth.js"></script><script src="/store-header.js?v=20260909-1"></script>
 </body>
 </html>
