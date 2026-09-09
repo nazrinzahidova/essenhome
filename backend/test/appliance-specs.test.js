@@ -12,7 +12,15 @@ for(const [file,category,fn,count,split] of [
 ["appliance","Şirəçəkənlər","applianceSpecEntries",19,"Meyvə ləti üçün rezervuarın həcmi"],
 ["appliance","Termopotlar","applianceSpecEntries",19,"İstiliyin qorunması"],
 ["appliance","Mətbəx kombaynları","applianceSpecEntries",13,"Blender"],
-["appliance","Meyvə və tərəvəz qurudan","applianceSpecEntries",12,"Çəki"]])test(category+' fields and edit round trip',()=>{
+["appliance","Meyvə və tərəvəz qurudan","applianceSpecEntries",12,"Çəki"],
+["appliance","Hava fenləri","applianceSpecEntries",16,"Turbo rejim"],
+["appliance","Fen daraqlar","applianceSpecEntries",22,"Korpusun materialı"],
+["appliance","Fen maşalar","applianceSpecEntries",21,"Maşanın diametri"],
+["appliance","Fen ütülər","applianceSpecEntries",21,"İonlaşma funksiyası"],
+["appliance","Multistaylerlər","applianceSpecEntries",22,"İsinmə indikatoru"],
+["appliance","Üz qırxanlar","applianceSpecEntries",17,"Ülgüclərin materialı"],
+["appliance","Saç qırxanlar","applianceSpecEntries",20,"Enerji yığma müddəti"],
+["appliance","Trimmerlər","applianceSpecEntries",15,"Ülgüclərin materialı"]])test(category+' fields and edit round trip',()=>{
  let selected=category,visible=false,inputs=[];
  const nodes={f_subcategory:{get value(){return selected}},categorySpecsPanel:{classList:{toggle:(_key,v)=>visible=v}},categorySpecsTitle:{},categorySpecsFields:{}};
  const ctx=vm.createContext({document:{getElementById:id=>nodes[id],querySelectorAll:s=>s==='.category-spec-range'?[]:inputs},escapeHtml:x=>String(x),preservedProductSpecs:{SKU:'keep'}});

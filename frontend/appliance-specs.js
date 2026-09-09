@@ -1774,6 +1774,856 @@ const APPLIANCE_SPEC_SCHEMAS = [
         ]
       }
     ]
+  },
+  {
+    "category": "Hava fenləri",
+    "rows": 8,
+    "keys": [
+      "Brend",
+      "Növ",
+      "Güc",
+      "Başlıqlar",
+      "Rejim sayı",
+      "Başlıqların sayı",
+      "Sürət sayı",
+      "Soyuq hava",
+      "Turbo rejim",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Korpusun materialı",
+      "Mühərrik növü",
+      "İonlaşma funksiyası",
+      "Zəmanət"
+    ],
+    "title": "Hava fenləri — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejim sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqların sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürət sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Soyuq hava",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Turbo rejim",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Mühərrik növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İonlaşma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Fen daraqlar",
+    "rows": 11,
+    "keys": [
+      "Brend",
+      "Növ",
+      "Güc",
+      "İdarəetmə növü",
+      "Saç düzümünün növü",
+      "İsinmə indikatoru",
+      "İsinmə temperaturunun seçimi",
+      "Rejimlərin sayı",
+      "Sürətlərin sayı",
+      "İsinmə elementinin materialı",
+      "Darağın materialı",
+      "Korpusun materialı",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Fırçanın diametri",
+      "Başlıqlar",
+      "Başlıq sayı",
+      "İonlaşma funksiyası",
+      "Soyuq hava",
+      "Fırlanabilən başlıq",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Zəmanət"
+    ],
+    "title": "Fen daraqlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Saç düzümünün növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə indikatoru",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə temperaturunun seçimi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejimlərin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürətlərin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə elementinin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Darağın materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Fırçanın diametri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıq sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İonlaşma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Soyuq hava",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Fırlanabilən başlıq",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Fen maşalar",
+    "rows": 11,
+    "keys": [
+      "Brend",
+      "Növ",
+      "Maksimal dərəcə",
+      "İsinmə elementinin materialı",
+      "İsinmə vaxtı",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "İsinmə indikatoru",
+      "İsinmə temperaturunun seçimi",
+      "İdarəetmə növü",
+      "İonlaşma funksiyası",
+      "Avtomatik sönmə müddəti",
+      "Maşanın diametri",
+      "Korpusun materialı",
+      "Saç düzümünün növü",
+      "Avtomatik sönmə",
+      "Displey",
+      "Rejim sayı",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Ölçülər (U × E × Q)",
+      "Zəmanət"
+    ],
+    "title": "Fen maşalar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal dərəcə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə elementinin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə vaxtı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə indikatoru",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə temperaturunun seçimi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İonlaşma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik sönmə müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maşanın diametri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Saç düzümünün növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik sönmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejim sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (U × E × Q)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Fen ütülər",
+    "rows": 11,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Növ",
+      "İdarəetmə növü",
+      "İsinmə temperaturunun seçimi",
+      "İsinmə indikatoru",
+      "Lövhənin eni",
+      "Maksimal dərəcə",
+      "İsinmə vaxtı",
+      "İsinmə elementinin materialı",
+      "Avtomatik sönmə",
+      "İonlaşma funksiyası",
+      "Displey",
+      "Rejimlərin sayı",
+      "Korpusun materialı",
+      "Saç düzümünün növü",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Buxarlı nəmləndirmə",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Zəmanət"
+    ],
+    "title": "Fen ütülər — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə temperaturunun seçimi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə indikatoru",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Lövhənin eni",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal dərəcə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə vaxtı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə elementinin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik sönmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İonlaşma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejimlərin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Saç düzümünün növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Buxarlı nəmləndirmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Multistaylerlər",
+    "rows": 11,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "İdarəetmə növü",
+      "Maksimal dərəcə",
+      "Güc",
+      "İsinmə elementinin materialı",
+      "Saç düzümünün növü",
+      "Avtomatik sönmə",
+      "Maşanın diametri",
+      "Lövhənin eni",
+      "İsinmə vaxtı",
+      "İsinmə indikatoru",
+      "Çəki",
+      "Başlıqlar",
+      "Rejimlərin sayı",
+      "İonlaşma funksiyası",
+      "Korpusun materialı",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Fırçanın diametri",
+      "Zəmanət"
+    ],
+    "title": "Multistaylerlər — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal dərəcə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə elementinin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Saç düzümünün növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik sönmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maşanın diametri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Lövhənin eni",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə vaxtı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə indikatoru",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejimlərin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İonlaşma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Fırçanın diametri",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Üz qırxanlar",
+    "rows": 9,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Nəm təmizləmə",
+      "Xüsusiyyətlər",
+      "Avtonom işləmə müddəti",
+      "Displey",
+      "Rəng",
+      "Enerji yığma müddəti",
+      "Saç qırxmaq üçün başlıqlar",
+      "Ülgüclərin materialı",
+      "Qırxma sistemi",
+      "Təraş növü",
+      "Enerji mənbəyi",
+      "Ülgüc başlıqlarının sayı",
+      "Avtomatik özünü təmizləmə",
+      "Trimmer",
+      "Zəmanət"
+    ],
+    "title": "Üz qırxanlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Nəm təmizləmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Xüsusiyyətlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtonom işləmə müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji yığma müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Saç qırxmaq üçün başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ülgüclərin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qırxma sistemi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Təraş növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji mənbəyi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ülgüc başlıqlarının sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtomatik özünü təmizləmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Trimmer",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Saç qırxanlar",
+    "rows": 10,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Avtonom işləmə müddəti",
+      "Özüitilənən bıçaqlar",
+      "Minimal saç uzunluğu",
+      "Maksimal saç uzunluğu",
+      "Nəm qırxma",
+      "Nəm təmizləmə",
+      "Başlıqların sayı",
+      "Sürətli enerji yığma",
+      "Enerji yığma müddəti",
+      "Ülgüclərin materialı",
+      "Təyinat",
+      "Üz qırxma funksiyası",
+      "Displey",
+      "Suyadavamlı korpus",
+      "Naqilin uzunluğu",
+      "Enerji mənbəyi",
+      "Rəng",
+      "Zəmanət"
+    ],
+    "title": "Saç qırxanlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtonom işləmə müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Özüitilənən bıçaqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Minimal saç uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal saç uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Nəm qırxma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Nəm təmizləmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqların sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürətli enerji yığma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji yığma müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ülgüclərin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Təyinat",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Üz qırxma funksiyası",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Suyadavamlı korpus",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji mənbəyi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Trimmerlər",
+    "rows": 8,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Başlıqların sayı",
+      "Avtonom işləmə müddəti",
+      "Enerji yığma müddəti",
+      "Maksimal saç uzunluğu",
+      "Nəm təmizləmə",
+      "Təyinat",
+      "Ülgüclərin materialı",
+      "Sürətli enerji yığma",
+      "Rəng",
+      "Displey",
+      "Enerji mənbəyi",
+      "Çəki",
+      "Zəmanət"
+    ],
+    "title": "Trimmerlər — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqların sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Avtonom işləmə müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji yığma müddəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Maksimal saç uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Nəm təmizləmə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Təyinat",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ülgüclərin materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürətli enerji yığma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Enerji mənbəyi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
   }
 ];
 function applianceSpecification(item) {
