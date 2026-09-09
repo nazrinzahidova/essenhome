@@ -138,6 +138,7 @@ window.addEventListener('storage',event=>{
 });
 const seenChatMessages=new Map();
 const unreadChats=new Set();
+let chatReadState=null;
 const selectedChats=new Set();
 let listedChatIds=[];
 let deletingChats=false;
@@ -168,7 +169,15 @@ document.getElementById('deleteSelectedChats').addEventListener('click',async()=
 });
 let chatNoticesReady=false;
 function startChatNotices() {
-  seenChatMessages.clear(); unreadChats.clear(); chatNoticesReady=false;
+  activeChatId=null;
+  document.getElementById('chatRoomHead').textContent='Çat seçin';
+  document.getElementById('chatMessages').replaceChildren();
+  document.getElementById('chatReplyInput').value='';
+  document.getElementById('chatReplyInput').disabled=true;
+  document.getElementById('chatReplyBtn').disabled=true;
+  const user=getUser();
+  chatReadState=window.createAdminChatReadState(localStorage,String(user?.id || user?.email || 'admin'));
+  seenChatMessages.clear(); unreadChats.clear(); selectedChats.clear(); chatNoticesReady=false;
   window.chatNotice.badge(chatsTab,0);
   loadChatSessions(false);
   clearInterval(adminChatPollTimer);
@@ -217,10 +226,12 @@ async function connectAdminChatStream() {
 }
 
 async function loadChatSessions(showError = true) {
+  const requestToken=getToken();
   try {
     const response = await fetch(`${API}/api/chats/admin/sessions/list`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
     const sessions = await response.json();
+    if (!requestToken || requestToken !== getToken()) return;
     listedChatIds=sessions.map(session=>session.id);
     for(const id of selectedChats) if(!listedChatIds.includes(id)) selectedChats.delete(id);
     for(const id of unreadChats) if(!listedChatIds.includes(id)) unreadChats.delete(id);
@@ -239,10 +250,9 @@ async function loadChatSessions(showError = true) {
     for (const session of sessions) {
       const latest=session.messages?.[0];
       const previous=seenChatMessages.get(session.id) || 0;
-      if (chatNoticesReady && latest?.sender === 'user' && latest.id > previous) {
-        newMessage=true;
-        if (document.hidden || !chatsTab.classList.contains('active') || activeChatId !== session.id) unreadChats.add(session.id);
-      }
+      const isUnread=chatReadState?.isUnread(session);
+      if(isUnread) unreadChats.add(session.id); else unreadChats.delete(session.id);
+      if (isUnread && latest.id > previous) newMessage=true;
       seenChatMessages.set(session.id,Math.max(previous,latest?.id || 0));
     }
     chatNoticesReady=true;
@@ -266,11 +276,15 @@ async function loadChatSessions(showError = true) {
 }
 
 async function loadChatRoom(id, showError = true) {
+  const requestToken=getToken();
   try {
     const response = await fetch(`${API}/api/chats/admin/sessions/${id}`, { headers: authHeaders() });
     if (!response.ok) throw new Error();
-    const session = await response.json(); activeChatId = session.id;
+    const session = await response.json();
+    if (!requestToken || requestToken !== getToken()) return;
+    activeChatId = session.id;
     if (!document.hidden && chatsTab.classList.contains('active')) {
+      chatReadState?.markRead(session);
       unreadChats.delete(session.id);window.chatNotice.badge(chatsTab,unreadChats.size);
       document.querySelector(`[data-chat-id="${session.id}"]`)?.classList.remove('has-unread');
     }
