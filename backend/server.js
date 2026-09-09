@@ -68,8 +68,14 @@ app.get('/:page', (req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
+require('../scripts/migrate-home-sections').migrateHomeSections().then(() => {
 server = app.listen(PORT, () => {
   console.log(`🚀 Server http://localhost:${PORT} ünvanında işləyir`);
+});
+
+}).catch(error => {
+  console.error('Home sections migration failed:', error.code || error.message);
+  process.exitCode = 1;
 });
 
 async function shutdown(signal) {

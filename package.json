@@ -1,7 +1,7 @@
 {
   "scripts": {
     "postinstall": "node scripts/generate-prisma.js",
-    "start": "node scripts/migrate-home-sections.js && node backend/server.js",
+    "start": "node backend/server.js",
     "test": "node --test backend/test/*.test.js",
     "migrate:phone-auth": "node scripts/migrate-phone-auth.js",
     "migrate:home-sections": "node scripts/migrate-home-sections.js"
