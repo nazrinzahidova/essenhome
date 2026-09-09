@@ -5,6 +5,7 @@ for(const [file,category,fn,count,split] of [['washingmachine','Paltaryuyan maş
  const nodes={f_subcategory:{get value(){return selected}},categorySpecsPanel:{classList:{toggle:(_key,v)=>visible=v}},categorySpecsTitle:{},categorySpecsFields:{}};
  const ctx=vm.createContext({document:{getElementById:id=>nodes[id],querySelectorAll:s=>s==='.category-spec-range'?[]:inputs},escapeHtml:x=>String(x),preservedProductSpecs:{SKU:'keep'}});
  for(const f of ['washingmachine','fridge','freezer'])vm.runInContext(read(f+'-specs.js'),ctx);
+ vm.runInContext(read('appliance-specs.js'),ctx);
  const admin=read('admin.js');vm.runInContext(admin.slice(admin.indexOf('function activeSpecificationTemplate()'),admin.indexOf('// ============== RƏNG SEÇİCİSİ')),ctx);
  ctx.renderCategorySpecs({});assert(visible);assert.equal((nodes.categorySpecsFields.innerHTML.match(/class="category-spec-input"/g)||[]).length,count-1);
  inputs=[{dataset:{specKey:'Rəng'},value:'Ağ'},{dataset:{specKey:'Zəmanət'},value:'36 ay'}];let saved=ctx.mergeCategorySpecs();ctx.renderCategorySpecs(saved);assert(nodes.categorySpecsFields.innerHTML.includes('value="36 ay"'));

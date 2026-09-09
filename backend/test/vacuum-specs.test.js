@@ -5,6 +5,7 @@ test('vacuum admin fields add/edit/clear, category visibility and product row or
  const nodes={f_subcategory:{get value(){return selected;}},categorySpecsPanel:{classList:{toggle:(_name,value)=>visible=value}},categorySpecsTitle:{},categorySpecsFields:{}};
  const ctx=vm.createContext({document:{getElementById:id=>nodes[id],querySelectorAll:selector=>selector==='.category-spec-range'?[]:inputs},escapeHtml:value=>String(value),preservedProductSpecs:{SKU:'keep'}});
  vm.runInContext(read('vacuum-specs.js'),ctx);
+ vm.runInContext(read('appliance-specs.js'),ctx);
  const admin=read('admin.js');vm.runInContext(admin.slice(admin.indexOf('function activeSpecificationTemplate()'),admin.indexOf('// ============== RƏNG SEÇİCİSİ')),ctx);
  ctx.renderCategorySpecs({});assert.equal(visible,true);assert.equal((nodes.categorySpecsFields.innerHTML.match(/class="category-spec-input"/g)||[]).length,17);
  inputs=[{dataset:{specKey:'Güc'},value:'1600 Vt'},{dataset:{specKey:'Sorma gücü'},value:'350 Vt'}];

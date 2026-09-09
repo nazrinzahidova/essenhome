@@ -706,6 +706,8 @@ document.getElementById('f_subcategory').addEventListener('change', () => {
 function activeSpecificationTemplate() {
   const selectedSubcategory = document.getElementById('f_subcategory').value.trim();
   const subcategory = selectedSubcategory.toLocaleLowerCase('az');
+  const appliance = applianceSpecification({subcategory:selectedSubcategory});
+  if (appliance) return appliance;
   if (subcategory === 'qoruyucu örtük' || subcategory === 'apple qoruyucu örtükləri') {
     return { title: 'Qoruyucu örtük xüsusiyyətləri', groups: PROTECTIVE_CASE_SPEC_GROUPS };
   }
@@ -736,9 +738,6 @@ function activeSpecificationTemplate() {
   }
   if (subcategory === 'ventilyatorlar') {
     return { title: 'Ventilyator xüsusiyyətləri', groups: FAN_SPEC_GROUPS };
-  }
-  if (subcategory === 'dispenserlər') {
-    return { title: 'Dispenser xüsusiyyətləri', groups: DISPENSER_SPEC_GROUPS };
   }
   if (subcategory === 'dondurucular') {
     return { title: 'Dondurucu xüsusiyyətləri', groups: FREEZER_SPEC_GROUPS };
