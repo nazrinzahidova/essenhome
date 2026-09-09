@@ -617,7 +617,7 @@
 
   <div class="relative z-50 shrink-0 w-[245px] h-[550px] overflow-visible" id="hero-sidebar-wrap">
     <nav class="w-full h-full bg-white border border-gray-300 rounded-xl overflow-y-auto scrollbar-hide" id="menuWrapper">
-      <div class="sidebar-item" data-panel="panel-yay"><span class="label">Yay sərinliyi</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span></div>
+      <div class="sidebar-item" data-panel="panel-yay"><span class="label">Kondisionerlər</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span></div>
       <div class="sidebar-item" data-panel="panel-gamer"><span class="label">Gamer zona</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span></div>
       <div class="sidebar-item" data-panel="panel-coffee"><span class="label">Coffee</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span></div>
       <div class="sidebar-item" data-panel="panel-apple"><span class="label">Apple</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span></div>
@@ -902,6 +902,7 @@
     ticket: '<path d="M3 7a2 2 0 0 0 0 4v6h18v-6a2 2 0 0 0 0-4V5H3v2Z"/><path d="M14 5v12M14 9v1M14 13v1"/>'
   };
 
+  const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
   const catData = Object.entries(ADMIN_CATEGORY_TREE).map(([label, groups], index) => ({
     label,
     icon: categoryIcons[index] || 'ticket',
@@ -949,7 +950,7 @@
       group.className = 'catalog-group';
       const title = document.createElement('h3');
       title.className = 'font-semibold text-gray-900 mb-2';
-      title.textContent = sub.title;
+      title.textContent = categoryDisplayName(sub.title);
       group.appendChild(title);
 
       if (sub.items.length) {
@@ -985,7 +986,7 @@
     const menuItem = document.createElement('div');
     menuItem.className = 'sidebar-item';
     menuItem.dataset.panel = panelId;
-    menuItem.innerHTML = `<span class="icon">${categoryIconMarkup(cat)}</span><span class="label">${cat.label}</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span>`;
+    menuItem.innerHTML = `<span class="icon">${categoryIconMarkup(cat)}</span><span class="label">${categoryDisplayName(cat.label)}</span><span class="arrow"><i class="fa-solid fa-chevron-right"></i></span>`;
     menuItem.addEventListener('click', () => applyCatalogFilter(cat.label));
     heroMenu.appendChild(menuItem);
 
@@ -1007,7 +1008,7 @@
     const item = document.createElement('div');
     item.className = 'catalog-category-item';
     item.style.cssText = 'padding:11px 16px;font-size:13.5px;color:#222;cursor:pointer;border-bottom:1px solid #f5f5f5;display:flex;justify-content:space-between;align-items:center;transition:background 0.15s;';
-    item.innerHTML = `<span style="display:flex;align-items:center;gap:10px;">${categoryIconMarkup(cat)}${cat.label}</span><span style="color:#aaa;font-size:11px;">›</span>`;
+    item.innerHTML = `<span style="display:flex;align-items:center;gap:10px;">${categoryIconMarkup(cat)}${categoryDisplayName(cat.label)}</span><span style="color:#aaa;font-size:11px;">›</span>`;
     item.addEventListener('mouseenter', () => {
       catSidebar.querySelectorAll('div').forEach(d => { d.style.background=''; d.style.color='#222'; });
       item.style.background = '#fff0f0'; item.style.color = '#e8222e';
@@ -1038,7 +1039,7 @@
     const block = document.createElement('div');
     const item = document.createElement('div');
     item.className = 'mob-cat';
-    item.innerHTML = `<span style="display:flex;align-items:center;gap:10px;">${categoryIconMarkup(cat)}${cat.label}</span><span class="mob-arrow" style="color:#aaa;font-size:11px">›</span>`;
+    item.innerHTML = `<span style="display:flex;align-items:center;gap:10px;">${categoryIconMarkup(cat)}${categoryDisplayName(cat.label)}</span><span class="mob-arrow" style="color:#aaa;font-size:11px">›</span>`;
 
     const subPanel = document.createElement('div');
     subPanel.className = 'mob-sub-panel';
@@ -1294,7 +1295,7 @@ function productTopBadge(product) {
 
       const row = document.getElementById("scrollRow");
       const title = document.getElementById('productsTitle');
-      title.textContent = filter.subcategory || filter.category ||
+      title.textContent = categoryDisplayName(filter.subcategory || filter.category) ||
         (filter.search ? `"${filter.search}" üçün nəticələr` : 'Fürsətlər');
       row.innerHTML = "";
       if (products.length === 0) {

@@ -13,7 +13,7 @@
   toggle.addEventListener('click', () => { catalog.hidden = !catalog.hidden; toggle.setAttribute('aria-expanded',String(!catalog.hidden)); });
   const list = header.querySelector('.eh-category-list');
   if (typeof CATEGORY_TREE !== 'undefined') Object.keys(CATEGORY_TREE).forEach(category => {
-    const link = document.createElement('a'); link.href = '/catalog.html?category=' + encodeURIComponent(category); link.textContent = category; list.append(link);
+    const link = document.createElement('a'); link.href = '/catalog.html?category=' + encodeURIComponent(category); link.textContent = category === 'Yay sərinliyi' ? 'Kondisionerlər' : category; list.append(link);
   });
   document.addEventListener('click', event => { if (!catalog.contains(event.target) && !toggle.contains(event.target)) closeCatalog(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeCatalog(); header.querySelector('.eh-language').open = false; } });

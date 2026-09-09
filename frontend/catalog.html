@@ -239,6 +239,7 @@
 
   <script src="admin-categories.js?v=20260705-2"></script>
   <script>
+    const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
     const API = '';
     const params = new URLSearchParams(window.location.search);
     const selectedCategory = params.get('category') || '';
@@ -280,7 +281,7 @@
         const link = document.createElement('a');
         link.href = catalogUrl(category);
         link.className = `category-link block px-4 py-3 border-b border-gray-100 hover:bg-red-50 hover:text-red-600 ${selectedCategory === category ? 'active' : ''}`;
-        link.textContent = category;
+        link.textContent = categoryDisplayName(category);
         categoryList.appendChild(link);
       });
     }
@@ -368,7 +369,7 @@
     }
 
     function updateHeading() {
-      const title = (selectedBrand ? selectedBrand + ' — ' : '') + (selectedSubcategory || selectedCategory ||
+      const title = (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
         (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
       document.getElementById('catalogTitle').textContent = title;
       document.getElementById('breadcrumbCurrent').textContent = title;
