@@ -1119,6 +1119,661 @@ const APPLIANCE_SPEC_SCHEMAS = [
         ]
       }
     ]
+  },
+  {
+    "category": "Mikrodalğalı sobalar",
+    "rows": 9,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Növ",
+      "Mikrodalğaların maksimal gücü",
+      "Daxili örtük",
+      "İdarəetmə növü",
+      "Güc səviyyələrinin sayı",
+      "Qapının açılması",
+      "Displey",
+      "İnverter",
+      "Funksiyalar",
+      "Rəng",
+      "Həcm",
+      "Ölçülər (H × E × D)",
+      "Qril",
+      "Quraşdırma növü",
+      "Zəmanət"
+    ],
+    "title": "Mikrodalğalı sobalar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Mikrodalğaların maksimal gücü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Daxili örtük",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc səviyyələrinin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qapının açılması",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İnverter",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Funksiyalar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həcm",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qril",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Quraşdırma növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Stasionar blenderlər",
+    "rows": 12,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Növ",
+      "Güc",
+      "Ölçü qabının tutumu",
+      "Korpusun materialı",
+      "Doğrayıcı bıçağın materialı",
+      "Ölçü qabının materialı",
+      "Turbo rejimi",
+      "İmpuls rejimi",
+      "Sürət sayı",
+      "Xırdalayıcı",
+      "Buz doğrama imkanı",
+      "Sürətin əl ilə idarə olunması",
+      "Ölçü qabı",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Komplektasiya",
+      "İdarəetmə növü",
+      "Doğrayıcının tutumu",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Displey",
+      "Ölçülər (H × E × D)",
+      "Zəmanət"
+    ],
+    "title": "Stasionar blenderlər — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçü qabının tutumu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Doğrayıcı bıçağın materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçü qabının materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Turbo rejimi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İmpuls rejimi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürət sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Xırdalayıcı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Buz doğrama imkanı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürətin əl ilə idarə olunması",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçü qabı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Komplektasiya",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Doğrayıcının tutumu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Doğrayıcı",
+    "rows": 7,
+    "keys": [
+      "Brend",
+      "Güc",
+      "Kasanın həcmi",
+      "Çəki",
+      "Sürətlərin sayı",
+      "Kasanın materialı",
+      "İdarəetmə növü",
+      "Korpusun materialı",
+      "Universal bıçaq",
+      "Ölçülər (H × E × D)",
+      "Rəng",
+      "Komplektasiya",
+      "Zəmanət"
+    ],
+    "title": "Doğrayıcı — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Kasanın həcmi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürətlərin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Kasanın materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Universal bıçaq",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Komplektasiya",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Şirəçəkənlər",
+    "rows": 10,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Növ",
+      "Güc",
+      "Sürət sayı",
+      "Bütöv almanı atma imkanı",
+      "İdarəetmə növü",
+      "Torun materialı",
+      "Rejimlər",
+      "Şirə üçün rezervuarın həcmi",
+      "Meyvə ləti üçün rezervuarın həcmi",
+      "Köpük ayırıcısı",
+      "Damcılama əleyhinə sistem",
+      "Korpusun materialı",
+      "Başlıqlar",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "Ölçülər (H × E × D)",
+      "Zəmanət"
+    ],
+    "title": "Şirəçəkənlər — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürət sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Bütöv almanı atma imkanı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Torun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rejimlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Şirə üçün rezervuarın həcmi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Meyvə ləti üçün rezervuarın həcmi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Köpük ayırıcısı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Damcılama əleyhinə sistem",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Başlıqlar",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Termopotlar",
+    "rows": 10,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Taymer",
+      "Korpusun materialı",
+      "Su səviyyəsinin göstəricisi",
+      "Naqilin uzunluğu",
+      "Rəng",
+      "İsinmə elementinin növü",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Su olmadıqda bloklanma",
+      "İstiliyin qorunması",
+      "Ölçülər (H × E × D)",
+      "Həcm",
+      "Güc",
+      "Qapağın bloklanması",
+      "Displey",
+      "İsinmə temperaturunun təyini",
+      "Ərp əleyhinə filtr",
+      "Zəmanət"
+    ],
+    "title": "Termopotlar — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Taymer",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Su səviyyəsinin göstəricisi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Naqilin uzunluğu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə elementinin növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Su olmadıqda bloklanma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İstiliyin qorunması",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həcm",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qapağın bloklanması",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Displey",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İsinmə temperaturunun təyini",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ərp əleyhinə filtr",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Mətbəx kombaynları",
+    "rows": 7,
+    "keys": [
+      "Brend",
+      "Növ",
+      "Güc",
+      "Kasanın tutumu",
+      "Kasanın materialı",
+      "Korpusun materialı",
+      "Sürət sayı",
+      "Blender",
+      "Fırlanma sürəti",
+      "Həddindən artıq qızmaya qarşı qorunma",
+      "Ölçülər (H × E × D)",
+      "Xüsusiyyətlər",
+      "Zəmanət"
+    ],
+    "title": "Mətbəx kombaynları — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "Növ",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Kasanın tutumu",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Kasanın materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Korpusun materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Sürət sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Blender",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Fırlanma sürəti",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Həddindən artıq qızmaya qarşı qorunma",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Ölçülər (H × E × D)",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Xüsusiyyətlər",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "category": "Meyvə və tərəvəz qurudan",
+    "rows": 6,
+    "keys": [
+      "Brend",
+      "İstehsalçı ölkə",
+      "Tutumların sayı",
+      "İdarəetmə növü",
+      "Tutumların materialı",
+      "Taymer",
+      "Çəki",
+      "Qurutma dərəcəsi",
+      "Güc",
+      "Bölmələrin sayı",
+      "Rəng",
+      "Zəmanət"
+    ],
+    "title": "Meyvə və tərəvəz qurudan — xüsusiyyətlər",
+    "groups": [
+      {
+        "title": "Əsas xüsusiyyətlər",
+        "fields": [
+          {
+            "key": "İstehsalçı ölkə",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Tutumların sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "İdarəetmə növü",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Tutumların materialı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Taymer",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Çəki",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Qurutma dərəcəsi",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Güc",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Bölmələrin sayı",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Rəng",
+            "placeholder": "Dəyəri daxil edin"
+          },
+          {
+            "key": "Zəmanət",
+            "placeholder": "Dəyəri daxil edin"
+          }
+        ]
+      }
+    ]
   }
 ];
 function applianceSpecification(item) {
