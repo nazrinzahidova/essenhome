@@ -71,6 +71,9 @@
     .description { color:#4b5563; margin:22px 0 0; white-space:pre-line; }
     .spec-card { margin:26px 0 45px; padding:26px; }
     .spec-card h2 { margin:0 0 20px; font-size:22px; }
+    .washer-spec-grid { grid-auto-flow:column; grid-template-rows:repeat(17, auto); }
+    .fridge-spec-grid { grid-auto-flow:column; grid-template-rows:repeat(15, auto); }
+    .washer-spec-grid .spec-value,.fridge-spec-grid .spec-value { text-align:right; }
     .freezer-spec-grid { grid-auto-flow:column; grid-template-rows:repeat(14, auto); }
     .freezer-spec-grid .spec-value { text-align:right; }
     .vacuum-spec-grid { grid-auto-flow:column; grid-template-rows:repeat(9, auto); }
@@ -110,6 +113,7 @@
       .actions { grid-template-columns:1fr; }
       .spec-card { padding:20px 16px; margin-top:18px; }
       .spec-grid { grid-template-columns:1fr; }
+      .washer-spec-grid,.fridge-spec-grid { grid-auto-flow:row; grid-template-rows:none; }
       .freezer-spec-grid { grid-auto-flow:row; grid-template-rows:none; }
       .vacuum-spec-grid { grid-auto-flow:row; grid-template-rows:none; }
       .hood-spec-grid { grid-auto-flow:row; grid-template-rows:none; }
@@ -120,6 +124,8 @@
 <script src="freezer-specs.js?v=20260908-1"></script>
 <script src="hood-specs.js?v=20260908-1"></script>
 <script src="vacuum-specs.js?v=20260909-1"></script>
+<script src="washingmachine-specs.js?v=20260909-1"></script>
+<script src="fridge-specs.js?v=20260909-1"></script>
 <script src="stock-status.js?v=20260907"></script>
 <link rel="stylesheet" href="/store-header.css?v=20260909-1">
 </head>
@@ -289,6 +295,8 @@
       return item.model || (key ? specs[key] : '');
     }
     function specEntries(item) {
+      if (isWashingMachineProduct(item)) return washingMachineSpecEntries(item);
+      if (isFridgeProduct(item)) return fridgeSpecEntries(item);
       if (isFreezerProduct(item)) return freezerSpecEntries(item);
       if (isHoodProduct(item)) return hoodSpecEntries(item);
       if (isVacuumProduct(item)) return vacuumSpecEntries(item);
@@ -323,7 +331,7 @@
             ${clean(item.description) ? '<section class="highlights" aria-labelledby="highlightsTitle"><h2 id="highlightsTitle">Əsas göstəricilər</h2><p class="description" id="description"></p></section>' : ''}
           </section>
         </div>
-        ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid"></div></section>` : ''}`;
+        ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${isWashingMachineProduct(item) ? 'washer-spec-grid' : isFridgeProduct(item) ? 'fridge-spec-grid' : isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid"></div></section>` : ''}`;
       setText('crumbName', item.name);
       setText('productName', item.name);
       setText('price', money(item.price));
