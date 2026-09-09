@@ -1311,7 +1311,9 @@ function productTopBadge(product) {
         card.setAttribute('aria-label', `${p.name} məhsul səhifəsini aç`);
         const openProduct = () => { window.location.href = `product.html?id=${encodeURIComponent(p.id)}`; };
         card.addEventListener('click', event => {
-          if (event.target.closest('button, .color-dot, a, input, select')) return;
+          // The favourite icon can be replaced before this event reaches the card.
+          // Its original event path still includes the button that was clicked.
+          if (event.composedPath().some(node => node.matches?.('button, .color-dot, a, input, select'))) return;
           openProduct();
         });
         card.addEventListener('keydown', event => {
