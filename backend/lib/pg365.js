@@ -66,8 +66,7 @@ function postJson(url, headers, body) {
 async function sendOtpSms(receiver, code) {
   const settings = config();
   if (settings.mock) {
-    if (process.env.NODE_ENV === 'production') throw new Error('SMS mock is forbidden in production');
-    return { providerId: 'mock-' + Date.now(), mocked: true };
+    throw Object.assign(new Error('Real SMS is required'), { code: 'PG365_NOT_CONFIGURED' });
   }
   if (!settings.publicKey || !settings.privateKey) {
     const error = new Error('PG365 açarları konfiqurasiya edilməyib');

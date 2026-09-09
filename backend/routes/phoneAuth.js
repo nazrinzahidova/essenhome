@@ -11,7 +11,7 @@ const phoneWhere = phone => ({ phone: { in: otp.phoneVariants(phone) } });
 const latest = (db, phone) => db.otpChallenge.findFirst({ where: phoneWhere(phone), orderBy: [{ createdAt: 'desc' }, { id: 'desc' }] });
 const findUser = (db, phone) => db.user.findFirst({ where: phoneWhere(phone) });
 const failure = (status, message, extra = {}) => ({ status, body: { message, ...extra } });
-const expired = () => failure(400, 'Kodun istifadə müddəti bitib. Yeni kod göndərin.');
+const expired = () => failure(400, 'Kodun vaxtı bitib');
 function session(user) {
   return { registrationRequired: false, token: jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' }),
     user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role } };
@@ -23,7 +23,7 @@ async function withPhone(phone, fn) {
   return prisma.$transaction(async db => {
     await db.$executeRawUnsafe("SET LOCAL lock_timeout = '5s'");
     await lock(db, 'otp:' + phone);
-    const [{ now }] = await db.$queryRaw`SELECT clock_timestamp() AS now`;
+    const [{ now }] = await db.$queryRaw`SELECT clock_timestamp() AT TIME ZONE 'UTC' AS now`;
     return fn(db, now);
   }, { maxWait: 6000, timeout: 10000 });
 }
@@ -43,7 +43,7 @@ router.get('/otp/status', async (req, res) => {
       const times = otp.timing(challenge, now);
       const recent = await db.otpChallenge.findMany({ where: { ...phoneWhere(phone), createdAt: { gt: new Date(now.getTime() - 3600000) } }, orderBy: { createdAt: 'asc' }, select: { createdAt: true } });
       if (recent.length >= otp.maxPerHour) times.retryAfter = times.resendAfterSeconds = Math.max(times.retryAfter, Math.ceil((recent[0].createdAt.getTime() + 3600000 - now.getTime()) / 1000));
-      return { ...times, codeSent: Boolean(challenge && challenge.status === 'sent' && !challenge.consumedAt), hasPendingCode: Boolean(challenge && challenge.status === 'sent' && !challenge.consumedAt && challenge.expiresAt > now) };
+      return { ...times, codeSent: Boolean(challenge && challenge.status === 'sent' && !challenge.consumedAt && challenge.expiresAt > now), hasPendingCode: Boolean(challenge && challenge.status === 'sent' && !challenge.consumedAt && challenge.expiresAt > now) };
     });
     res.json(result);
   } catch (error) { unexpected(res, 'status', error); }
@@ -79,7 +79,7 @@ router.post('/otp/request', async (req, res) => {
     // during network I/O, and never retry an ambiguously accepted SMS.
     const sent = await sendOtpSms(phone.slice(1), code);
     const result = await withPhone(phone, async (db, now) => {
-      const changed = await db.otpChallenge.updateMany({ where: { id: reserved.challenge.id, status: 'pending', consumedAt: null }, data: { status: 'sent', providerId: sent.providerId, expiresAt: new Date(now.getTime() + otp.ttlSeconds * 1000) } });
+      const changed = await db.otpChallenge.updateMany({ where: { id: reserved.challenge.id, status: 'pending', consumedAt: null }, data: { status: 'sent', sentAt: now, providerId: sent.providerId, expiresAt: new Date(now.getTime() + otp.ttlSeconds * 1000) } });
       if (!changed.count) throw new Error('SMS reservation superseded');
       const challenge = await db.otpChallenge.findUnique({ where: { id: reserved.challenge.id } });
       return { message: 'Kod SMS ilə göndərildi.', ...otp.timing(challenge, now) };
@@ -87,6 +87,7 @@ router.post('/otp/request', async (req, res) => {
     res.json(result);
   } catch (error) {
     if (reserved?.challenge) await prisma.otpChallenge.updateMany({ where: { id: reserved.challenge.id, status: 'pending' }, data: { status: 'failed' } }).catch(() => {});
+    if (String(error.code || '').startsWith('PG365_')) return res.status(503).json({ message: 'SMS göndərilə bilmədi. Yenidən cəhd edin.' });
     unexpected(res, 'request', error);
   }
 });
@@ -106,7 +107,7 @@ router.post(['/otp/verify', '/verify-code'], async (req, res) => {
       if (challenge.attempts >= otp.maxAttempts) return failure(429, 'Cəhd limiti dolub. Yeni kod göndərin.');
       if (!otp.matchesCode(challenge, code)) {
         await db.otpChallenge.update({ where: { id: challenge.id }, data: { attempts: { increment: 1 } } });
-        return failure(400, 'Kod yanlışdır.');
+        return failure(400, 'OTP kodu yanlışdır');
       }
       await db.otpChallenge.update({ where: { id: challenge.id }, data: { consumedAt: now } });
       const user = await findUser(db, phone);
@@ -130,7 +131,7 @@ router.post(['/otp/register', '/complete-registration'], async (req, res) => {
   const email = String(req.body?.email || '').trim().toLowerCase();
   if (!firstName || firstName.length > 100) return res.status(400).json({ message: 'Adınızı düzgün daxil edin.' });
   if (!lastName || lastName.length > 100) return res.status(400).json({ message: 'Soyadınızı düzgün daxil edin.' });
-  if (!birthDate) return res.status(400).json({ message: 'Doğum tarixini GG/AA/İİİİ formatında düzgün daxil edin.' });
+  if (req.body?.birthDate && !birthDate) return res.status(400).json({ message: 'Doğum tarixini GG/AA/İİİİ formatında düzgün daxil edin.' });
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: 'E-mail ünvanını düzgün daxil edin.' });
   try {
     const password = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);

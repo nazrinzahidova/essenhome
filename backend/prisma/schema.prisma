@@ -36,6 +36,7 @@ model OtpChallenge {
   registrationUsedAt DateTime?
   codeHash       String
   purpose        String    @default("login")
+  sentAt         DateTime?
   providerId     String?
   attempts       Int       @default(0)
   expiresAt      DateTime

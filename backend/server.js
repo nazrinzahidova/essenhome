@@ -68,7 +68,7 @@ app.get('/:page', (req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-require('../scripts/migrate-home-sections').migrateHomeSections().then(() => require('../scripts/migrate-product-seo').migrateProductSeo()).then(() => {
+require('../scripts/migrate-home-sections').migrateHomeSections().then(() => require('../scripts/migrate-product-seo').migrateProductSeo()).then(() => require('../scripts/migrate-otp-timing').migrateOtpTiming()).then(() => {
 server = app.listen(PORT, () => {
   console.log(`🚀 Server http://localhost:${PORT} ünvanında işləyir`);
 });

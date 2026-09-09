@@ -20,7 +20,9 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
   const { Pool } = require('pg');
   const { PrismaPg } = require('@prisma/adapter-pg');
   const { PrismaClient } = require('../generated/client-v3');
-  const config = require('../lib/dbConfig')();
+  const url = new URL(process.env.AUTH_TEST_DATABASE_URL);
+  assert(['127.0.0.1', 'localhost'].includes(url.hostname), 'Use an isolated local test database');
+  const config = { connectionString: url.toString(), ssl: false };
   const admin = new Pool({ ...config, max: 1 });
   const schema = 'auth_test_' + crypto.randomBytes(8).toString('hex');
   let db, server;
@@ -53,14 +55,15 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
     const phone = '+994501234567';
     const request = () => call('/otp/request', { phone });
     const verify = code => call('/verify-code', { phone, code });
-    const age = async () => { const item = await db.otpChallenge.findFirst({ orderBy: { id: 'desc' } }); await db.otpChallenge.update({ where: { id: item.id }, data: { createdAt: new Date(Date.now() - (otp.resendSeconds + 1) * 1000) } }); };
+    const age = async () => { const item = await db.otpChallenge.findFirst({ orderBy: { id: 'desc' } }); await db.otpChallenge.update({ where: { id: item.id }, data: { createdAt: new Date(Date.now() - (otp.resendSeconds + 1) * 1000), sentAt: new Date(Date.now() - (otp.resendSeconds + 1) * 1000) } }); };
 
     await t.test('double request reserves one SMS and status survives refresh', async () => {
       const results = await Promise.all([request(), request()]);
       assert.deepEqual(results.map(x => x.status).sort(), [200, 429]);
       assert.equal(sent.length, 1);
       const success = results.find(x => x.status === 200).body;
-      assert.ok(success.resendAfterSeconds > 0 && success.resendAfterSeconds <= otp.resendSeconds);
+      assert.ok(success.resendAfterSeconds >= 59 && success.resendAfterSeconds <= 60);
+      assert.ok(Math.abs(Date.now() - Date.parse(success.serverTime)) < 2000, 'Database time must be UTC');
       assert.equal(success.testCode, undefined); assert.equal(success.code, undefined);
       const status = await call('/otp/status?phone=' + encodeURIComponent(phone), null, 'GET');
       assert.equal(status.body.codeSent, true); assert.ok(status.body.resendAfterSeconds > 0);
@@ -69,7 +72,7 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
     });
     let registrationToken;
     await t.test('wrong code, double verify, single-use OTP, restricted registration token', async () => {
-      assert.equal((await verify('000000')).body.message, 'Kod yanlışdır.');
+      assert.equal((await verify('000000')).body.message, 'OTP kodu yanlışdır');
       const results = await Promise.all([verify(sent[0].code), verify(sent[0].code)]);
       assert.deepEqual(results.map(x => x.status).sort(), [200, 400]);
       registrationToken = results.find(x => x.status === 200).body.registrationToken;
@@ -78,7 +81,7 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
     });
     let user;
     await t.test('profile validation and double registration create one user', async () => {
-      const profile = { firstName: 'Sınaq', lastName: 'İstifadəçisi', birthDate: '29/02/2000', email: 'auth-test@example.invalid', registrationToken };
+      const profile = { firstName: 'Sınaq', lastName: 'İstifadəçisi', email: 'auth-test@example.invalid', registrationToken };
       assert.equal((await call('/complete-registration', { ...profile, firstName: ' ' })).status, 400);
       assert.equal((await call('/complete-registration', { ...profile, lastName: '' })).status, 400);
       assert.equal((await call('/complete-registration', { ...profile, birthDate: '31/02/2000' })).status, 400);
@@ -96,7 +99,7 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
       await age(); assert.equal((await request()).status, 200);
       const oldCode = sent.at(-1).code;
       await age(); assert.equal((await request()).status, 200);
-      if (oldCode !== sent.at(-1).code) assert.equal((await verify(oldCode)).body.message, 'Kod yanlışdır.');
+      if (oldCode !== sent.at(-1).code) assert.equal((await verify(oldCode)).body.message, 'OTP kodu yanlışdır');
       const result = await verify(sent.at(-1).code);
       assert.equal(result.status, 200); assert.equal(result.body.registrationRequired, false);
       assert.equal(result.body.user.id, user.id); assert.equal(result.body.registrationToken, undefined);
@@ -107,19 +110,24 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
       await age(); assert.equal((await request()).status, 200);
       let challenge = await db.otpChallenge.findFirst({ orderBy: { id: 'desc' } });
       await db.otpChallenge.update({ where: { id: challenge.id }, data: { expiresAt: new Date(Date.now() - 1000) } });
-      assert.equal((await verify(sent.at(-1).code)).body.message, 'Kodun istifadə müddəti bitib. Yeni kod göndərin.');
+      assert.equal((await verify(sent.at(-1).code)).body.message, 'Kodun vaxtı bitib');
       await db.otpChallenge.update({ where: { id: challenge.id }, data: { expiresAt: new Date(Date.now() + 60000) } });
       const attempts = await Promise.all(Array.from({ length: 8 }, () => verify('000000')));
-      assert.equal(attempts.filter(x => x.status === 400).length, 5);
+      assert.equal(attempts.filter(x => x.status === 400).length, 5, JSON.stringify(attempts));
       assert.equal(attempts.filter(x => x.status === 429).length, 3);
       assert.equal((await verify(sent.at(-1).code)).status, 429);
     });
-    await t.test('provider failure never confirms delivery and does not permit duplicate retry', async () => {
+    await t.test('hourly request limit is enforced by the database', async () => {
+      await age(); assert.equal((await request()).status,200);
+      await age(); assert.equal((await request()).status,429);
+    });
+    await t.test('provider failure confirms no delivery, starts no cooldown and permits retry', async () => {
       const otherPhone = '+994501234568'; sendFailure = true;
       assert.equal((await call('/otp/request', { phone: otherPhone })).status, 503);
       const status = await call('/otp/status?phone=' + encodeURIComponent(otherPhone), null, 'GET');
-      assert.equal(status.body.codeSent, false); assert.ok(status.body.retryAfter > 0);
-      assert.equal((await call('/otp/request', { phone: otherPhone })).status, 429);
+      assert.equal(status.body.codeSent, false); assert.equal(status.body.retryAfter, 0);
+      sendFailure = false;
+      assert.equal((await call('/otp/request', { phone: otherPhone })).status, 200);
     });
   } finally {
     if (server) await new Promise(resolve => server.close(resolve));

@@ -30,7 +30,7 @@ window.EssenPhoneAuth = {
     function tick() {
       const left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
       $('otpTimer').textContent = '';
-      $('otpResend').textContent = 'Kodu yenidən göndər' + (left ? ` — ${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}` : '');
+      $('otpResend').textContent = 'Kodu yenidən göndər' + (left ? `: ${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}` : '');
       $('otpResend').disabled = busy || left > 0 || !phone;
     }
     function setCountdown(seconds) {
@@ -73,7 +73,7 @@ window.EssenPhoneAuth = {
         if (version !== generation) return;
         setCountdown(data.resendAfterSeconds);
         if (data.codeSent) { show('otp'); $('otpPhonePreview').textContent = phone; }
-        else show('phone');
+        else if (currentStep !== 'otp') show('phone');
       } catch (error) { if (version === generation) loginMessage.textContent = error.message; }
     }
     function openModal() {
@@ -109,7 +109,7 @@ window.EssenPhoneAuth = {
       const entered = $('authPhone').value;
       if (!/^\+994\d{9}$/.test(entered.replace(/[\s()-]/g, ''))) { loginMessage.textContent = 'Telefon nömrəsini tam daxil edin.'; return; }
       run(event.submitter || event.target.querySelector('[type=submit]'), 'Kod göndərilir...', async version => {
-        phone = entered; savePhone();
+        phone = entered.replace(/[\s()-]/g, ''); savePhone();
         const data = await request('/otp/request', { phone });
         if (version !== generation) return;
         registrationToken = ''; boxes.forEach(input => input.value = '');
@@ -130,14 +130,15 @@ window.EssenPhoneAuth = {
       run(event.submitter || event.target.querySelector('[type=submit]'), 'Kod yoxlanılır...', async version => {
         const data = await request('/verify-code', { phone, code });
         if (version !== generation) return;
-        if (!data.registrationRequired) return complete(data);
+        if (data.registrationRequired === false && data.token && data.user) return complete(data);
+        if (data.registrationRequired !== true || !data.registrationToken) throw new Error('Təsdiq cavabı alınmadı. Yenidən cəhd edin.');
         registrationToken = data.registrationToken; boxes.forEach(input => input.value = ''); show('email'); $('authFirstName').focus();
       });
     });
     $('emailDesignForm').addEventListener('submit', event => {
       event.preventDefault();
       run(event.submitter || event.target.querySelector('[type=submit]'), 'Hesab yaradılır...', async version => {
-        const data = await request('/complete-registration', { firstName: $('authFirstName').value, lastName: $('authLastName').value, birthDate: $('authBirthDate').value, email: $('authEmail').value, registrationToken });
+        const data = await request('/complete-registration', { firstName: $('authFirstName').value, lastName: $('authLastName').value, email: $('authEmail').value, registrationToken });
         if (version === generation) complete(data);
       });
     });

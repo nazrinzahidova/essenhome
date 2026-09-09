@@ -5,7 +5,7 @@ function positiveInt(value, fallback, max = 3600) {
   if (!Number.isInteger(n) || n < 1 || n > max) throw new Error('Invalid OTP configuration');
   return n;
 }
-const resendSeconds = positiveInt(process.env.OTP_RESEND_SECONDS, 60);
+const resendSeconds = 60;
 const ttlSeconds = 300;
 const maxAttempts = 5;
 const maxPerHour = 5;
@@ -19,7 +19,7 @@ function normalizeAzPhone(value) {
 }
 function phoneVariants(phone) {
   const canonical = normalizeAzPhone(phone);
-  return canonical ? [canonical, canonical.slice(1), '0' + canonical.slice(4)] : [];
+  return canonical ? [canonical, canonical.slice(1), '0' + canonical.slice(4), canonical.slice(4)] : [];
 }
 function otpHash(phone, code) {
   const secret = process.env.OTP_HASH_SECRET || process.env.JWT_SECRET;
@@ -40,7 +40,9 @@ function parseBirthDate(value) {
   return date;
 }
 function timing(challenge, now) {
-  const retryAfter = challenge ? Math.max(0, Math.ceil((challenge.createdAt.getTime() + resendSeconds * 1000 - now.getTime()) / 1000)) : 0;
+  const base = challenge?.status === 'sent' ? (challenge.sentAt || challenge.createdAt) : challenge?.status === 'pending' ? challenge.createdAt : null;
+  const wait = challenge?.status === 'pending' ? 30 : resendSeconds;
+  const retryAfter = base ? Math.max(0, Math.ceil((base.getTime() + wait * 1000 - now.getTime()) / 1000)) : 0;
   return { serverTime: now.toISOString(), resendAfterSeconds: retryAfter, retryAfter, expiresIn: challenge ? Math.max(0, Math.ceil((challenge.expiresAt - now) / 1000)) : 0 };
 }
 module.exports = { normalizeAzPhone, phoneVariants, otpHash, matchesCode, parseBirthDate, timing, resendSeconds, ttlSeconds, maxAttempts, maxPerHour };
