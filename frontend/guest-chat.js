@@ -29,43 +29,58 @@ window.visualViewport?.addEventListener('scroll',updateChatViewport);
 window.addEventListener('resize',updateChatViewport);
 updateChatViewport();
 
+let chatIdentity = localStorage.getItem('token') || '';
+let chatGeneration = 0;
+function syncChatIdentity() {
+  const current = localStorage.getItem('token') || '';
+  if (current === chatIdentity) return;
+  chatIdentity = current; chatGeneration++;
+  guestSessionPromise = null; guestSessionId = null;
+  guestHistoryReady = false; latestOperatorMessage = 0; guestUnread = 0;
+  renderedChatMessageIds.clear(); document.getElementById('chat-body').replaceChildren();
+  document.getElementById('chat-input').value = '';
+  window.chatNotice.badge(document.getElementById('fab-btn'),0);
+  window.chatNotice.badge(document.getElementById('operator-chat-choice'),0);
+}
+window.addEventListener('essen:login', syncChatIdentity);
+window.addEventListener('essen:logout', syncChatIdentity);
+window.addEventListener('storage', event => { if (event.key === 'token' || event.key === null) syncChatIdentity(); });
+
 async function ensureGuestSession() {
+  syncChatIdentity();
   if (!guestSessionPromise) {
+    const identity = chatIdentity, generation = chatGeneration;
     guestSessionPromise = (async () => {
-      const response = await fetch('/api/chats/guest/session', {method:'POST',credentials:'same-origin'});
-      if (!response.ok) throw new Error('Çat açıla bilmədi. Yenidən cəhd edin.');
+      const response = await fetch(identity ? '/api/chats/session' : '/api/chats/guest/session', {method:'POST',credentials:'same-origin',headers:identity ? {Authorization:'Bearer '+identity} : {}});
+      if (!response.ok) throw new Error(response.status === 401 ? 'Çat üçün hesabınıza yenidən daxil olun.' : 'Çat açıla bilmədi. Yenidən cəhd edin.');
       const session = await response.json();
-      clearInterval(chatPollTimer);
-      chatPollTimer=setInterval(loadGuestMessages,3000);
+      if (generation !== chatGeneration || identity !== (localStorage.getItem('token') || '')) throw new Error('Hesab dəyişdi. Çatı yenidən açın.');
+      clearInterval(chatPollTimer); chatPollTimer=setInterval(loadGuestMessages,3000);
       if (guestSessionId !== session.id) {
-        guestSessionId = session.id;
-        renderedChatMessageIds.clear();
-        document.getElementById('chat-body').replaceChildren();
+        guestSessionId=session.id; renderedChatMessageIds.clear(); document.getElementById('chat-body').replaceChildren();
       }
       return session;
-    })().catch(error => { guestSessionPromise=null; throw error; });
+    })().catch(error => { if (generation === chatGeneration) guestSessionPromise=null; throw error; });
   }
   return guestSessionPromise;
 }
 
 async function guestRequest(options = {}) {
-  await ensureGuestSession();
-  let response = await fetch('/api/chats/guest/messages', {...options,credentials:'same-origin'});
-  if (response.status === 401) {
+  syncChatIdentity();
+  const identity=chatIdentity, generation=chatGeneration;
+  let session=await ensureGuestSession();
+  if (generation !== chatGeneration) throw new Error('Hesab dəyişdi. Çatı yenidən açın.');
+  const send = () => fetch(identity ? '/api/chats/'+session.id+'/messages' : '/api/chats/guest/messages', {...options,credentials:'same-origin',headers:{...options.headers,...(identity ? {Authorization:'Bearer '+identity} : {})}});
+  let response=await send();
+  if (response.status === 401 && !identity && generation === chatGeneration) {
     guestSessionPromise=null;
-    if (options.method !== 'POST') {
-      clearInterval(chatPollTimer);
-      guestHistoryReady=false;latestOperatorMessage=0;guestUnread=0;
-      return [];
-    }
-    await ensureGuestSession();
-    response=await fetch('/api/chats/guest/messages', {...options,credentials:'same-origin'});
+    if (options.method !== 'POST') { guestHistoryReady=false;latestOperatorMessage=0;guestUnread=0;return []; }
+    session=await ensureGuestSession();response=await send();
   }
-  if (!response.ok) {
-    const error=await response.json().catch(()=>({}));
-    throw new Error(error.message || 'Bağlantı alınmadı. Yenidən cəhd edin.');
-  }
-  return response.json();
+  if (!response.ok) { const error=await response.json().catch(()=>({}));throw new Error(error.message || 'Bağlantı alınmadı. Yenidən cəhd edin.'); }
+  const data=await response.json();
+  if (generation !== chatGeneration || identity !== (localStorage.getItem('token') || '')) throw new Error('Hesab dəyişdi. Çatı yenidən açın.');
+  return data;
 }
 
 function renderChatMessage(message) {

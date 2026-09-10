@@ -5,6 +5,14 @@ const prisma = require('../lib/prisma');
 const auth = require('../middleware/auth');
 const adminCheck = require('../middleware/adminCheck');
 const { subscribe, publish } = require('../lib/chatEvents');
+const chatUserSelect = { firstName: true, lastName: true, name: true };
+function registeredName(user, fallback) {
+  return [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() || user?.name || fallback;
+}
+function adminSession(session) {
+  const { user, ...data } = session;
+  return { ...data, name: registeredName(user, session.name) };
+}
 
 function openStream(req, res, filter) {
   res.set({
@@ -31,7 +39,7 @@ router.post('/session', auth, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user?.phone) return res.status(400).json({ message: 'Profilinizdə telefon nömrəsi yoxdur' });
     let session = await prisma.chatSession.findFirst({ where: { userId: user.id, status: 'open' } });
-    if (!session) session = await prisma.chatSession.create({ data: { chatKey: crypto.randomUUID(), userId: user.id, name: user.name, phone: String(user.phone).replace(/\D/g, '') } });
+    if (!session) session = await prisma.chatSession.create({ data: { chatKey: crypto.randomUUID(), userId: user.id, name: registeredName(user, user.name), phone: String(user.phone).replace(/\D/g, '') } });
     res.json({ id: session.id, name: session.name, phone: session.phone });
   } catch (err) { console.error('Chat session error:', err); res.status(500).json({ message: 'Çat açıla bilmədi' }); }
 });
@@ -58,15 +66,15 @@ router.post('/:id/messages', auth, async (req, res) => {
 });
 
 router.get('/admin/sessions/list', auth, adminCheck, async (_req, res) => {
-  try { res.json(await prisma.chatSession.findMany({ orderBy: { updatedAt: 'desc' }, include: { messages: { orderBy: { createdAt: 'desc' }, take: 1 } } })); }
+  try { res.json((await prisma.chatSession.findMany({ orderBy: { updatedAt: 'desc' }, include: { user: { select: chatUserSelect }, messages: { orderBy: { createdAt: 'desc' }, take: 1 } } })).map(adminSession)); }
   catch { res.status(500).json({ message: 'Çatlar yüklənmədi' }); }
 });
 
 router.get('/admin/sessions/:id', auth, adminCheck, async (req, res) => {
   try {
-    const session = await prisma.chatSession.findUnique({ where: { id: Number(req.params.id) }, include: { messages: { orderBy: { createdAt: 'asc' } } } });
+    const session = await prisma.chatSession.findUnique({ where: { id: Number(req.params.id) }, include: { user: { select: chatUserSelect }, messages: { orderBy: { createdAt: 'asc' } } } });
     if (!session) return res.status(404).json({ message: 'Çat tapılmadı' });
-    res.json(session);
+    res.json(adminSession(session));
   } catch { res.status(500).json({ message: 'Çat yüklənmədi' }); }
 });
 

@@ -275,6 +275,15 @@ async function loadChatSessions(showError = true) {
   } catch { if (showError) showToast('Çatlar yüklənmədi'); }
 }
 
+function adminMessageTime(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return '';
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-GB', {timeZone:'Asia/Baku',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(date).map(part => [part.type, part.value]));
+  const label = `${parts.day}.${parts.month}.${parts.year} ${parts.hour}:${parts.minute}`;
+  return '<time class="chat-message-time" datetime="' + date.toISOString() + '" title="Bakı vaxtı">' + label + '</time>';
+}
+
 async function loadChatRoom(id, showError = true) {
   const requestToken=getToken();
   try {
@@ -290,7 +299,7 @@ async function loadChatRoom(id, showError = true) {
     }
     document.getElementById('chatRoomHead').textContent = `${session.name}${session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
     const messages = document.getElementById('chatMessages');
-    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}"><div>${escapeHtml(message.text)}</div><button type="button" class="chat-delete" data-session-id="${session.id}" data-message-id="${message.id}" aria-label="Mesajı sil">Sil</button></div>`).join('');
+    messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}"><div>${escapeHtml(message.text)}</div>${adminMessageTime(message.createdAt)}<button type="button" class="chat-delete" data-session-id="${session.id}" data-message-id="${message.id}" aria-label="Mesajı sil">Sil</button></div>`).join('');
     messages.scrollTop = messages.scrollHeight;
     document.getElementById('chatReplyInput').disabled = false; document.getElementById('chatReplyBtn').disabled = false;
     document.querySelectorAll('[data-chat-id]').forEach(item => item.classList.toggle('active', Number(item.dataset.chatId) === id));
