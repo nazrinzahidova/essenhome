@@ -104,6 +104,30 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
       user = await db.user.update({ where: { id: user.id }, data: { birthDate: new Date('2000-02-29T00:00:00Z') } });
       response = await readProfile();
       assert.equal((await response.json()).user.birthDate, '2000-02-29T00:00:00.000Z');
+      const updateProfile = (body, authHeaders = headers) => fetch(base + '/auth/me?userId=999999', { method: 'PUT', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const changes = { firstName: 'Yeni', lastName: 'Soyad', email: 'saved@example.invalid', birthDate: '1999-12-31', id: 999999, role: 'admin', password: 'must-not-change' };
+      assert.equal((await updateProfile(changes, {})).status, 401);
+      for (const invalid of [{firstName:''}, {lastName:' '}, {email:'bad'}, {birthDate:'2001-02-29'}, {birthDate:'3000-01-01'}, {phone:'+994501234569'}]) {
+        assert.equal((await updateProfile({...changes,...invalid})).status,400);
+      }
+      assert.deepEqual(await db.user.findUnique({where:{id:user.id}}),user);
+      const originalPassword = user.password;
+      response = await updateProfile(changes);
+      assert.equal(response.status,200);
+      const saved = (await response.json()).user;
+      assert.equal(saved.email,changes.email); assert.equal(saved.birthDate,'1999-12-31T00:00:00.000Z');
+      assert.equal(saved.password,undefined); assert.equal(saved.role,undefined);
+      user = await db.user.findUnique({where:{id:user.id}});
+      assert.equal(user.password,originalPassword); assert.equal(user.phone,phone); assert.equal(user.role,'user');
+      assert.equal(user.name,'Yeni Soyad');
+      assert.deepEqual((await (await readProfile()).json()).user,saved);
+      const other = await db.user.create({data:{name:'Other',email:'taken@example.invalid',password:'test-only',role:'user'}});
+      assert.equal((await updateProfile({...changes,email:'TAKEN@example.invalid'})).status,409);
+      assert.equal((await db.user.findUnique({where:{id:other.id}})).name,'Other');
+      await db.user.delete({where:{id:other.id}});
+      response = await updateProfile({...changes,birthDate:''}); assert.equal(response.status,200);
+      assert.equal((await response.json()).user.birthDate,null);
+      user = await db.user.findUnique({where:{id:user.id}});
       assert.equal((await call('/register', { email: 'b@example.invalid' })).status, 410);
     });
     await t.test('resend invalidates prior code and existing user logs in unchanged', async () => {
