@@ -93,6 +93,17 @@ test('real Postgres: atomic request, verify, register, replay, resend, and failu
       assert.equal(user.phone, phone); assert.equal(user.name, 'Sınaq İstifadəçisi');
       const token = results.find(x => x.status === 200).body.token;
       assert.equal((await fetch(base + '/private', { headers: { Authorization: 'Bearer ' + token } })).status, 200);
+      const headers = { Authorization: 'Bearer ' + token };
+      const readProfile = () => fetch(base + '/auth/me?userId=999999', { headers });
+      let response = await readProfile();
+      assert.equal(response.status, 200);
+      assert.deepEqual((await response.json()).user, {
+        firstName: user.firstName, lastName: user.lastName, birthDate: null, email: user.email, phone: user.phone
+      });
+      // A fresh request must see the DB update, rather than a login payload or browser cache.
+      user = await db.user.update({ where: { id: user.id }, data: { birthDate: new Date('2000-02-29T00:00:00Z') } });
+      response = await readProfile();
+      assert.equal((await response.json()).user.birthDate, '2000-02-29T00:00:00.000Z');
       assert.equal((await call('/register', { email: 'b@example.invalid' })).status, 410);
     });
     await t.test('resend invalidates prior code and existing user logs in unchanged', async () => {

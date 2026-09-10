@@ -132,7 +132,7 @@ router.post(['/otp/register', '/complete-registration'], async (req, res) => {
   if (!firstName || firstName.length > 100) return res.status(400).json({ message: 'Adınızı düzgün daxil edin.' });
   if (!lastName || lastName.length > 100) return res.status(400).json({ message: 'Soyadınızı düzgün daxil edin.' });
   if (req.body?.birthDate && !birthDate) return res.status(400).json({ message: 'Doğum tarixini GG/AA/İİİİ formatında düzgün daxil edin.' });
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: 'E-mail ünvanını düzgün daxil edin.' });
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: 'E-poçt ünvanını düzgün daxil edin.' });
   try {
     const password = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
     const result = await withPhone(phone, async (db, now) => {

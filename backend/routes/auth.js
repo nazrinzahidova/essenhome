@@ -6,6 +6,21 @@ const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
 router.use(require('./phoneAuth'));
 
+router.get('/me', authMiddleware, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { firstName: true, lastName: true, birthDate: true, email: true, phone: true }
+    });
+    if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
+    res.json({ user });
+  } catch (error) {
+    console.error('Profile lookup failed:', error.message);
+    res.status(500).json({ message: 'Şəxsi məlumatlar yüklənə bilmədi. Yenidən cəhd edin.' });
+  }
+});
+
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -26,7 +41,7 @@ router.post('/login', async (req, res) => {
     const cleanEmail = normalizeEmail(email);
 
     if (!cleanEmail || !password) {
-      return res.status(400).json({ message: 'Email və şifrə daxil edin' });
+      return res.status(400).json({ message: 'E-poçt və şifrə daxil edin' });
     }
 
     if (!process.env.JWT_SECRET) {
@@ -36,7 +51,7 @@ router.post('/login', async (req, res) => {
 
     const user = await findUserByEmail(cleanEmail);
     if (!user) {
-      return res.status(400).json({ message: 'Email və ya şifrə yanlışdır' });
+      return res.status(400).json({ message: 'E-poçt və ya şifrə yanlışdır' });
     }
 
     if (!user.password || !/^\$2[aby]\$/.test(user.password)) {
@@ -47,7 +62,7 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (user.role !== 'admin') return res.status(403).json({ message: 'Daxil olmaq üçün telefon nömrənizə SMS kodu göndərin.' });
     if (!isMatch) {
-      return res.status(400).json({ message: 'Email və ya şifrə yanlışdır' });
+      return res.status(400).json({ message: 'E-poçt və ya şifrə yanlışdır' });
     }
 
     const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });

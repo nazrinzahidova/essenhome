@@ -91,8 +91,7 @@ window.EssenPhoneAuth = {
       localStorage.setItem('token', data.token);
       localStorage.setItem('activeUser', data.user.email || data.user.phone);
       localStorage.setItem('user', JSON.stringify(data.user));
-      openLoginModal.textContent = data.user.name || data.user.phone;
-      openLoginModal.classList.add('logged-in');
+      openLoginModal.setAttribute('aria-label', 'Hesab');
       reset(); closeModal();
       window.dispatchEvent(new CustomEvent('essen:login', { detail: data.user }));
     }

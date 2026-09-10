@@ -168,6 +168,8 @@
 
   </style>
     <link rel="icon" type="image/svg+xml" href="../img/essen-favicon.svg?v=20260907">
+<link rel="stylesheet" href="/account.css?v=20260910-1">
+<script defer src="/account.js?v=20260910-1"></script>
 </head>
 <body class="bg-white m-0 p-0">
 
@@ -192,9 +194,8 @@
 
                 <button
                   id="openLoginModal"
-                  class="bg-gray-100 px-5 py-2 rounded-xl text-black hover:bg-red-50 transition"
-                >
-                Войти
+                  aria-label="Hesab" style="background:none;border:0;color:#374151;font-size:26px;padding:4px 6px;line-height:1"
+                ><i class="fa-regular fa-circle-user"></i>
                 </button>
 
                 <div class="relative inline-block text-left" id="languageSwitcher">
@@ -306,7 +307,7 @@
     <form id="loginForm" class="space-y-6">
       <div class="space-y-4">
         <div class="space-y-2">
-          <label for="loginEmail" class="block text-sm">Email</label>
+          <label for="loginEmail" class="block text-sm">E-poçt</label>
           <input
             type="email"
             name="email"
@@ -1186,7 +1187,7 @@ loginForm.addEventListener("submit", function (event) {
   const foundUser = users.find(user => user.email === email && user.password === password);
 
   if (!foundUser) {
-    showMessage("Email или пароль указан неверно.", "error");
+    showMessage("E-poçt или пароль указан неверно.", "error");
     return;
   }
 
@@ -1208,9 +1209,8 @@ function showMessage(text, type) {
 function loginSuccess(email) {
   showMessage("Вход выполнен успешно!", "success");
 
-  openLoginModal.textContent = email.split("@")[0];
-  openLoginModal.className = "bg-red-600 px-5 py-2 rounded-xl text-white hover:bg-red-700 transition";
 
+  window.dispatchEvent(new Event("essen:login"));
   setTimeout(closeModal, 700);
 }
 
@@ -1224,10 +1224,7 @@ document.querySelectorAll(".social-login").forEach(button => {
 
 const activeUser = localStorage.getItem("activeUser");
 
-if (activeUser && activeUser !== "social-user@essen.az") {
-  openLoginModal.textContent = activeUser.split("@")[0];
-  openLoginModal.className = "bg-red-600 px-5 py-2 rounded-xl text-white hover:bg-red-700 transition";
-} else {
+if (!activeUser || activeUser === "social-user@essen.az") {
   localStorage.removeItem("activeUser");
 }
 

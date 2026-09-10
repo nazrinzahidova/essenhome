@@ -1,0 +1,14 @@
+#essen-account-menu{position:fixed;z-index:10000;width:230px;max-width:calc(100vw - 24px);padding:8px;background:#fff;color:#202124;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 12px 35px #0002;font:14px Poppins,Arial,sans-serif}
+#essen-account-menu[hidden],#essen-profile [hidden]{display:none}
+#essen-account-menu button,#essen-account-menu a{display:block;box-sizing:border-box;width:100%;padding:12px;text-align:left;border:0;background:none;border-radius:8px;color:inherit;font:inherit;text-decoration:none;cursor:pointer}
+#essen-account-menu button:hover,#essen-account-menu a:hover,#essen-account-menu :focus-visible{background:#fff1f2;color:#e8222e}
+#essen-account-menu [data-logout]{color:#e8222e}
+#essen-profile{box-sizing:border-box;margin:auto;width:min(680px,calc(100% - 32px));max-height:calc(100dvh - 32px);overflow:auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;color:#202124;font:14px Poppins,Arial,sans-serif}
+#essen-profile::backdrop{background:#0008}
+#essen-profile h2{margin:0 38px 24px 0;font-size:22px;font-weight:600}
+#essen-profile dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:0}
+#essen-profile dt{color:#747b88;margin-bottom:8px}
+#essen-profile dd{margin:0;padding:12px;border:1px solid #e5e7eb;border-radius:10px;min-height:46px;overflow-wrap:anywhere}
+#essen-profile .essen-profile-close{position:absolute;right:16px;top:14px;border:0;background:#f4f5f7;border-radius:50%;width:34px;height:34px;font-size:24px;cursor:pointer}
+#essen-profile [data-retry]{margin-top:16px;border:0;border-radius:8px;padding:10px 16px;background:#e8222e;color:#fff;cursor:pointer}
+@media(max-width:540px){#essen-profile{padding:22px}#essen-profile dl{grid-template-columns:1fr;gap:14px}}

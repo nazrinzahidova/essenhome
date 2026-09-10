@@ -279,15 +279,6 @@
       line-height: 1;
     }
     #openLoginModal:hover { color: #e8222e; }
-    #openLoginModal.logged-in {
-      font-size: 13px;
-      background: #e8222e;
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 10px;
-      font-family: 'Poppins', sans-serif;
-      font-weight: 500;
-    }
 
     /* Səbət badge */
     .cart-badge {
@@ -408,7 +399,9 @@
     <link rel="icon" sizes="512x512" href="/android-chrome-512x512.png">
     <link rel="apple-touch-icon" sizes="192x192" href="/favicon.png">
 <script src="stock-status.js?v=20260907"></script>
-<style>.chat-unread-badge{display:inline-flex!important;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;border-radius:12px;background:#d50016;color:#fff;font:700 12px Arial;border:2px solid #fff;vertical-align:middle}.chat-unread-badge[hidden]{display:none!important}#fab-btn .chat-unread-badge{position:absolute;right:-4px;top:-4px;z-index:2}.chat-person.has-unread{border-left:4px solid #e8222e;background:#fff1f2}.chat-person.has-unread strong:after{content:" ●";color:#e8222e}</style></head>
+<style>.chat-unread-badge{display:inline-flex!important;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;border-radius:12px;background:#d50016;color:#fff;font:700 12px Arial;border:2px solid #fff;vertical-align:middle}.chat-unread-badge[hidden]{display:none!important}#fab-btn .chat-unread-badge{position:absolute;right:-4px;top:-4px;z-index:2}.chat-person.has-unread{border-left:4px solid #e8222e;background:#fff1f2}.chat-person.has-unread strong:after{content:" ●";color:#e8222e}</style><link rel="stylesheet" href="/account.css?v=20260910-1">
+<script defer src="/account.js?v=20260910-1"></script>
+</head>
 <body class="bg-white m-0 p-0 overflow-x-hidden">
 
 <!-- Mobile Drawer (catalog) -->
@@ -536,8 +529,8 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">Gmail / E-mail</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email" placeholder="adiniz@gmail.com" required>
+        <label class="essen-auth-label" for="authEmail">E-poçt</label>
+        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -831,7 +824,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
 <script src="admin-categories.js?v=20260705-2"></script>
-<script src="/phone-auth.js?v=20260909-otp-2"></script>
+<script src="/phone-auth.js?v=20260910-profile-1"></script>
 <script>
   // ── LOGIN ──
   const openLoginModal = document.getElementById("openLoginModal");
@@ -840,10 +833,6 @@
   const loginMessage = document.getElementById("loginMessage");
   const { openModal, closeModal } = window.EssenPhoneAuth.mount({ openLoginModal, loginModal, loginMessage, closeLoginModal });
   const activeUser = localStorage.getItem("activeUser");
-  if (activeUser) {
-    openLoginModal.innerHTML = activeUser.split("@")[0];
-    openLoginModal.classList.add("logged-in");
-  }
 
   // ── DİL ──
   const languageSwitcher = document.getElementById("languageSwitcher");
