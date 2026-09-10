@@ -49,5 +49,14 @@
   window.addEventListener('essen:login', refresh);
   window.addEventListener('essen:logout', refresh);
   window.addEventListener('storage', event => { if (event.key === 'token' || event.key === null) { refresh(); } });
+async function linkPreviousGuestChat() {
+  const token=localStorage.getItem('token');
+  if (!token) return;
+  try { await fetch('/api/chats/link-guest',{method:'POST',credentials:'same-origin',headers:{Authorization:'Bearer '+token}}); } catch {}
+}
+window.addEventListener('essen:login',linkPreviousGuestChat);
+linkPreviousGuestChat();
+
+
   refresh();
 })();

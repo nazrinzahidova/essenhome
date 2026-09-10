@@ -26,7 +26,7 @@ test('profile uses authenticated identity, limits returned fields and handles fa
     const response = await call(token);
     assert.equal(response.status, 200);
     assert.equal(response.headers.get('cache-control'), 'no-store');
-    assert.deepEqual(await response.json(), { user: record });
+    assert.deepEqual(await response.json(), { user: record, userCode: "EH-000042" });
     assert.deepEqual(query.where, { id: 42 });
     assert.deepEqual(Object.keys(query.select).sort(), Object.keys(record).sort());
     mode = 'missing'; assert.equal((await call(token)).status, 404);

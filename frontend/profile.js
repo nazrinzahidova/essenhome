@@ -18,6 +18,8 @@
   }
   function signedOut() {
     controller?.abort(); controller = null; form.reset(); form.hidden = true; retry.hidden = true; login.hidden = false;
+    document.getElementById('profile-user-code').hidden = true;
+    document.getElementById('profile-user-code').textContent = '';
     message('Şəxsi məlumatlarınıza baxmaq üçün hesabınıza daxil olun.');
   }
   async function request(method, body) {
@@ -41,11 +43,11 @@
       throw error;
     } finally { clearTimeout(timer); }
   }
-  function fill(user) { for (const key of keys) input(key).value = key === 'birthDate' ? (user[key] || '').slice(0,10) : (user[key] || ''); }
+  function fill(user, code) { const badge=document.getElementById("profile-user-code"); badge.textContent=code ? "İstifadəçi ID: " + code : ""; badge.hidden=!code; for (const key of keys) input(key).value = key === 'birthDate' ? (user[key] || '').slice(0,10) : (user[key] || ''); }
   async function load() {
     if (!localStorage.getItem('token')) return signedOut();
     form.hidden = true; login.hidden = true; retry.hidden = true; errors(); message('Məlumatlar yüklənir…');
-    try { const data = await request('GET'); if (!data) return; fill(data.user); form.hidden = false; message(''); }
+    try { const data = await request('GET'); if (!data) return; fill(data.user, data.userCode); form.hidden = false; message(''); }
     catch (error) { if (!localStorage.getItem('token')) return; message(error.name === 'AbortError' ? 'Sorğu vaxtı bitdi. Yenidən cəhd edin.' : error.message, 'error'); retry.hidden = false; }
   }
   form.addEventListener('submit', async event => {
@@ -56,7 +58,7 @@
     try {
       const body = Object.fromEntries(['firstName','lastName','email','birthDate'].map(key => [key,input(key).value]));
       const data = await request('PUT', body); if (!data) return;
-      fill(data.user);
+      fill(data.user, data.userCode);
       try { const cached=JSON.parse(localStorage.getItem('user') || '{}'); localStorage.setItem('user',JSON.stringify({...cached,...data.user,name:data.user.firstName+' '+data.user.lastName})); localStorage.setItem('activeUser',data.user.email || data.user.phone); } catch {}
       message(data.message, 'success');
     } catch (error) { if (localStorage.getItem('token')) message(error.name === 'AbortError' ? 'Cavab alınmadı. Yenidən yükləyib məlumatları yoxlayın.' : error.message, 'error'); }

@@ -70,3 +70,4 @@ module.exports = function guestChat(prisma, publish, openStream) {
   router.get('/stream',(req,res)=>openStream(req,res,event=>event.sessionId === req.guestChat.id));
   return router;
 };
+module.exports.guestKey = req => { const token = tokenFrom(req); return token ? keyFor(token) : null; };

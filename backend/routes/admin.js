@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../lib/prisma');
+router.use('/users', require('./adminUsers'));
 const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const { IMAGE_SELECT, imageUrl, serializeProduct } = require('../lib/productImages');

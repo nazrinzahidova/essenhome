@@ -61,6 +61,7 @@ function showApp() {
   document.getElementById('whoami').textContent = user ? `${user.name} (${user.email})` : '';
   loadProducts();
   startChatNotices();
+  window.dispatchEvent(new Event("essen:admin-session"));
 }
 function showLogin() {
   document.getElementById('app').style.display = 'none';
@@ -261,7 +262,7 @@ async function loadChatSessions(showError = true) {
     document.getElementById('chatCount').textContent = `${sessions.length} çat`;
     const list = document.getElementById('chatList');
     if (!sessions.length) { list.innerHTML = '<div class="empty-state">Hələ çat yoxdur.</div>'; return; }
-    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}${session.userId ? '' : ' #' + session.id}</strong><span>${session.phone ? '📞 ' + escapeHtml(session.phone) : 'Sayt ziyarətçisi'}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
+    list.innerHTML = sessions.map(session => `<div class="chat-person ${session.id === activeChatId ? 'active' : ''}" data-chat-id="${session.id}"><strong>${escapeHtml(session.name)}${session.userCode || session.userId ? '' : ' #' + session.id}</strong><span>${session.userCode ? escapeHtml(session.userCode) + " · " : ""}${session.phone ? '📞 ' + escapeHtml(session.phone) : 'Sayt ziyarətçisi'}</span><span>${escapeHtml(session.messages?.[0]?.text || 'Yeni çat')}</span></div>`).join('');
     list.querySelectorAll('[data-chat-id]').forEach(item => item.addEventListener('click', () => loadChatRoom(Number(item.dataset.chatId))));
     list.querySelectorAll('[data-chat-id]').forEach(item=>item.classList.toggle('has-unread',unreadChats.has(Number(item.dataset.chatId))));
     list.querySelectorAll('[data-chat-id]').forEach(item=>{
@@ -297,7 +298,7 @@ async function loadChatRoom(id, showError = true) {
       unreadChats.delete(session.id);window.chatNotice.badge(chatsTab,unreadChats.size);
       document.querySelector(`[data-chat-id="${session.id}"]`)?.classList.remove('has-unread');
     }
-    document.getElementById('chatRoomHead').textContent = `${session.name}${session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
+    document.getElementById('chatRoomHead').textContent = `${session.name}${session.userCode ? " · " + session.userCode : ""}${session.userCode || session.userId ? '' : ' #' + session.id}${session.phone ? ' — ' + session.phone : ' — Sayt ziyarətçisi'}`;
     const messages = document.getElementById('chatMessages');
     messages.innerHTML = session.messages.map(message => `<div class="chat-message ${message.sender === 'admin' ? 'admin' : 'user'}"><div>${escapeHtml(message.text)}</div>${adminMessageTime(message.createdAt)}<button type="button" class="chat-delete" data-session-id="${session.id}" data-message-id="${message.id}" aria-label="Mesajı sil">Sil</button></div>`).join('');
     messages.scrollTop = messages.scrollHeight;

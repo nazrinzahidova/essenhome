@@ -5,13 +5,31 @@ const prisma = require('../lib/prisma');
 const auth = require('../middleware/auth');
 const adminCheck = require('../middleware/adminCheck');
 const { subscribe, publish } = require('../lib/chatEvents');
-const chatUserSelect = { firstName: true, lastName: true, name: true };
+const {userCode} = require('../lib/userIdentity');
+const {normalizeAzPhone,phoneVariants} = require('../lib/otp');
+const chatUserSelect = { id: true, firstName: true, lastName: true, name: true, phone: true };
 function registeredName(user, fallback) {
   return [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() || user?.name || fallback;
 }
 function adminSession(session) {
   const { user, ...data } = session;
-  return { ...data, name: registeredName(user, session.name) };
+  return { ...data, name: registeredName(user, session.name), userCode: user?.id ? userCode(user.id) : null };
+}
+async function adminSessions(sessions) {
+  const phones = [...new Set(sessions.filter(s=>!s.user && s.phone).map(s=>normalizeAzPhone(s.phone)).filter(Boolean))];
+  const users = phones.length ? await prisma.user.findMany({where:{phone:{in:phones.flatMap(phoneVariants)}},select:chatUserSelect}) : [];
+  return sessions.map(session=>{
+    const matches = session.user ? [] : users.filter(user=>normalizeAzPhone(user.phone) === normalizeAzPhone(session.phone));
+    // Legacy phone matching changes only the admin display, never access to chat history.
+    return adminSession({...session,user:session.user || (matches.length === 1 ? matches[0] : null)});
+  });
+}
+async function linkGuest(req,user) {
+  const chatKey = require('../lib/guestChat').guestKey(req);
+  if (!chatKey) return;
+  // Both the signed account token and secret HttpOnly guest cookie are required.
+  const result = await prisma.chatSession.updateMany({where:{chatKey,userId:null},data:{userId:user.id,name:registeredName(user,user.name),phone:user.phone || '',chatKey:crypto.randomUUID()}});
+  if (result.count) publish({type:'session-linked',userId:user.id});
 }
 
 function openStream(req, res, filter) {
@@ -33,11 +51,19 @@ function openStream(req, res, filter) {
 router.use('/guest', require('../lib/guestChat')(prisma, publish, openStream));
 router.get('/stream', auth, (req, res) => openStream(req, res, event => event.userId === req.user.id));
 router.get('/admin/stream', auth, adminCheck, (_req, res) => openStream(_req, res, () => true));
+router.post('/link-guest', auth, async (req,res)=>{
+  try {
+    const user=await prisma.user.findUnique({where:{id:req.user.id},select:chatUserSelect});
+    if (!user) return res.sendStatus(404);
+    await linkGuest(req,user); res.sendStatus(204);
+  } catch { res.status(500).json({message:'Çat hesabla əlaqələndirilə bilmədi.'}); }
+});
 
 router.post('/session', auth, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user?.phone) return res.status(400).json({ message: 'Profilinizdə telefon nömrəsi yoxdur' });
+    await linkGuest(req,user);
     let session = await prisma.chatSession.findFirst({ where: { userId: user.id, status: 'open' } });
     if (!session) session = await prisma.chatSession.create({ data: { chatKey: crypto.randomUUID(), userId: user.id, name: registeredName(user, user.name), phone: String(user.phone).replace(/\D/g, '') } });
     res.json({ id: session.id, name: session.name, phone: session.phone });
@@ -66,7 +92,7 @@ router.post('/:id/messages', auth, async (req, res) => {
 });
 
 router.get('/admin/sessions/list', auth, adminCheck, async (_req, res) => {
-  try { res.json((await prisma.chatSession.findMany({ orderBy: { updatedAt: 'desc' }, include: { user: { select: chatUserSelect }, messages: { orderBy: { createdAt: 'desc' }, take: 1 } } })).map(adminSession)); }
+  try { res.json(await adminSessions(await prisma.chatSession.findMany({ orderBy: { updatedAt: 'desc' }, include: { user: { select: chatUserSelect }, messages: { orderBy: { createdAt: 'desc' }, take: 1 } } }))); }
   catch { res.status(500).json({ message: 'Çatlar yüklənmədi' }); }
 });
 
@@ -74,7 +100,7 @@ router.get('/admin/sessions/:id', auth, adminCheck, async (req, res) => {
   try {
     const session = await prisma.chatSession.findUnique({ where: { id: Number(req.params.id) }, include: { user: { select: chatUserSelect }, messages: { orderBy: { createdAt: 'asc' } } } });
     if (!session) return res.status(404).json({ message: 'Çat tapılmadı' });
-    res.json(adminSession(session));
+    res.json((await adminSessions([session]))[0]);
   } catch { res.status(500).json({ message: 'Çat yüklənmədi' }); }
 });
 

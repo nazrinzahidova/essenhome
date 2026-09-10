@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
+const {userCode} = require('../lib/userIdentity');
 router.use(require('./phoneAuth'));
 
 router.get('/me', authMiddleware, async (req, res) => {
@@ -14,7 +15,7 @@ router.get('/me', authMiddleware, async (req, res) => {
       select: { firstName: true, lastName: true, birthDate: true, email: true, phone: true }
     });
     if (!user) return res.status(404).json({ message: 'İstifadəçi tapılmadı' });
-    res.json({ user });
+    res.json({ user, userCode: userCode(req.user.id) });
   } catch (error) {
     console.error('Profile lookup failed:', error.message);
     res.status(500).json({ message: 'Şəxsi məlumatlar yüklənə bilmədi. Yenidən cəhd edin.' });
@@ -47,7 +48,7 @@ router.put('/me', authMiddleware, async (req, res) => {
       data: { firstName, lastName, name: `${firstName} ${lastName}`, email, birthDate },
       select: { firstName: true, lastName: true, birthDate: true, email: true, phone: true }
     });
-    res.json({ user, message: 'Məlumatlarınız yadda saxlanıldı.' });
+    res.json({ user, userCode: userCode(req.user.id), message: 'Məlumatlarınız yadda saxlanıldı.' });
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ message: 'İstifadəçi tapılmadı.' });
     if (error.code === 'P2002') return res.status(409).json({ message: 'Bu e-poçt ünvanı artıq istifadə olunur.', errors: { email: 'Bu e-poçt ünvanı artıq istifadə olunur.' } });
