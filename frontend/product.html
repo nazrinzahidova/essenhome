@@ -130,7 +130,7 @@
 <script src="vacuum-specs.js?v=20260909-1"></script>
 <script src="washingmachine-specs.js?v=20260909-1"></script>
 <script src="fridge-specs.js?v=20260909-1"></script>
-<script src="stock-status.js?v=20260907"></script>
+<script src="stock-status.js?v=20260911-stock-delivery-1"></script>
 <link rel="stylesheet" href="/store-header.css?v=20260909-1">
 <link rel="stylesheet" href="/account.css?v=20260910-2">
 <script defer src="/account.js?v=20260910-users-1"></script>
@@ -330,7 +330,7 @@
           <section class="card details">
             <h1 id="productName"></h1>
             <div class="meta" id="meta"></div>
-            ${appleStockBadge(item)}
+            ${stockBadge(item)}
             <div class="price-line"><span class="price" id="price"></span><span class="old-price" id="oldPrice"></span><span class="discount" id="discount"></span></div>
             <div class="actions"><button class="action cart-btn" id="addCart" ${inStock ? '' : 'disabled'}><i class="fa-solid fa-cart-plus"></i> Səbətə əlavə et</button><button class="action buy-btn" id="buyNow" ${inStock ? '' : 'disabled'}>İndi al</button></div>
             ${clean(item.description) ? '<section class="highlights" aria-labelledby="highlightsTitle"><h2 id="highlightsTitle">Əsas göstəricilər</h2><p class="description" id="description"></p></section>' : ''}
