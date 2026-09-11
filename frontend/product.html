@@ -71,22 +71,23 @@
     .description { color:#4b5563; margin:22px 0 0; white-space:pre-line; }
     .spec-card { margin:26px 0 45px; padding:26px; }
     .spec-card h2 { margin:0 0 20px; font-size:22px; }
-    .credit-card { margin:26px 0; padding:22px; }
-    .credit-card h2 { margin:0 0 4px; font-size:18px; font-weight:600; }
-    .credit-note { margin:0 0 14px; color:var(--muted); font-size:12px; }
+    .credit-card { margin:22px 0 0; padding:18px 0 0; border-top:1px solid var(--line); }
+    .credit-card h2 { margin:0 0 12px; font-size:18px; font-weight:600; }
     .credit-panel { display:flex; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-    .credit-terms { flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:28px; padding:12px 18px; }
+    .credit-terms { flex:1; min-width:0; display:flex; align-items:center; justify-content:center; gap:6px; padding:12px 8px; }
     .credit-term { display:flex; flex-direction:column; align-items:center; gap:4px; }
-    .credit-rate { color:var(--red); font-size:10px; }
-    .credit-term button { width:42px; height:42px; border:0; border-radius:50%; background:#f3f4f6; color:var(--ink); font-size:12px; cursor:pointer; }
+    .credit-term button { width:36px; height:36px; border:0; border-radius:50%; background:#f3f4f6; color:var(--ink); font-size:12px; cursor:pointer; }
     .credit-term button[aria-pressed="true"] { background:#303030; color:#fff; font-weight:600; }
     .credit-term button:focus-visible { outline:2px solid var(--red); outline-offset:3px; }
-    .credit-result { min-width:165px; padding:15px; border-left:1px solid var(--line); display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; }
+    .credit-result { min-width:105px; padding:12px 8px; border-left:1px solid var(--line); display:flex; flex-direction:column; justify-content:center; align-items:center; gap:6px; }
     .credit-result span { font-size:12px; }
     .credit-result output { font-size:20px; font-weight:600; white-space:nowrap; }
-    .credit-summary { margin:12px 0 0; color:var(--muted); font-size:12px; }
+    @media (min-width:861px) and (max-width:1100px) {
+      .credit-panel { flex-direction:column; }
+      .credit-result { border-left:0; border-top:1px solid var(--line); flex-direction:row; gap:14px; }
+    }
     @media (max-width:640px) {
-      .credit-card { padding:18px 14px; }
+      .credit-card { padding:18px 0 0; }
       .credit-panel { flex-direction:column; }
       .credit-terms { gap:0; justify-content:space-between; padding:12px 8px; }
       .credit-term button { width:38px; height:38px; }
@@ -152,7 +153,7 @@
 <script src="washingmachine-specs.js?v=20260909-1"></script>
 <script src="fridge-specs.js?v=20260909-1"></script>
 <script src="stock-status.js?v=20260911-stock-delivery-1"></script>
-<script src="credit-calculator.js?v=20260911-1"></script>
+<script src="credit-calculator.js?v=20260911-2"></script>
 <link rel="stylesheet" href="/store-header.css?v=20260909-1">
 <link rel="stylesheet" href="/account.css?v=20260910-2">
 <script defer src="/account.js?v=20260910-users-1"></script>
@@ -355,20 +356,18 @@
             ${stockBadge(item)}
             <div class="price-line"><span class="price" id="price"></span><span class="old-price" id="oldPrice"></span><span class="discount" id="discount"></span></div>
             <div class="actions"><button class="action cart-btn" id="addCart" ${inStock ? '' : 'disabled'}><i class="fa-solid fa-cart-plus"></i> Səbətə əlavə et</button><button class="action buy-btn" id="buyNow" ${inStock ? '' : 'disabled'}>İndi al</button></div>
+        <section class="credit-card" id="creditCalculator" aria-labelledby="creditTitle" hidden>
+          <h2 id="creditTitle">Hissəli alış kalkulyatoru</h2>
+          <div class="credit-panel">
+            <div class="credit-terms" role="group" aria-label="Kredit müddəti">
+              ${[6,9,12,15,18,24].map(months => `<div class="credit-term"><button type="button" data-credit-months="${months}" aria-pressed="${months === 12}" aria-label="${months} ay">${months} ay</button></div>`).join('')}
+            </div>
+            <div class="credit-result" aria-live="polite" aria-atomic="true"><span>Aylıq</span><output id="creditMonthly"></output></div>
+          </div>
+        </section>
             ${clean(item.description) ? '<section class="highlights" aria-labelledby="highlightsTitle"><h2 id="highlightsTitle">Əsas göstəricilər</h2><p class="description" id="description"></p></section>' : ''}
           </section>
         </div>
-        <section class="card credit-card" id="creditCalculator" aria-labelledby="creditTitle" hidden>
-          <h2 id="creditTitle">Hissəli alış kalkulyatoru</h2>
-          <p class="credit-note">Hesablama məhsulun cari satış qiymətinə tətbiq olunur. Faizlər illik göstərilib.</p>
-          <div class="credit-panel">
-            <div class="credit-terms" role="group" aria-label="Kredit müddəti">
-              ${[6,9,12,15,18,24].map(months => `<div class="credit-term"><span class="credit-rate">${months <= 12 ? 32 : 34}%</span><button type="button" data-credit-months="${months}" aria-pressed="${months === 12}" aria-label="${months} ay, illik ${months <= 12 ? 32 : 34}%">${months} ay</button></div>`).join('')}
-            </div>
-            <div class="credit-result" aria-live="polite" aria-atomic="true"><span>Təxmini orta aylıq</span><output id="creditMonthly"></output></div>
-          </div>
-          <p class="credit-summary" id="creditSummary"></p>
-        </section>
         ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${applianceSpecification(item) ? 'appliance-spec-grid' : isWashingMachineProduct(item) ? 'washer-spec-grid' : isFridgeProduct(item) ? 'fridge-spec-grid' : isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid" style="--appliance-rows:${applianceSpecification(item)?.rows || 1}"></div></section>` : ''}`;
       setText('crumbName', item.name);
       setText('productName', item.name);

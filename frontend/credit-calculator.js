@@ -3,11 +3,10 @@ function calculateCredit(price, months) {
   if (!Number.isFinite(principal) || principal <= 0 || ![6,9,12,15,18,24].includes(months)) return null;
   const annualRate = months <= 12 ? 32 : 34;
   const monthlyRate = annualRate / 1200;
-  const principalPayment = principal / months;
-  const first = principalPayment + principal * monthlyRate;
-  const last = principalPayment + principalPayment * monthlyRate;
-  const monthly = (first + last) / 2;
-  return { monthly, annualRate, principalPayment, first, last, total: monthly * months };
+  // Match the supplied monthly examples: annuity rounded up to the next 0.50 AZN.
+  const payment = principal * monthlyRate / (1 - Math.pow(1 + monthlyRate, -months));
+  const monthly = Math.ceil(payment * 2 - 1e-9) / 2;
+  return { monthly, annualRate };
 }
 
 function initCreditCalculator(price) {
@@ -21,7 +20,6 @@ function initCreditCalculator(price) {
     if (!result) return;
     buttons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.creditMonths) === months)));
     document.getElementById('creditMonthly').textContent = format(result.monthly);
-    document.getElementById('creditSummary').textContent = `${months} ay · İllik faiz: ${result.annualRate}% · Aylıq əsas borc: ${format(result.principalPayment)} · İlk ay: ${format(result.first)} · Son ay: ${format(result.last)} · Ümumi ödəniş: ${format(result.total)}. Faiz qalan borca hesablanır. Məbləğlər təxminidir.`;
   }
   buttons.forEach(button => button.addEventListener('click', () => update(Number(button.dataset.creditMonths))));
   update(12);
