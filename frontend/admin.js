@@ -570,15 +570,15 @@ const ADMIN_BRAND_LIST = [
   "2E", "Acer", "AEG", "Alarko", "Anbernic", "Apple", "Arçelik",
   "Ardesto", "Askona", "ASUS", "AUX", "Ayaneo", "Beko", "BergHOFF",
   "Biryusa", "Blackview", "BORK", "Bosch", "Braun", "Canon", "Chicco",
-  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Euroacs", "Euroklimat",
+  "Dell", "De'Longhi", "Doogee", "Dreame", "Dyson", "Electrolux", "Elif", "Elleti", "Essen", "Euroacs", "Euroklimat",
   "Fakir", "Fieldmann", "Fujiaire", "Gorenje", "Graft", "Gree", "Haier",
   "HANN", "Hisense", "HOFFMANN", "Honor", "HP", "HUAWEI", "Infinix", "JBL", "JVC",
-  "Karcher", "Keman", "Kenwood", "Komfy", "LEGO", "Lenovo", "LG", "Logitech",
+  "Karcher", "Keman", "Kenwood", "Komfy", "Kumtel", "LEGO", "Lenovo", "LG", "Logitech",
   "MDV", "Microsoft", "Midea", "Mitsubishi", "Miyoo", "Motorola", "MSI",
   "Moulinex", "MyChoice", "Nintendo", "Nutribullet", "OPPO", "Ormatek", "Oukitel", "P.I.T.",
   "Pamer", "Panasonic", "Philips", "PlayStation", "Porodo", "Rampage", "Realme", "Remington",
   "Roborock", "Royal", "Rowenta", "Samsung", "Schaffer", "Sencor", "Shark", "Sharp",
-  "Skyworth", "Sony", "Stadler Form", "Stanley", "SVEN", "Stihl", "TCL", "Tefal", "Toshiba", "Total", "TP-LINK",
+  "Skyworth", "Sony", "Stadler Form", "Stanley", "SVEN", "Stihl", "Taube", "TCL", "Tefal", "Toshiba", "Total", "TP-LINK",
   "WMF", "WOKIN", "Xiaomi", "Zanussi"
 ].sort((a, b) => a.localeCompare(b, 'az', { sensitivity: 'base' }));
 
