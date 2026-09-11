@@ -339,7 +339,7 @@
         <i class="fa-solid fa-circle-info" style="color:#e8222e;"></i>
         199.99 ₼-dən yuxarı sifarişlərə pulsuz çatdırılma
       </div>
-      <button class="checkout-btn">
+      <button class="checkout-btn" type="button" id="checkoutButton" aria-haspopup="dialog" aria-controls="checkoutDialog">
         <i class="fa-solid fa-lock" style="font-size:13px;"></i>
         Sifarişi tamamla
       </button>
@@ -350,12 +350,59 @@
   </div>
 </div>
 
+<dialog id="checkoutDialog" aria-labelledby="checkoutTitle">
+  <button type="button" id="checkoutClose" aria-label="Bağla">×</button>
+  <h2 id="checkoutTitle">Ödəniş üsulunu seçin</h2>
+  <p>Seçiminizə uyğun sifariş mesajı WhatsApp-da açılacaq.</p>
+  <div class="checkout-options">
+    <a data-checkout-method="cash">Nağd (qapıda)</a>
+    <a data-checkout-method="card">Nağdsız (qapıda)</a>
+    <a data-checkout-method="credit">Daxili kredit</a>
+  </div>
+</dialog>
+<style>
+  #checkoutDialog { margin:auto; width:min(440px,calc(100% - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:28px 22px 22px; border:0; border-radius:18px; color:#171717; box-shadow:0 20px 70px #0003; }
+  #checkoutDialog::backdrop { background:#0007; }
+  #checkoutDialog h2 { font-size:19px; margin:0 30px 8px 0; }
+  #checkoutDialog p { color:#6b7280; font-size:13px; margin:0 0 20px; }
+  #checkoutClose { position:absolute; right:12px; top:10px; width:32px; height:32px; border:0; border-radius:50%; background:#f3f4f6; font-size:24px; cursor:pointer; }
+  .checkout-options { display:grid; gap:10px; }
+  .checkout-options a { display:block; padding:14px 16px; border:1px solid #e5e7eb; border-radius:11px; color:#171717; text-decoration:none; font-weight:500; }
+  .checkout-options a:hover { border-color:#e8222e; background:#fff5f5; }
+  .checkout-options a:focus-visible { outline:2px solid #e8222e; outline-offset:2px; }
+  #checkoutButton:disabled { opacity:.6; cursor:wait; }
+</style>
 <script>
   const API = '/api';
   const FREE_THRESHOLD = 199.99;
 
   // In-memory selected state (keyed by product id)
   let selectedIds = new Set();
+
+  const checkoutDialog = document.getElementById('checkoutDialog');
+  document.getElementById('checkoutClose').addEventListener('click', () => checkoutDialog.close());
+  checkoutDialog.addEventListener('click', event => {
+    const box = checkoutDialog.getBoundingClientRect();
+    if (event.target === checkoutDialog && (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom)) checkoutDialog.close();
+  });
+  document.getElementById('checkoutButton').addEventListener('click', async event => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+      const cart = await fetchCart();
+      if (!cart.length) { await renderCart(); return; }
+      const products = cart.map(item => `• ${item.name} — ${item.qty} ədəd${item.color ? ` (Rəng: ${item.color})` : ''}`).join('\n');
+      const messages = {
+        cash: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağd edəcəyəm.',
+        card: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağdsız (bank kartı ilə) edəcəyəm.',
+        credit: 'Salam! Aşağıdakı məhsulları daxili kreditlə almaq istəyirəm. Kredit şərtləri barədə məlumat verməyinizi xahiş edirəm.'
+      };
+      checkoutDialog.querySelectorAll('[data-checkout-method]').forEach(link => {
+        link.href = 'https://wa.me/994102414782?text=' + encodeURIComponent(messages[link.dataset.checkoutMethod] + '\n\n' + products);
+      });
+      checkoutDialog.showModal();
+    } finally { button.disabled = false; }
+  });
 
   function getToken() { return localStorage.getItem('token'); }
 
