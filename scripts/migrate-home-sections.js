@@ -12,6 +12,7 @@ async function migrateHomeSections(config = require('../backend/lib/dbConfig')()
       await db.query("SET LOCAL statement_timeout = '20s'");
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:home-sections-migration', 0))");
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20260909160000_home_sections/migration.sql'), 'utf8'));
+      await db.query('ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "sortPosition" INTEGER NOT NULL DEFAULT 2147483647; ALTER TABLE "HomeSectionProduct" ADD COLUMN IF NOT EXISTS "sortPosition" INTEGER NOT NULL DEFAULT 2147483647');
       await db.query('COMMIT');
       console.log('Home sections schema ready (additive migration).');
     } catch (error) {

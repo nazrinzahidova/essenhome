@@ -17,6 +17,7 @@ function sortByPlacementDate(products, category, subcategory) {
     return placement ? new Date(placement.createdAt).getTime() : 0;
   };
   return products.sort((a, b) =>
+    a.sortPosition - b.sortPosition ||
     matchingDate(b) - matchingDate(a) ||
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
@@ -162,7 +163,7 @@ router.get('/', async (req, res) => {
 
     const products = await prisma.product.findMany({
       where: filters.length ? { AND: filters } : undefined,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ sortPosition: 'asc' }, { createdAt: 'desc' }, {id:'desc'}],
       include: productInclude
     });
     const ordered =

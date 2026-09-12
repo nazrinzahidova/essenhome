@@ -17,7 +17,7 @@ function createHomeSectionsRouter(db) {
   router.get('/', run(async (_req, res) => {
     const sections = await db.homeSection.findMany({
       where: { active: true, products: { some: {} } }, orderBy: [{ position: 'asc' }, { id: 'asc' }],
-      include: { products: { orderBy: { productId: 'asc' }, include: { product: { include: {
+      include: { products: { orderBy: [{sortPosition:'asc'},{productId:'asc'}], include: { product: { include: {
         images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] }
       } } } } }
     });

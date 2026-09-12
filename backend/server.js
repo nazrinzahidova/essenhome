@@ -35,6 +35,7 @@ app.use('/login-code', authRouter);
 app.use('/api/product-images', require('./routes/productImages'));
 app.use('/api/home-sections', require('./routes/homeSections').createHomeSectionsRouter(require('./lib/prisma')));
 app.use('/api/brands', require('./routes/brands').createBrandsRouter(require('./lib/prisma')));
+app.use('/api/product-order', require('./routes/productOrder').createProductOrderRouter(require('./lib/prisma')));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/credit-orders', require('./routes/creditOrders').createCreditOrdersRouter(require('./lib/prisma')));
 app.use('/api/orders', require('./routes/orders'));

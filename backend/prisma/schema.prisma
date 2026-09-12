@@ -95,6 +95,7 @@ model ChatMessage {
 }
 
 model Product {
+  sortPosition Int @default(2147483647)
   id          Int      @id @default(autoincrement())
   name        String
   nameRu      String
@@ -220,6 +221,7 @@ model HomeSection {
 }
 
 model HomeSectionProduct {
+  sortPosition Int @default(2147483647)
   sectionId Int
   productId Int
   section HomeSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)

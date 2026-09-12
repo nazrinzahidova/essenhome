@@ -58,6 +58,7 @@ async function loadHomeSectionAdmin() {
           await loadHomeSectionAdmin();
         } catch (error) { showToast(error.message); await loadHomeSectionAdmin(); }
       });
+      const orderButton=document.createElement('button');orderButton.type='button';orderButton.className='btn-ghost';orderButton.textContent='Məhsulların sırası';orderButton.onclick=event=>{event.stopPropagation();openProductOrder(section.id,section.name);};row.append(orderButton);
       list.append(row);
     });
   } catch (error) { list.textContent = error.message; }
