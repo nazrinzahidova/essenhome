@@ -211,32 +211,59 @@
     </div>
   </main>
 
-  <div id="catalogLoginModal" class="hidden fixed inset-0 z-[100] bg-black/45 items-center justify-center p-4">
-    <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-xl font-bold">Hesaba daxil ol</h2>
-        <button id="closeCatalogLogin" type="button"
-          class="w-9 h-9 rounded-full border border-gray-200 text-gray-500 hover:text-red-600">×</button>
-      </div>
-      <form id="catalogLoginForm" class="space-y-4">
-        <div>
-          <label for="catalogLoginEmail" class="block text-sm font-medium mb-1">E-poçt</label>
-          <input id="catalogLoginEmail" type="email" required
-            class="w-full h-11 rounded-xl border border-gray-300 px-3 outline-none focus:border-red-500">
-        </div>
-        <div>
-          <label for="catalogLoginPassword" class="block text-sm font-medium mb-1">Şifrə</label>
-          <input id="catalogLoginPassword" type="password" required
-            class="w-full h-11 rounded-xl border border-gray-300 px-3 outline-none focus:border-red-500">
-        </div>
-        <p id="catalogLoginMessage" class="hidden text-sm text-red-600"></p>
-        <button type="submit" class="w-full h-11 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700">
-          Daxil ol
-        </button>
+<style>
+  .essen-auth-overlay{overflow-y:auto;position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(9,12,18,.72);backdrop-filter:blur(8px)}
+  .essen-auth-overlay.flex{display:flex}.essen-auth-card{margin:auto;flex-shrink:0;position:relative;width:min(100%,440px);min-height:520px;padding:38px 38px 34px;border:1px solid rgba(20,25,35,.08);border-radius:24px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.28);color:#151820}
+  .essen-auth-close{position:absolute;right:20px;top:18px;width:38px;height:38px;border:0;border-radius:50%;background:#f4f5f7;color:#616875;font-size:25px;line-height:1;cursor:pointer}.essen-auth-logo{display:block;width:176px;max-height:76px;object-fit:contain;margin:0 auto 22px}
+  .essen-auth-step{display:none}.essen-auth-step.active{display:block}.essen-auth-card h2{margin:0 0 10px;font-size:30px;line-height:1.2;text-align:center;font-weight:750}.essen-auth-lead{margin:0 auto 30px;max-width:330px;text-align:center;color:#747b88;font-size:14px;line-height:1.65}
+  .essen-auth-label{display:block;margin:0 0 9px;font-size:13px;font-weight:650;color:#292e38}.essen-auth-input{width:100%;height:56px;border:1px solid #dfe2e7;border-radius:14px;padding:0 16px;background:#fafbfc;color:#151820;font:500 16px Poppins,sans-serif;outline:0;transition:.2s}.essen-auth-input:focus{border-color:#e8222e;background:#fff;box-shadow:0 0 0 4px rgba(232,34,46,.08)}
+  .essen-auth-primary{width:100%;height:56px;margin-top:18px;border:0;border-radius:14px;background:#e8222e;color:#fff;font:700 15px Poppins,sans-serif;cursor:pointer;box-shadow:0 10px 24px rgba(232,34,46,.22);transition:.2s}.essen-auth-primary:hover{background:#ca101c;transform:translateY(-1px)}.essen-auth-note{min-height:20px;margin:14px 0 0;text-align:center;color:#e8222e;font-size:12px}
+  .otp-row{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}.otp-box{width:100%;height:58px;border:1px solid #dfe2e7;border-radius:12px;text-align:center;font:700 22px Poppins,sans-serif;outline:0}.otp-box:focus{border-color:#e8222e;box-shadow:0 0 0 3px rgba(232,34,46,.08)}.otp-meta{display:flex;justify-content:space-between;gap:12px;margin:18px 0 4px;color:#7a818d;font-size:12px}.otp-resend{border:0;background:none;color:#e8222e;font-weight:650;cursor:pointer}.otp-resend:disabled{color:#9ba0a9;cursor:default}.essen-auth-back{display:block;margin:18px auto 0;border:0;background:none;color:#646b77;font:600 13px Poppins,sans-serif;cursor:pointer}
+  @media(max-width:640px){.essen-auth-overlay{padding:0;background:#fff;backdrop-filter:none;align-items:stretch}.essen-auth-card{width:100%;min-height:100dvh;border:0;border-radius:0;box-shadow:none;padding:58px 24px 32px;display:flex;flex-direction:column;justify-content:center}.essen-auth-logo{width:164px;margin-bottom:30px}.essen-auth-card h2{font-size:28px}.essen-auth-close{right:18px;top:18px}.otp-row{gap:6px}.otp-box{height:54px;border-radius:10px}}
+</style>
+<div id="loginModal" class="essen-auth-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="essen-auth-card">
+    <button id="closeLoginModal" class="essen-auth-close" type="button" aria-label="Bağla">&times;</button>
+    <img src="img/logo.png" alt="Essen Home" class="essen-auth-logo">
+    <section class="essen-auth-step active" data-auth-step="phone">
+      <h2 id="authTitle">Giriş</h2>
+      <p class="essen-auth-lead">Hesabınıza təhlükəsiz daxil olmaq üçün telefon nömrənizi qeyd edin.</p>
+      <form id="phoneDesignForm">
+        <label class="essen-auth-label" for="authPhone">Telefon nömrəsi</label>
+        <input id="authPhone" class="essen-auth-input" type="tel" inputmode="tel" autocomplete="tel" placeholder="+994 (50) 123 45 67" maxlength="19" required>
+        <button class="essen-auth-primary" type="submit">Kodu əldə et</button>
       </form>
-    </div>
+    </section>
+    <section class="essen-auth-step" data-auth-step="otp">
+      <h2>Təsdiq kodu</h2>
+      <p class="essen-auth-lead"><span id="otpPhonePreview"></span> nömrəsinə göndərilən 6 rəqəmli kodu daxil edin.</p>
+      <form id="otpDesignForm">
+        <div class="otp-row" aria-label="6 rəqəmli təsdiq kodu">
+          <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="1-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="2-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="3-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="4-cü rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="5-ci rəqəm"><input class="otp-box" inputmode="numeric" maxlength="1" aria-label="6-cı rəqəm">
+        </div>
+        <div class="otp-meta"><span id="otpTimer"></span><button id="otpResend" class="otp-resend" type="button" disabled>Kodu yenidən göndər</button></div>
+        <button class="essen-auth-primary" type="submit">Kodu təsdiqlə</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
+    </section>
+    <section class="essen-auth-step" data-auth-step="email">
+      <h2>Hesabı tamamlayın</h2>
+      <p class="essen-auth-lead">İlk qeydiyyat üçün məlumatlarınızı daxil edin.</p>
+      <form id="emailDesignForm">
+        <label class="essen-auth-label" for="authFirstName">Ad</label>
+        <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
+        <label class="essen-auth-label" for="authLastName">Soyad</label>
+        <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
+        <label class="essen-auth-label" for="authEmail">E-poçt</label>
+        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
+        <button class="essen-auth-primary" type="submit">Hesab yarat</button>
+      </form>
+      <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
+    </section>
+    <p id="loginMessage" class="essen-auth-note" aria-live="polite"></p>
   </div>
-
+</div>
+<script src="/phone-auth.js?v=20260912-catalog-1"></script>
   <script src="admin-categories.js?v=20260705-2"></script>
   <script>
     const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
@@ -918,21 +945,13 @@
     }
 
     let pendingProtectedAction = null;
-
+    const catalogPhoneAuth=window.EssenPhoneAuth.mount({loginModal:document.getElementById('loginModal'),loginMessage:document.getElementById('loginMessage'),closeLoginModal:document.getElementById('closeLoginModal')});
     function showCatalogLogin(action) {
-      pendingProtectedAction = action || null;
-      const modal = document.getElementById('catalogLoginModal');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-      document.getElementById('catalogLoginEmail').focus();
+      pendingProtectedAction=action||null;
+      catalogPhoneAuth.openModal();
     }
-
-    function closeCatalogLogin() {
-      const modal = document.getElementById('catalogLoginModal');
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-      document.getElementById('catalogLoginMessage').classList.add('hidden');
-    }
+    document.getElementById('closeLoginModal').addEventListener('click',()=>{pendingProtectedAction=null;});
+    document.getElementById('loginModal').addEventListener('click',event=>{if(event.target===event.currentTarget)pendingProtectedAction=null;});
 
     function setFavouriteState(button, active) {
       button.dataset.active = String(active);
@@ -1073,7 +1092,7 @@
 
     const catalogSearchInput = document.getElementById('catalogSearch');
     const catalogSearchForm = document.getElementById('catalogSearchForm');
-    const catalogLoginModal = document.getElementById('catalogLoginModal');
+
 
     catalogSearchForm.addEventListener('submit', event => {
       event.preventDefault();
@@ -1095,39 +1114,11 @@
       if (!catalogSearchForm.contains(event.target)) hideSearchResults();
     });
 
-    document.getElementById('closeCatalogLogin').addEventListener('click', closeCatalogLogin);
-    catalogLoginModal.addEventListener('click', event => {
-      if (event.target === catalogLoginModal) closeCatalogLogin();
-    });
-
-    document.getElementById('catalogLoginForm').addEventListener('submit', async event => {
-      event.preventDefault();
-      const email = document.getElementById('catalogLoginEmail').value.trim();
-      const password = document.getElementById('catalogLoginPassword').value;
-      const message = document.getElementById('catalogLoginMessage');
-
-      try {
-        const response = await fetch(`${API}/api/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || data.error || 'Giriş alınmadı');
-
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('activeUser', data.user.email);
-        localStorage.setItem('userRole', data.user.role);
-        const action = pendingProtectedAction;
-        pendingProtectedAction = null;
-        closeCatalogLogin();
-        await initCardActionButtons();
-        await initCatalogCartState();
-        if (action) await action();
-      } catch (error) {
-        message.textContent = error.message || 'Giriş alınmadı';
-        message.classList.remove('hidden');
-      }
+    window.addEventListener('essen:login', async () => {
+      const action=pendingProtectedAction;pendingProtectedAction=null;
+      await initCardActionButtons();
+      await initCatalogCartState();
+      if(action)await action();
     });
 
     renderCategories();
