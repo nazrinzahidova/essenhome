@@ -11,7 +11,9 @@
   async function load(){
     list.textContent='Yüklənir...';
     try{
-      const data=await request('?page='+page);list.replaceChildren();
+      const data=await request('?page='+page);
+      if(page>1&&!data.items.length){page=Math.max(1,Math.ceil(data.count/25));return load();}
+      list.replaceChildren();
       if(!data.items.length)list.textContent='Hələ kredit sifarişi yoxdur.';
       for(const order of data.items){
         const card=el('details');card.className='credit-admin-card';
@@ -23,7 +25,14 @@
         card.append(products);const label=el('label','Status: '), select=el('select');
         for(const [value,text] of Object.entries(statuses)){const option=el('option',text);option.value=value;select.append(option);}select.value=order.status;label.append(select);card.append(label);
         select.onchange=async()=>{select.disabled=true;try{await request('/'+encodeURIComponent(order.id),{method:'PATCH',body:JSON.stringify({status:select.value})});summary.textContent=`${order.firstName} ${order.lastName} — ${money(order.total)} — ${statuses[select.value]}`;order.status=select.value;}catch(e){select.value=order.status;showToast(e.message);}finally{select.disabled=false;}};
-        list.append(card);
+        const remove=el('button','Sil');remove.type='button';remove.className='credit-delete-button';
+        remove.onclick=async()=>{
+          if(!confirm('Müraciət № '+String(order.number).padStart(6,'0')+' silinsin? Bu əməliyyat geri qaytarılmır.'))return;
+          remove.disabled=true;select.disabled=true;
+          try{await request('/'+encodeURIComponent(order.id),{method:'DELETE'});showToast('Müraciət silindi.');await load();}
+          catch(e){showToast(e.message);remove.disabled=false;select.disabled=false;}
+        };
+        card.append(remove);list.append(card);
       }
       pageInfo.textContent=`${data.count} müraciət · Səhifə ${page}`;
       document.getElementById('creditPrevious').disabled=page===1;document.getElementById('creditNext').disabled=page*25>=data.count;

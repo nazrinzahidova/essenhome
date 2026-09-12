@@ -8,7 +8,8 @@ test('credit submission validates, prices on server, deduplicates and restricts 
   const db={product:{findMany:async()=>[{id:1,name:'Test product',price:125.5,stock:5}]},creditApplication:{
     findUnique:async({where})=>rows.find(r=>r.requestKey===where.requestKey),
     create:async({data})=>{const row={...data,id:'application-1',number:rows.length+1,status:'new',createdAt:new Date()};rows.push(row);return row;},
-    findMany:async()=>rows,count:async()=>rows.length,update:async({data})=>Object.assign(rows[0],data)
+    findMany:async()=>rows,count:async()=>rows.length,update:async({data})=>Object.assign(rows[0],data),
+    delete:async({where})=>{const index=rows.findIndex(r=>r.id===where.id);if(index<0)throw Object.assign(Error('missing'),{code:'P2025'});return rows.splice(index,1)[0];}
   }};
   const app=express();app.use(express.json());app.use('/api/credit-orders',createCreditOrdersRouter(db));
   const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
@@ -24,7 +25,12 @@ test('credit submission validates, prices on server, deduplicates and restricts 
   assert.equal((await fetch(base+'/admin')).status,401);
   const headers={Authorization:'Bearer '+jwt.sign({id:1,role:'user'},process.env.JWT_SECRET)};
   assert.equal((await fetch(base+'/admin',{headers})).status,403);
+  assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE'})).status,401);
+  assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE',headers})).status,403);assert.equal(rows.length,1);
   headers.Authorization='Bearer '+jwt.sign({id:2,role:'admin'},process.env.JWT_SECRET);
   const admin=await fetch(base+'/admin',{headers});assert.equal(admin.status,200);assert.equal(admin.headers.get('cache-control'),'no-store');assert.equal((await admin.json()).items[0].fin,'TEST123');
   const updated=await fetch(base+'/admin/application-1',{method:'PATCH',headers:{...headers,'Content-Type':'application/json'},body:JSON.stringify({status:'contacted'})});assert.equal(updated.status,200);assert.equal(rows[0].status,'contacted');
+  assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE',headers})).status,200);assert.equal(rows.length,0);
+  const afterDelete=await (await fetch(base+'/admin',{headers})).json();assert.equal(afterDelete.count,0);assert.deepEqual(afterDelete.items,[]);
+  assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE',headers})).status,404);
 });

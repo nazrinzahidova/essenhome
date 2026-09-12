@@ -80,6 +80,15 @@ function createCreditOrdersRouter(db) {
     try {await db.creditApplication.update({where:{id:req.params.id},data:{status:req.body.status}});res.json({ok:true});}
     catch {res.status(404).json({message:'Müraciət tapılmadı və ya yenilənmədi.'});}
   });
+  router.delete('/admin/:id',auth,admin,async(req,res)=>{
+    try {
+      await db.creditApplication.delete({where:{id:req.params.id}});
+      res.json({ok:true});
+    } catch(error) {
+      if(error.code === 'P2025') return res.status(404).json({message:'Müraciət tapılmadı.'});
+      res.status(503).json({message:'Müraciət silinmədi. Yenidən cəhd edin.'});
+    }
+  });
   return router;
 }
 module.exports = {createCreditOrdersRouter,validate};
