@@ -218,7 +218,13 @@
     /* Responsive breakpoints */
     @media (max-width: 1024px) {
       #hero-sidebar-wrap { display: none !important; }
-      #hero-banner-wrap { display: none !important; }
+      #hero-banner-wrap { display: flex !important; width: 100%; height: clamp(210px, 40vw, 280px); }
+      #hero-banner-wrap .weekly-offer-header { padding: 6px 8px; }
+      #hero-banner-wrap .weekly-offer-unit strong { font-size: 16px; line-height: 20px; }
+      #hero-banner-wrap .weekly-offer-unit span { font-size: 11px; line-height: 15px; }
+      #hero-banner-wrap .weekly-offer-unit + .weekly-offer-unit::before { top: 8px; }
+      #hero-banner-wrap .bannerSwiper .swiper-slide { background: #fff; }
+      #hero-banner-wrap .bannerSwiper img { object-fit: contain; }
       .hero-flex { flex-direction: column !important; }
       #hero-swiper-wrap { width: 100% !important; }
       #catalogDropdown { display: none !important; }
