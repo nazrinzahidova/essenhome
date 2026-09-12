@@ -3,6 +3,8 @@ const crypto = require('crypto');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminCheck');
 
+function applicationCode(row) { return String(row.number).padStart(6, '0'); }
+
 function validate(body) {
   const value = {};
   for (const key of ['firstName', 'lastName', 'fatherName']) {
@@ -44,7 +46,7 @@ function createCreditOrdersRouter(db) {
     const requestHash = crypto.createHash('sha256').update(JSON.stringify(input)).digest('hex');
     try {
       const previous = await db.creditApplication.findUnique({where:{requestKey:input.requestKey}});
-      if (previous) return previous.requestHash === requestHash ? res.json({id:previous.id}) : res.status(409).json({message:'Müraciət dəyişib. Formanı yenidən açın.'});
+      if (previous) return previous.requestHash === requestHash ? res.json({id:previous.id,code:applicationCode(previous)}) : res.status(409).json({message:'Müraciət dəyişib. Formanı yenidən açın.'});
       const products = await db.product.findMany({where:{id:{in:[...new Set(input.items.map(i=>i.productId))]}}});
       const byId = new Map(products.map(p=>[p.id,p]));
       const quantities = new Map();
@@ -57,11 +59,11 @@ function createCreditOrdersRouter(db) {
       const total = items.reduce((sum,i)=>sum+Math.round(i.price*100)*i.quantity,0)/100;
       const {requestKey,firstName,lastName,fatherName,phone,fin,hasSima} = input;
       const saved = await db.creditApplication.create({data:{requestKey,requestHash,firstName,lastName,fatherName,phone,fin,hasSima,items,total}});
-      res.status(201).json({id:saved.id});
+      res.status(201).json({id:saved.id,code:applicationCode(saved)});
     } catch(error) {
       if (error.code === 'P2002') {
         const previous = await db.creditApplication.findUnique({where:{requestKey:input.requestKey}}).catch(()=>null);
-        if (previous?.requestHash === requestHash) return res.json({id:previous.id});
+        if (previous?.requestHash === requestHash) return res.json({id:previous.id,code:applicationCode(previous)});
       }
       res.status(503).json({message:'Müraciət göndərilmədi. Məlumatlarınızı saxlayıb yenidən cəhd edin.'});
     }

@@ -17,7 +17,7 @@
         const card=el('details');card.className='credit-admin-card';
         const summary=el('summary',`${order.firstName} ${order.lastName} — ${money(order.total)} — ${statuses[order.status]||order.status}`);card.append(summary);
         const info=el('dl');
-        for(const [label,value] of [['Müraciət №',order.id],['Tarix',new Date(order.createdAt).toLocaleString('az-AZ')],['Ad',order.firstName],['Soyad',order.lastName],['Ata adı',order.fatherName],['Telefon',order.phone],['FIN kod',order.fin],['SİMA',order.hasSima?'Var':'Yoxdur']]) info.append(el('dt',label),el('dd',value));
+        for(const [label,value] of [['Müraciət №',String(order.number).padStart(6,'0')],['Tarix',new Date(order.createdAt).toLocaleString('az-AZ')],['Ad',order.firstName],['Soyad',order.lastName],['Ata adı',order.fatherName],['Telefon',order.phone],['FIN kod',order.fin],['SİMA',order.hasSima?'Var':'Yoxdur']]) info.append(el('dt',label),el('dd',value));
         card.append(info);const products=el('ul');
         for(const item of order.items)products.append(el('li',`${item.name} — ${item.quantity} ədəd × ${money(item.price)}${item.color?' · '+item.color:''}`));
         card.append(products);const label=el('label','Status: '), select=el('select');

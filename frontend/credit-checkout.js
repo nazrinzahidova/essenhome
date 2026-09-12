@@ -37,7 +37,7 @@
     try {
       const response=await fetch('/api/credit-orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,hasSima:values.hasSima==='yes',requestKey,items:items.map(i=>({productId:Number(i.id),quantity:Number(i.qty),color:i.color||''}))})});
       const data=await response.json();if(!response.ok)throw new Error(data.message||'Müraciət göndərilmədi. Yenidən cəhd edin.');
-      form.reset();form.hidden=true;success.hidden=false;success.textContent=`Müraciətiniz qəbul edildi. Əməkdaşımız sizinlə əlaqə saxlayacaq. Müraciət nömrəsi: ${data.id}`;
+      form.reset();form.hidden=true;success.hidden=false;success.textContent=`Müraciətiniz qəbul edildi. Əməkdaşımız sizinlə əlaqə saxlayacaq. Müraciət nömrəsi: ${data.code}`;
     }catch(err){error.textContent=err.message==='Failed to fetch'?'Bağlantı alınmadı. Yenidən cəhd edin.':err.message;error.hidden=false;}
     finally{sending=false;button.disabled=false;button.textContent='Rəsmiləşdir';}
   };

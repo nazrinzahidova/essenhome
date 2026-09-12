@@ -7,7 +7,7 @@ test('credit submission validates, prices on server, deduplicates and restricts 
   process.env.JWT_SECRET='credit-local-test-only';const rows=[];
   const db={product:{findMany:async()=>[{id:1,name:'Test product',price:125.5,stock:5}]},creditApplication:{
     findUnique:async({where})=>rows.find(r=>r.requestKey===where.requestKey),
-    create:async({data})=>{const row={...data,id:'application-1',status:'new',createdAt:new Date()};rows.push(row);return row;},
+    create:async({data})=>{const row={...data,id:'application-1',number:rows.length+1,status:'new',createdAt:new Date()};rows.push(row);return row;},
     findMany:async()=>rows,count:async()=>rows.length,update:async({data})=>Object.assign(rows[0],data)
   }};
   const app=express();app.use(express.json());app.use('/api/credit-orders',createCreditOrdersRouter(db));
@@ -19,7 +19,7 @@ test('credit submission validates, prices on server, deduplicates and restricts 
   assert.equal((await submit({...body,fin:'x'})).status,400);
   assert.equal((await submit({...body,items:[{productId:1,quantity:6}]})).status,409);
   assert.equal((await submit(body)).status,201);assert.equal(rows[0].total,251);assert.equal(rows[0].items[0].price,125.5);assert.equal(rows[0].phone,'994501234567');
-  const repeated=await submit(body);assert.equal(repeated.status,200);assert.equal(rows.length,1);assert.deepEqual(await repeated.json(),{id:'application-1'});
+  const repeated=await submit(body);assert.equal(repeated.status,200);assert.equal(rows.length,1);assert.deepEqual(await repeated.json(),{id:'application-1',code:'000001'});
   assert.equal((await submit({...body,fin:'TEST456'})).status,409);
   assert.equal((await fetch(base+'/admin')).status,401);
   const headers={Authorization:'Bearer '+jwt.sign({id:1,role:'user'},process.env.JWT_SECRET)};
