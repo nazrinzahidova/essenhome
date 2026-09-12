@@ -265,10 +265,12 @@
 </div>
 <script src="/phone-auth.js?v=20260912-catalog-1"></script>
   <script src="admin-categories.js?v=20260705-2"></script>
+  <script src="/sales-categories.js?v=20260912-1"></script>
   <script>
     const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
     const API = '';
     const params = new URLSearchParams(window.location.search);
+    const selectedLeader=Object.hasOwn(EssenSalesCategories.definitions,params.get('leader'))?params.get('leader'):'';
     const selectedCategory = params.get('category') || '';
     const selectedSubcategory = params.get('subcategory') || '';
     const searchQuery = params.get('search') || '';
@@ -396,13 +398,13 @@
     }
 
     function updateHeading() {
-      const title = (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
+      const title = (selectedLeader ? EssenSalesCategories.definitions[selectedLeader].label : '') || (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
         (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
       document.getElementById('catalogTitle').textContent = title;
       document.getElementById('breadcrumbCurrent').textContent = title;
       document.title = `${title} — Essen Home`;
       document.getElementById('catalogSearch').value = searchQuery;
-      document.getElementById('clearFilter').classList.toggle('hidden', !selectedCategory && !selectedSubcategory && !searchQuery && !selectedBrand);
+      document.getElementById('clearFilter').classList.toggle('hidden', !selectedLeader && !selectedCategory && !selectedSubcategory && !searchQuery && !selectedBrand);
     }
 
     function productMatchesPlacement(product, category, subcategory) {
@@ -417,6 +419,7 @@
 
     function filteredProducts(products) {
       return products.filter(product => {
+        if(!EssenSalesCategories.matches(product,selectedLeader))return false;
         if (!productMatchesPlacement(product, selectedCategory, selectedSubcategory)) return false;
         if (selectedBrand && !splitValues(product.brand).some(value=>brandKey(value) === brandKey(selectedBrand))) return false;
         if (searchQuery) {
