@@ -227,3 +227,13 @@ model HomeSectionProduct {
   @@id([sectionId, productId])
   @@index([productId])
 }
+
+model Brand {
+  id Int @id @default(autoincrement())
+  name String @unique
+  image String?
+  logoData Bytes?
+  logoMime String?
+  active Boolean @default(false)
+  position Int @default(1000)
+}

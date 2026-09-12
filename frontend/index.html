@@ -1102,8 +1102,9 @@
     autoplay: { delay: 3500, disableOnInteraction: false },
   });
 
+  (async()=>{
   // ── BRANDS CAROUSEL ──
-  const brands = [
+  let brands = [
     { image: "img/karcher.png" }, { image: "img/schaffer.png" }, { image: "img/huawei.png" },
     { image: "img/hp.png" }, { image: "img/acer.png" }, { image: "img/panasonic.png" },
     { image: "img/electrolux.png" }, { image: "img/braun.png" }, { image: "img/asus.png" },
@@ -1118,20 +1119,22 @@
     { image: "img/toshiba.png" }, { image: "img/bosch.png" }, { image: "img/oppo.png" },
     { image: "img/dyson.png" }, { image: "img/aeg.png" },
   ];
+  try {const response=await fetch('/api/brands',{cache:'no-store'});if(!response.ok)throw Error();brands=(await response.json()).filter(b=>b.active);}catch{}
+  if(!brands.length){document.getElementById('trackWrapper').hidden=true;return;}
   const GAP = 12;
   const TOTAL = brands.length;
   const allBrands = [...brands, ...brands, ...brands];
   const track = document.getElementById('track');
   const wrapper = document.getElementById('trackWrapper');
   allBrands.forEach((b) => {
-    const key=b.image.split('/').pop().replace('.png','');
-    const brandName=({karcher:'Kärcher',schaffer:'Schafer',delonghi:'DeLonghi',berghoff:'BergHOFF'})[key] || key.toUpperCase();
+    const key=(b.image||'').split('/').pop().replace('.png','');
+    const brandName=b.name || ({karcher:'Kärcher',schaffer:'Schafer',delonghi:'DeLonghi',berghoff:'BergHOFF'})[key] || key.toUpperCase();
     const card = document.createElement('a');
     card.href=`catalog.html?brand=${encodeURIComponent(brandName)}`;
     card.setAttribute('aria-label',`${brandName} məhsulları`);
     card.className = 'brand-card h-16 border border-gray-200 rounded-xl flex items-center justify-center cursor-pointer hover:border-gray-300 hover:bg-gray-50 bg-white';
     card.style.transition = 'background 0.15s, border-color 0.15s';
-    card.innerHTML = b.image ? `<img src="${b.image}" alt="${brandName}" draggable="false" style="width:100%;height:100%;object-fit:contain;" />` : '';
+    if(b.image){const logo=document.createElement('img');logo.src=b.image;logo.alt=brandName;logo.draggable=false;logo.style.cssText='width:100%;height:100%;object-fit:contain';logo.onerror=()=>{card.textContent=brandName;};card.append(logo);}else{card.textContent=brandName;}
     card.draggable=false;
     card.addEventListener('click', event => { if (wasDragging) event.preventDefault(); });
     track.appendChild(card);
@@ -1169,6 +1172,8 @@
   wrapper.addEventListener('touchend', e => { if (!isDragging) return; isDragging=false; const dx=dragStartX-e.changedTouches[0].clientX; const cw=getCardWidth(); goToVirtual(Math.round((dragStartPx+dx)/cw),true); setTimeout(()=>{ wasDragging=false; startAuto(); },150); });
   setTranslate(currentPx(), false);
   startAuto();
+
+  })();
 
   // ── TAB AKTİV ──
   function setActive(el) {

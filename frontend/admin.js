@@ -582,6 +582,11 @@ const ADMIN_BRAND_LIST = [
   "WMF", "WOKIN", "Xiaomi", "Zanussi"
 ].sort((a, b) => a.localeCompare(b, 'az', { sensitivity: 'base' }));
 
+async function refreshAdminBrands(){
+ const response=await fetch('/api/brands',{cache:'no-store'});if(!response.ok)throw Error('Brendlər yüklənmədi.');
+ const brands=await response.json();ADMIN_BRAND_LIST.splice(0,ADMIN_BRAND_LIST.length,...brands.map(b=>b.name).sort((a,b)=>a.localeCompare(b,'az')));
+ populateBrandSelect(document.getElementById('f_brand')?.value||'');
+}
 function populateBrandSelect(selectedBrand = '') {
   const select = document.getElementById('f_brand');
   if (!select) return;
@@ -1302,3 +1307,5 @@ async function deleteProduct(id) {
     showLogin();
   }
 })();
+
+refreshAdminBrands().catch(()=>{});

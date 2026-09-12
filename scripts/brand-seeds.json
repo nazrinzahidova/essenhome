@@ -1,0 +1,626 @@
+[
+  {
+    "name": "2E",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Acer",
+    "image": "/img/acer.png",
+    "active": true,
+    "position": 4
+  },
+  {
+    "name": "AEG",
+    "image": "/img/aeg.png",
+    "active": true,
+    "position": 37
+  },
+  {
+    "name": "Alarko",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Anbernic",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Apple",
+    "image": "/img/apple.png",
+    "active": true,
+    "position": 29
+  },
+  {
+    "name": "Arçelik",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Ardesto",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Askona",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "ASUS",
+    "image": "/img/asus.png",
+    "active": true,
+    "position": 8
+  },
+  {
+    "name": "AUX",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Ayaneo",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Beko",
+    "image": "/img/beko.png",
+    "active": true,
+    "position": 21
+  },
+  {
+    "name": "BergHOFF",
+    "image": "/img/berghoff.png",
+    "active": true,
+    "position": 20
+  },
+  {
+    "name": "Biryusa",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Blackview",
+    "image": "/img/blackview.png",
+    "active": true,
+    "position": 10
+  },
+  {
+    "name": "BORK",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Bosch",
+    "image": "/img/bosch.png",
+    "active": true,
+    "position": 34
+  },
+  {
+    "name": "Braun",
+    "image": "/img/braun.png",
+    "active": true,
+    "position": 7
+  },
+  {
+    "name": "Canon",
+    "image": "/img/canon.png",
+    "active": true,
+    "position": 14
+  },
+  {
+    "name": "Chicco",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Dell",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "De'Longhi",
+    "image": "/img/delonghi.png",
+    "active": true,
+    "position": 22
+  },
+  {
+    "name": "Doogee",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Dreame",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Dyson",
+    "image": "/img/dyson.png",
+    "active": true,
+    "position": 36
+  },
+  {
+    "name": "Electrolux",
+    "image": "/img/electrolux.png",
+    "active": true,
+    "position": 6
+  },
+  {
+    "name": "Elif",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Elleti",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Essen",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Euroacs",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Euroklimat",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Fakir",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Fieldmann",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Fujiaire",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Gorenje",
+    "image": "/img/gorenje.png",
+    "active": true,
+    "position": 13
+  },
+  {
+    "name": "Graft",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Gree",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Haier",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "HANN",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Hisense",
+    "image": "/img/hisense.png",
+    "active": true,
+    "position": 25
+  },
+  {
+    "name": "HOFFMANN",
+    "image": "/img/hoffmann.png",
+    "active": true,
+    "position": 32
+  },
+  {
+    "name": "Honor",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "HP",
+    "image": "/img/hp.png",
+    "active": true,
+    "position": 3
+  },
+  {
+    "name": "HUAWEI",
+    "image": "/img/huawei.png",
+    "active": true,
+    "position": 2
+  },
+  {
+    "name": "Infinix",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "JBL",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "JVC",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Karcher",
+    "image": "/img/karcher.png",
+    "active": true,
+    "position": 0
+  },
+  {
+    "name": "Keman",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Kenwood",
+    "image": "/img/kenwood.png",
+    "active": true,
+    "position": 23
+  },
+  {
+    "name": "Komfy",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Kumtel",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "LEGO",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Lenovo",
+    "image": "/img/lenovo.png",
+    "active": true,
+    "position": 15
+  },
+  {
+    "name": "LG",
+    "image": "/img/lg.png",
+    "active": true,
+    "position": 30
+  },
+  {
+    "name": "Logitech",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "MDV",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Microsoft",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Midea",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Mitsubishi",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Miyoo",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Motorola",
+    "image": "/img/motorola.png",
+    "active": true,
+    "position": 16
+  },
+  {
+    "name": "MSI",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Moulinex",
+    "image": "/img/moulinex.png",
+    "active": true,
+    "position": 18
+  },
+  {
+    "name": "MyChoice",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Nintendo",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Nutribullet",
+    "image": "/img/nutribullet.png",
+    "active": true,
+    "position": 24
+  },
+  {
+    "name": "OPPO",
+    "image": "/img/oppo.png",
+    "active": true,
+    "position": 35
+  },
+  {
+    "name": "Ormatek",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Oukitel",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "P.I.T.",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Pamer",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Panasonic",
+    "image": "/img/panasonic.png",
+    "active": true,
+    "position": 5
+  },
+  {
+    "name": "Philips",
+    "image": "/img/philips.png",
+    "active": true,
+    "position": 12
+  },
+  {
+    "name": "PlayStation",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Porodo",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Rampage",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Realme",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Remington",
+    "image": "/img/remington.png",
+    "active": true,
+    "position": 26
+  },
+  {
+    "name": "Roborock",
+    "image": "/img/roborock.png",
+    "active": true,
+    "position": 27
+  },
+  {
+    "name": "Royal",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Rowenta",
+    "image": "/img/rowenta.png",
+    "active": true,
+    "position": 17
+  },
+  {
+    "name": "Samsung",
+    "image": "/img/samsung.png",
+    "active": true,
+    "position": 28
+  },
+  {
+    "name": "Schaffer",
+    "image": "/img/schaffer.png",
+    "active": true,
+    "position": 1
+  },
+  {
+    "name": "Sencor",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Shark",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Sharp",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Skyworth",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Sony",
+    "image": "/img/sony.png",
+    "active": true,
+    "position": 11
+  },
+  {
+    "name": "Stadler Form",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Stanley",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "SVEN",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Stihl",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Taube",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "TCL",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Tefal",
+    "image": "/img/tefal.png",
+    "active": true,
+    "position": 9
+  },
+  {
+    "name": "Toshiba",
+    "image": "/img/toshiba.png",
+    "active": true,
+    "position": 33
+  },
+  {
+    "name": "Total",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "TP-LINK",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "WMF",
+    "image": "/img/wmf.png",
+    "active": true,
+    "position": 19
+  },
+  {
+    "name": "WOKIN",
+    "image": null,
+    "active": false,
+    "position": 1000
+  },
+  {
+    "name": "Xiaomi",
+    "image": "/img/xiaomi.png",
+    "active": true,
+    "position": 31
+  },
+  {
+    "name": "Zanussi",
+    "image": null,
+    "active": false,
+    "position": 1000
+  }
+]
