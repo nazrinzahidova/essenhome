@@ -1309,3 +1309,27 @@ async function deleteProduct(id) {
 })();
 
 refreshAdminBrands().catch(()=>{});
+
+(() => {
+ const open=document.getElementById('addProductBrand'),box=document.getElementById('newProductBrandFields'),input=document.getElementById('newProductBrandName'),save=document.getElementById('saveProductBrand'),cancel=document.getElementById('cancelProductBrand'),message=document.getElementById('productBrandMessage');
+ let busy=false;
+ open.onclick=()=>{box.hidden=false;message.textContent='';input.focus();};
+ cancel.onclick=()=>{if(!busy){box.hidden=true;input.value='';message.textContent='';}};
+ save.onclick=async()=>{
+  if(busy)return;const name=input.value.trim();if(!name||name.length>100){message.textContent='Brend adını daxil edin (maksimum 100 simvol).';input.focus();return;}
+  busy=true;save.disabled=cancel.disabled=true;message.textContent='Əlavə edilir...';
+  try{
+   await refreshAdminBrands();let selected=ADMIN_BRAND_LIST.find(b=>b.toLowerCase()===name.toLowerCase());
+   if(!selected){
+    const data=new FormData();data.set('name',name);data.set('active','false');data.set('position','1000');
+    const response=await fetch('/api/brands',{method:'POST',headers:authHeaders(),body:data});const result=await response.json();
+    if(!response.ok){if(response.status===409){await refreshAdminBrands();selected=ADMIN_BRAND_LIST.find(b=>b.toLowerCase()===name.toLowerCase());}if(!selected)throw Error(result.message||'Brend əlavə edilmədi.');}
+    else selected=result.name;
+   }
+   populateBrandSelect(selected);if(!ADMIN_BRAND_LIST.includes(selected))ADMIN_BRAND_LIST.push(selected);
+   box.hidden=true;input.value='';message.textContent='';showToast('Brend seçildi: '+selected);
+  }catch(e){message.textContent=e.message||'Brend əlavə edilmədi. Yenidən cəhd edin.';}
+  finally{busy=false;save.disabled=cancel.disabled=false;}
+ };
+ input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();save.click();}});
+})();

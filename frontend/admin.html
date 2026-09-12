@@ -640,6 +640,13 @@
           <select id="f_brand">
             <option value="">Brendsiz</option>
           </select>
+          <button id="addProductBrand" class="btn-ghost" type="button" style="margin-top:8px">+ Brend əlavə et</button>
+          <div id="newProductBrandFields" hidden style="margin-top:10px">
+            <label for="newProductBrandName">Yeni brendin adı</label>
+            <input id="newProductBrandName" type="text" maxlength="100" placeholder="Məsələn: Premier" autocomplete="off">
+            <div style="display:flex;gap:8px;margin-top:8px"><button id="saveProductBrand" class="btn-primary" type="button">Əlavə et və seç</button><button id="cancelProductBrand" class="btn-ghost" type="button">Ləğv et</button></div>
+            <p id="productBrandMessage" role="status" style="margin-top:8px"></p>
+          </div>
         </div>
 
         <div class="field">
@@ -756,7 +763,7 @@
 <script src="tv-specs.js?v=20260728-3"></script>
 <script src="washingmachine-specs.js?v=20260909-1"></script>
 <script src="fridge-specs.js?v=20260909-1"></script>
-<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin-chat-read.js?v=20260909-1"></script><script src="admin.js?v=20260912-brands-2"></script>
+<script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin-chat-read.js?v=20260909-1"></script><script src="admin.js?v=20260912-brands-3"></script>
 <script src="admin-home-sections.js?v=20260909-1"></script>
 <script src="/admin-users.js?v=20260910-users-1"></script>
 <style>.credit-delete-button{margin-left:16px;padding:8px 16px;border:1px solid #dc2626;border-radius:6px;background:#fff;color:#b91c1c;cursor:pointer}.credit-delete-button:disabled{opacity:.5;cursor:wait}.credit-admin-card{padding:18px;border:1px solid #ddd;border-radius:12px;margin:12px 0;background:#fff}.credit-admin-card summary{cursor:pointer;font-weight:600}.credit-admin-card dl{display:grid;grid-template-columns:110px 1fr;gap:8px;margin:18px 0}.credit-admin-card dd{margin:0;overflow-wrap:anywhere}.credit-admin-card ul{padding:16px 20px}.credit-admin-card select{padding:8px;border:1px solid #ddd;border-radius:6px}</style><script src="admin-credit-orders.js?v=20260912-3"></script><script src="admin-brands.js?v=20260912-1"></script></body>
