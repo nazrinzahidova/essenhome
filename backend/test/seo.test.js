@@ -29,6 +29,14 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   assert.equal(schema(html).offers.price, 650);
   assert.equal(schema(html).image[0], 'https://essenhome.az/api/product-images/42');
   assert.match(html, /id="productFooter"/);
+  assert.match(html, /name="twitter:title"/);
+  assert.match(html, /max-image-preview:large/);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const categoryHtml = await (await get('/catalog.html?category=Kondisioner')).text();
+  assert.match(categoryHtml, /<title>Kondisioner \| Essen Home<\/title>/);
+  assert.match(categoryHtml, /catalog.html\?category=Kondisioner/);
+  assert.match(await (await get('/catalog.html?search=test')).text(), /noindex,follow/);
+  assert.equal((await get('/cart.html')).headers.get('x-robots-tag'), 'noindex, follow');
   rows[0].name = 'Model </script><script>alert(1)</script> & "test"';
   rows[0].price = 599;
   rows[0].stock = 0;

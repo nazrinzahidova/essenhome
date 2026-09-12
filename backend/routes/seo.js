@@ -13,6 +13,9 @@ function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item.id);
   const title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
+  const specs = item.specs && typeof item.specs === 'object' ? item.specs : {};
+  const modelKey = Object.keys(specs).find(key => ['model', 'modeli', 'model adı', 'model adi'].includes(key.trim().toLocaleLowerCase('az')));
+  const model = item.model || (modelKey ? specs[modelKey] : '');
   const description = item.seoDescription?.trim() || `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
   let image;
   try {
@@ -22,6 +25,7 @@ function renderProduct(template, product) {
   const data = {
     '@context': 'https://schema.org', '@type': 'Product', name: item.name,
     description: item.description || description, sku: String(item.id), url,
+    ...(model ? { model: String(model) } : {}),
     ...(image ? { image: [image] } : {}),
     ...(item.brand ? { brand: { '@type': 'Brand', name: item.brand } } : {}),
     offers: { '@type': 'Offer', url, priceCurrency: 'AZN', price: item.price,
@@ -29,6 +33,11 @@ function renderProduct(template, product) {
       seller: { '@type': 'Organization', name: 'Essen Home', url: ORIGIN } }
   };
   const metadata = `<meta name="description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">
+<meta name="twitter:title" content="${escape(title)}">
+<meta name="twitter:description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
+${image ? `<meta name="twitter:image" content="${escape(image)}">` : ''}
 <link rel="canonical" href="${escape(url)}">
 <meta property="og:type" content="product"><meta property="og:site_name" content="Essen Home">
 <meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
@@ -49,6 +58,27 @@ function createSeoRouter(prisma) {
   const router = express.Router();
   const template = fs.readFileSync(path.join(__dirname, '../../frontend/product.html'), 'utf8');
   const unavailable = res => res.status(503).set('Retry-After', '60').type('text').send('Müvəqqəti xəta. Bir az sonra yenidən yoxlayın.');
+  router.get('/catalog.html', (req, res) => {
+    const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
+    const subcategory = typeof req.query.subcategory === 'string' ? req.query.subcategory.trim() : '';
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (subcategory) params.set('subcategory', subcategory);
+    const url = `${ORIGIN}/catalog.html${params.size ? '?' + params.toString() : ''}`;
+    const title = `${subcategory || category || 'Məhsul kataloqu'} | Essen Home`;
+    const description = `${subcategory || category || 'Məişət texnikası və elektronika'}. Essen Home məhsullarının qiymətlərini və xüsusiyyətlərini müqayisə edin.`;
+    const filtered = Object.keys(req.query).some(key => !['category', 'subcategory', 'gclid', 'fbclid'].includes(key) && !key.startsWith('utm_'));
+    const tags = `<title>${escape(title)}</title>
+<meta name="description" content="${escape(description)}">
+<meta name="robots" content="${filtered ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
+<link rel="canonical" href="${escape(url)}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Essen Home">
+<meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}">
+<meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${ORIGIN}/img/logo.png">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}">
+<meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${ORIGIN}/img/logo.png">`;
+    res.type('html').send(fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags));
+  });
   router.get('/robots.txt', (_req, res) => res.type('text').send(`User-agent: *\nAllow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`));
   router.get('/sitemap.xml', async (_req, res) => {
     try {
@@ -75,8 +105,12 @@ function createSeoRouter(prisma) {
     try {
       const item = await prisma.product.findUnique({ where: { id }, include: { images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] } } });
       if (!item) return res.status(404).set('X-Robots-Tag', 'noindex').type('html').send('Məhsul tapılmadı. <a href="/catalog.html">Kataloqa qayıt</a>');
-      res.type('html').send(renderProduct(template, item));
+      res.set('Cache-Control', 'no-store').type('html').send(renderProduct(template, item));
     } catch (error) { console.error('Product page failed:', error.message); unavailable(res); }
+  });
+  router.use((req, res, next) => {
+    if (/^\/(cart|favourites|compare|admin|login|register)(\.html|\/|$)/i.test(req.path)) res.set('X-Robots-Tag', 'noindex, follow');
+    next();
   });
   return router;
 }
