@@ -357,7 +357,7 @@
   <div class="checkout-options">
     <a data-checkout-method="cash">Nağd (qapıda)</a>
     <a data-checkout-method="card">Nağdsız (qapıda)</a>
-    <a data-checkout-method="credit">Daxili kredit</a>
+    <a data-checkout-method="credit">Kredit</a>
   </div>
 </dialog>
 <style>
@@ -395,7 +395,7 @@
       const messages = {
         cash: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağd edəcəyəm.',
         card: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağdsız (bank kartı ilə) edəcəyəm.',
-        credit: 'Salam! Aşağıdakı məhsulları daxili kreditlə almaq istəyirəm. Kredit şərtləri barədə məlumat verməyinizi xahiş edirəm.'
+        credit: 'Salam! Aşağıdakı məhsulları kreditlə almaq istəyirəm. Kredit şərtləri barədə məlumat verməyinizi xahiş edirəm.'
       };
       checkoutDialog.querySelectorAll('[data-checkout-method]').forEach(link => {
         link.href = 'https://wa.me/994102414782?text=' + encodeURIComponent(messages[link.dataset.checkoutMethod] + '\n\n' + products);
