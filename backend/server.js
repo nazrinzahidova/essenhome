@@ -35,6 +35,7 @@ app.use('/login-code', authRouter);
 app.use('/api/product-images', require('./routes/productImages'));
 app.use('/api/home-sections', require('./routes/homeSections').createHomeSectionsRouter(require('./lib/prisma')));
 app.use('/api/products', require('./routes/products'));
+app.use('/api/credit-orders', require('./routes/creditOrders').createCreditOrdersRouter(require('./lib/prisma')));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/cart', require('./routes/cart'));
@@ -68,7 +69,7 @@ app.get('/:page', (req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-require('../scripts/migrate-home-sections').migrateHomeSections().then(() => require('../scripts/migrate-product-seo').migrateProductSeo()).then(() => require('../scripts/migrate-otp-timing').migrateOtpTiming()).then(() => {
+require('../scripts/migrate-home-sections').migrateHomeSections().then(() => require('../scripts/migrate-product-seo').migrateProductSeo()).then(() => require('../scripts/migrate-credit-applications').migrateCreditApplications()).then(() => require('../scripts/migrate-otp-timing').migrateOtpTiming()).then(() => {
 server = app.listen(PORT, () => {
   console.log(`🚀 Server http://localhost:${PORT} ünvanında işləyir`);
 });

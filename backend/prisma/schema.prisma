@@ -9,6 +9,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model CreditApplication {
+  id String @id @default(uuid())
+  requestKey String @unique
+  requestHash String
+  firstName String
+  lastName String
+  fatherName String
+  phone String
+  fin String
+  hasSima Boolean
+  items Json
+  total Float
+  status String @default("new")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([createdAt])
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   firstName String?

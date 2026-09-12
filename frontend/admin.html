@@ -501,7 +501,7 @@
   </header>
 
   <main>
-    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="homeSectionsTab">Ana səhifə bölmələri</button><button class="admin-tab" id="chatsTab">Çatlar</button></div>
+    <div class="admin-tabs"><button class="admin-tab active" id="productsTab">Məhsullar</button><button class="admin-tab" id="homeSectionsTab">Ana səhifə bölmələri</button><button class="admin-tab" id="chatsTab">Çatlar</button><button class="admin-tab" id="creditOrdersTab">Kreditlə sifarişlər</button></div>
     <div id="productView">
     <div class="panel-header">
       <div>
@@ -544,7 +544,7 @@
     </table>
     <div class="empty-state" id="emptyState" style="display:none;">Hələ məhsul yoxdur. "+ Məhsul əlavə et" düyməsi ilə başla.</div>
     </div>
-    <section id="homeSectionsView" style="display:none">
+    <section id="creditOrdersView" style="display:none"><div class="panel-header"><h2>Kreditlə sifarişlər</h2><button id="reloadCreditOrders" class="btn-ghost">Yenilə</button></div><div id="creditOrderList"></div><div style="display:flex;gap:12px;align-items:center;margin-top:16px"><button id="creditPrevious" class="btn-ghost">Əvvəlki</button><span id="creditPageInfo"></span><button id="creditNext" class="btn-ghost">Növbəti</button></div></section><section id="homeSectionsView" style="display:none">
       <div class="panel-header"><h2>Ana səhifə bölmələri</h2><button class="btn-ghost" id="reloadHomeSections">Yenilə</button></div>
       <form id="newHomeSection" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px"><input aria-label="Bölmə adı" id="homeSectionName" maxlength="120" placeholder="Bölmə adı" required><button class="btn-accent">+ Bölmə yarat</button></form>
       <p>Yalnız aktiv və məhsul əlavə edilmiş bölmələr ana səhifədə görünür.</p>
@@ -759,5 +759,5 @@
 <script src="chat-notifications.js?v=20260908-sound-2"></script><script src="admin-chat-read.js?v=20260909-1"></script><script src="admin.js?v=20260911-brands-1"></script>
 <script src="admin-home-sections.js?v=20260909-1"></script>
 <script src="/admin-users.js?v=20260910-users-1"></script>
-</body>
+<style>.credit-admin-card{padding:18px;border:1px solid #ddd;border-radius:12px;margin:12px 0;background:#fff}.credit-admin-card summary{cursor:pointer;font-weight:600}.credit-admin-card dl{display:grid;grid-template-columns:110px 1fr;gap:8px;margin:18px 0}.credit-admin-card dd{margin:0;overflow-wrap:anywhere}.credit-admin-card ul{padding:16px 20px}.credit-admin-card select{padding:8px;border:1px solid #ddd;border-radius:6px}</style><script src="admin-credit-orders.js?v=20260912-1"></script></body>
 </html>

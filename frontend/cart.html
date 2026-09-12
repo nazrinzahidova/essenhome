@@ -353,11 +353,11 @@
 <dialog id="checkoutDialog" aria-labelledby="checkoutTitle">
   <button type="button" id="checkoutClose" aria-label="Bağla">×</button>
   <h2 id="checkoutTitle">Ödəniş üsulunu seçin</h2>
-  <p>Seçiminizə uyğun sifariş mesajı WhatsApp-da açılacaq.</p>
+  <p>Nağd və nağdsız sifarişlər WhatsApp-la, kredit müraciəti isə forma ilə göndərilir.</p>
   <div class="checkout-options">
     <a data-checkout-method="cash">Nağd (qapıda)</a>
     <a data-checkout-method="card">Nağdsız (qapıda)</a>
-    <a data-checkout-method="credit">Kredit</a>
+    <button type="button" id="creditCheckoutOption">Kredit</button>
   </div>
 </dialog>
 <style>
@@ -394,8 +394,7 @@
       const products = cart.map(item => `• ${item.name} — ${item.qty} ədəd${item.color ? ` (Rəng: ${item.color})` : ''}`).join('\n');
       const messages = {
         cash: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağd edəcəyəm.',
-        card: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağdsız (bank kartı ilə) edəcəyəm.',
-        credit: 'Salam! Aşağıdakı məhsulları kreditlə almaq istəyirəm. Kredit şərtləri barədə məlumat verməyinizi xahiş edirəm.'
+        card: 'Salam! Aşağıdakı məhsulları sifariş etmək istəyirəm. Ödənişi qapıda nağdsız (bank kartı ilə) edəcəyəm.'
       };
       checkoutDialog.querySelectorAll('[data-checkout-method]').forEach(link => {
         link.href = 'https://wa.me/994102414782?text=' + encodeURIComponent(messages[link.dataset.checkoutMethod] + '\n\n' + products);
@@ -717,5 +716,5 @@
 </div>
   </div>
 
-</body>
+<script src="credit-checkout.js?v=20260912-1"></script></body>
 </html>
