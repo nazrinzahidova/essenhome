@@ -1,6 +1,6 @@
 const policy = require('../../frontend/order-policy');
 const statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', 'returned'];
-const transitions = { pending: ['confirmed', 'cancelled'], confirmed: ['shipped', 'cancelled'], shipped: ['delivered'], delivered: ['returned'], cancelled: [], returned: [] };
+const transitions = { pending: ['confirmed', 'cancelled'], confirmed: ['shipped', 'cancelled'], shipped: ['delivered', 'cancelled'], delivered: ['returned'], cancelled: [], returned: [] };
 const reasons = {
   changed_mind: 'Fikrimi dəyişdim', wrong_order: 'Sifarişi səhv verdim',
   delivery: 'Çatdırılma tarixi uyğun deyil', other: 'Digər səbəb'

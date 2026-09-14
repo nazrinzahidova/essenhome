@@ -87,6 +87,16 @@ test('orders: ownership, trusted prices, idempotency, cancellation and return li
   for(const status of ['confirmed','shipped','delivered']) assert.equal((await request('/admin/2',{status},3,'admin','PATCH')).status,200);
   assert.equal(+rows[1].deliveredAt,+clock);
   assert.equal((await request('/2/cancel',{reason:'other',details:'gecdir'})).status,409);
+  // Only admins can advance stages; a dispatched order may be cancelled by admin.
+  assert.equal((await request('',{...payload(),deliveryDate:'2026-09-15'})).status,201);
+  assert.equal((await request('/admin/3',{status:'confirmed'},1,'user','PATCH')).status,403);
+  assert.equal((await request('/admin/3',{status:'delivered'},3,'admin','PATCH')).status,409);
+  for (const status of ['confirmed','shipped']) assert.equal((await request('/admin/3',{status},3,'admin','PATCH')).status,200);
+  assert.equal((await (await request('/my')).json()).find(row=>row.id===3).status,'shipped');
+  credits.push({orderId:3,status:'new'});
+  assert.equal((await request('/admin/3',{status:'cancelled'},3,'admin','PATCH')).status,200);
+  assert.equal(credits.find(row=>row.orderId===3).status,'cancelled');
+  assert.equal((await request('/admin/3',{status:'delivered'},3,'admin','PATCH')).status,409);
   const deadline=new Date(+clock+14*86400000);
   assert.equal(canReturn(rows[1],new Date(+deadline+1)),false);
   clock=deadline;

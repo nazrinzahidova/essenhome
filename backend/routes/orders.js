@@ -57,11 +57,11 @@ function createOrdersRouter(db, now = () => new Date()) {
     }
   });
   router.get('/my', async (req, res) => {
-    try { res.json((await db.order.findMany({ where: { userId: req.user.id }, include: { items: { include: { product: { select: { name: true } } } } }, orderBy: { createdAt: 'desc' } })).map(row => publicOrder(row, now()))); }
+    try { res.json((await db.order.findMany({ where: { userId: req.user.id }, include: { items: { include: { product: { select: { name: true, image: true } } } } }, orderBy: { createdAt: 'desc' } })).map(row => publicOrder(row, now()))); }
     catch { res.status(503).json({ message: 'Sifarişlər yüklənmədi.' }); }
   });
   router.get('/admin', admin, async (_req, res) => {
-    try { res.json((await db.order.findMany({ include: { user: { select: { name: true, phone: true } }, items: true }, orderBy: { createdAt: 'desc' } })).map(row => publicOrder(row, now()))); }
+    try { res.json((await db.order.findMany({ include: { user: { select: { name: true, phone: true } }, items: { include: { product: { select: { name: true, image: true } } } } }, orderBy: { createdAt: 'desc' } })).map(row => publicOrder(row, now()))); }
     catch { res.status(503).json({ message: 'Sifarişlər yüklənmədi.' }); }
   });
   router.patch('/admin/:id', admin, async (req, res) => {

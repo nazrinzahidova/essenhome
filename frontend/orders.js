@@ -4,8 +4,8 @@
   const login = document.getElementById('ordersLogin'), reload = document.getElementById('ordersReload');
   const dialog = document.getElementById('orderReasonDialog'), form = document.getElementById('orderReasonForm');
   const select = document.getElementById('orderReasonSelect'), error = document.getElementById('orderReasonError');
-  const statuses = { pending:'Yeni', confirmed:'Təsdiqlənib', shipped:'Göndərilib', delivered:'Təhvil verilib', cancelled:'Ləğv edilib', returned:'Qaytarılıb' };
-  const transitions = { pending:['confirmed','cancelled'], confirmed:['shipped','cancelled'], shipped:['delivered'], delivered:['returned'] };
+  const statuses = { pending:'Sifariş qeydə alındı', confirmed:'Hazırlanır', shipped:'Çatdırılmada', delivered:'Çatdırıldı', cancelled:'Ləğv edildi', returned:'Qaytarılıb' };
+  const transitions = { pending:['confirmed','cancelled'], confirmed:['shipped','cancelled'], shipped:['delivered','cancelled'], delivered:['returned'] };
   const payments = { cash:'Nağd (qapıda)', card:'Kart (qapıda)', credit:'Kredit müraciəti' };
   const detailsField = document.getElementById('orderDetailsField');
   const detailsInput = form.elements.details;
@@ -37,19 +37,58 @@
     updateDetails();
     dialog.showModal();
   }
-  async function load() {
-    const version = ++generation; list.replaceChildren(); message.textContent = '';
+  let lastSnapshot = '';
+  async function load(background = false) {
+    if (background && (busy || dialog.open || document.hidden || reload.disabled)) return;
+    const version = ++generation;
+    if (!background) { list.replaceChildren(); message.textContent = ''; lastSnapshot = ''; }
     login.hidden = !!localStorage.getItem('token');
     if (!login.hidden) { message.textContent = 'Sifarişlərinizi görmək üçün hesaba daxil olun.'; return; }
-    reload.disabled = true; message.textContent = 'Yüklənir...';
+    reload.disabled = true; if (!background) message.textContent = 'Yüklənir...';
     try {
       const [rows, options] = await Promise.all([request(adminView ? '/admin' : '/my'), request('/reasons')]);
       if (version !== generation) return; reasons = options;
+      const snapshot = JSON.stringify(rows);
+      if (background && snapshot === lastSnapshot) return;
+      lastSnapshot = snapshot; list.replaceChildren();
       message.textContent = rows.length ? (adminView ? rows.length + ' sifariş' : '') : 'Hələ sifariş yoxdur.';
       for (const order of rows) {
         const card = el('article'); card.className = 'order-card';
-        card.append(el('h2','Sifariş №' + order.id));
-        const status = el('p',statuses[order.status] || order.status); status.className = 'order-status'; card.append(status);
+        const header = el('div'); header.className = 'order-card-header';
+        header.append(el('h2','Sifariş №' + order.id));
+        const gallery = el('div'); gallery.className = 'order-product-images'; gallery.setAttribute('aria-label','Sifarişdəki məhsullar');
+        for (const item of order.items) {
+          const name = item.name || item.product?.name || 'Məhsul';
+          const tile = el('div'); tile.className = 'order-product-image'; tile.title = name;
+          const fallback = el('span','Şəkil yoxdur'); tile.append(fallback);
+          const source = item.product?.image;
+          if (source) {
+            try {
+              const url = new URL(source,location.origin);
+              if (['http:','https:'].includes(url.protocol)) {
+                const img = el('img'); img.alt = name; img.loading = 'lazy'; img.width = 88; img.height = 88;
+                img.onload = () => { fallback.hidden = true; }; img.onerror = () => { img.remove(); fallback.hidden = false; };
+                img.src = url.href; tile.append(img);
+              }
+            } catch {}
+          }
+          gallery.append(tile);
+        }
+        header.append(gallery); card.append(header);
+        const status = el('p',statuses[order.status] || order.status); status.className = 'order-status order-status-' + order.status; card.append(status);
+        const progress = el('ol'); progress.className = 'order-progress'; progress.setAttribute('aria-label','Sifarişin mərhələləri');
+        const steps = ['pending','confirmed','shipped','delivered'];
+        const current = steps.indexOf(order.status);
+        for (const [index,step] of steps.entries()) {
+          const marker = el('li',statuses[step]);
+          if (current >= index || order.status === 'returned') marker.classList.add('is-complete');
+          if (step === order.status) { marker.classList.add('is-current'); marker.setAttribute('aria-current','step'); }
+          progress.append(marker);
+        }
+        if (order.status === 'cancelled' || order.status === 'returned') {
+          const terminal = el('li',statuses[order.status]); terminal.className = 'is-current is-terminal'; terminal.setAttribute('aria-current','step'); progress.append(terminal);
+        }
+        card.append(progress);
         const details = el('dl');
         const fields = [['Tarix',new Date(order.createdAt).toLocaleString('az-AZ',{timeZone:'Asia/Baku'})],['Çatdırılma tarixi',order.deliveryDate || 'Qeyd olunmayıb'],['Ünvan',order.address || 'Qeyd olunmayıb'],['Ödəniş',payments[order.paymentMethod] || 'Qeyd olunmayıb'],['Çatdırılma haqqı',money(order.shippingFee)],['Cəmi',money(order.total)]];
         if (adminView) fields.unshift(['Müştəri',order.user?.name || ''],['Telefon',order.user?.phone || '']);
@@ -73,7 +112,7 @@
         }
         card.append(actions); list.append(card);
       }
-    } catch(e) { if (version === generation) message.textContent = e.message; }
+    } catch(e) { if (version === generation && !background) message.textContent = e.message; }
     finally { if (version === generation) reload.disabled = false; }
   }
   form.onsubmit = async event => {
@@ -85,9 +124,11 @@
   };
   document.getElementById('orderReasonClose').onclick = () => { if (!busy) dialog.close(); };
   dialog.addEventListener('cancel',event => { if (busy) event.preventDefault(); });
-  login.onclick = () => document.getElementById('openLoginModal').click(); reload.onclick = load;
-  window.addEventListener('essen:login',load); window.addEventListener('essen:logout',() => { dialog.close(); load(); });
+  login.onclick = () => document.getElementById('openLoginModal').click(); reload.onclick = () => load();
+  window.addEventListener('essen:login',() => load()); window.addEventListener('essen:logout',() => { dialog.close(); load(); });
   window.addEventListener('storage',event => { if (event.key === 'token' || event.key === null) { dialog.close(); load(); } });
   if (adminView) { document.getElementById('ordersHeading').textContent = 'Sifarişlər və qaytarmalar'; const back = el('a','Admin panelinə qayıt'); back.href = '/admin.html'; document.getElementById('ordersHeading').after(back); }
+  setInterval(() => load(true),30000);
+  document.addEventListener('visibilitychange',() => { if (!document.hidden) load(true); });
   load();
 })();
