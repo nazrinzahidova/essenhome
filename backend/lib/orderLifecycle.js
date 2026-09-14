@@ -3,11 +3,11 @@ const statuses = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled', '
 const transitions = { pending: ['confirmed', 'cancelled'], confirmed: ['shipped', 'cancelled'], shipped: ['delivered'], delivered: ['returned'], cancelled: [], returned: [] };
 const reasons = {
   changed_mind: 'Fikrimi dəyişdim', wrong_order: 'Sifarişi səhv verdim',
-  delivery: 'Çatdırılma tarixi uyğun deyil', damaged: 'Məhsul zədəlidir',
-  faulty: 'Məhsul işləmir', different: 'Sifariş etdiyim məhsuldan fərqlidir', other: 'Digər səbəb'
+  delivery: 'Çatdırılma tarixi uyğun deyil', other: 'Digər səbəb'
 };
 function reasonText(body) {
   if (!Object.hasOwn(reasons, body.reason)) throw Error('Səbəb seçin.');
+  if (body.reason !== 'other') return reasons[body.reason];
   const detail = typeof body.details === 'string' ? body.details.trim() : '';
   if (detail.length < 3 || detail.length > 1000) throw Error('Səbəbi 3–1000 simvolla izah edin.');
   return `${reasons[body.reason]}: ${detail}`;

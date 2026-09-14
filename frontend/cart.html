@@ -353,10 +353,9 @@
 <dialog id="checkoutDialog" aria-labelledby="checkoutTitle">
   <button type="button" id="checkoutClose" aria-label="Bağla">×</button>
   <h2 id="checkoutTitle">Sifarişi rəsmiləşdir</h2>
-  <p>Sifariş şəxsi hesabınızda saxlanacaq. Ödəniş qapıda edilir; kredit üçün müraciət forması açılır.</p>
+  <p>Sifariş şəxsi hesabınızda saxlanacaq. Ödəniş qapıda edilir.</p>
   <form id="orderCheckoutForm">
     <label class="order-field">Çatdırılma tarixi<input id="orderDeliveryDate" type="date" required></label>
-    <p id="orderDeliveryNote">Bakı vaxtı ilə 10:00-dan əvvəl həmin gün, 10:00-dan etibarən növbəti gündən başlayaraq tarix seçin.</p>
     <label class="order-field">Çatdırılma ünvanı<textarea id="orderAddress" minlength="5" maxlength="500" autocomplete="street-address" required></textarea></label>
   <div class="checkout-options">
     <button type="submit" data-checkout-method="cash">Nağd (qapıda)</button>

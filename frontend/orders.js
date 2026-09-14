@@ -7,6 +7,17 @@
   const statuses = { pending:'Yeni', confirmed:'Təsdiqlənib', shipped:'Göndərilib', delivered:'Təhvil verilib', cancelled:'Ləğv edilib', returned:'Qaytarılıb' };
   const transitions = { pending:['confirmed','cancelled'], confirmed:['shipped','cancelled'], shipped:['delivered'], delivered:['returned'] };
   const payments = { cash:'Nağd (qapıda)', card:'Kart (qapıda)', credit:'Kredit müraciəti' };
+  const detailsField = document.getElementById('orderDetailsField');
+  const detailsInput = form.elements.details;
+  function updateDetails() {
+    const other = select.value === 'other';
+    detailsField.hidden = !other;
+    detailsField.style.display = other ? '' : 'none';
+    detailsInput.required = other;
+    detailsInput.disabled = !other;
+    if (!other) detailsInput.value = '';
+  }
+  select.addEventListener('change', updateDetails);
   let chosen = null, busy = false, generation = 0, reasons = {};
   const el = (tag, text) => { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; return n; };
   const money = n => Number(n).toFixed(2) + ' AZN';
@@ -20,9 +31,10 @@
     if (busy) return;
     chosen = { id:order.id, action }; form.reset(); error.textContent = '';
     document.getElementById('orderReasonTitle').textContent = action === 'cancel' ? 'Sifarişi ləğv et — №' + order.id : 'Qaytarma müraciəti — №' + order.id;
-    document.getElementById('orderReasonNote').textContent = action === 'cancel' ? 'Səbəbi seçin və izah edin. Göndərdikdən sonra sifariş ləğv ediləcək.' : 'Təhvil tarixindən 14 gün ərzində əsaslandırılmış səbəblə müraciət edə bilərsiniz. Müraciətə mağaza baxacaq.';
+    document.getElementById('orderReasonNote').textContent = action === 'cancel' ? 'Səbəbi seçin. Göndərdikdən sonra sifariş ləğv ediləcək.' : 'Təhvil tarixindən 14 gün ərzində əsaslandırılmış səbəblə müraciət edə bilərsiniz. Müraciətə mağaza baxacaq.';
     select.replaceChildren(); const placeholder = el('option','Səbəblər — seçin'); placeholder.value = ''; select.append(placeholder);
     for (const [value,text] of Object.entries(reasons)) { const option = el('option',text); option.value = value; select.append(option); }
+    updateDetails();
     dialog.showModal();
   }
   async function load() {

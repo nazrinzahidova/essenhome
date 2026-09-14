@@ -74,9 +74,11 @@ test('orders: ownership, trusted prices, idempotency, cancellation and return li
   assert.deepEqual(await (await request('/my',undefined,2)).json(),[]);
   assert.equal((await request('/1/cancel',{reason:'other',details:'Səhv sifariş'},2)).status,404);
   assert.equal((await request('/1/cancel',{reason:'unknown',details:'Səhv sifariş'})).status,400);
+  assert.equal((await request('/1/cancel',{reason:'other'})).status,400);
+  for (const reason of ['damaged','faulty','different']) assert.equal((await request('/1/cancel',{reason,details:'İzah'})).status,400);
   credits.push({orderId:1,status:'new'});
-  assert.equal((await request('/1/cancel',{reason:'wrong_order',details:'İki dəfə seçmişəm'})).status,200);
-  assert.equal(rows[0].status,'cancelled'); assert.match(rows[0].cancellationReason,/İki dəfə/); assert.equal(credits[0].status,'cancelled');
+  assert.equal((await request('/1/cancel',{reason:'wrong_order'})).status,200);
+  assert.equal(rows[0].status,'cancelled'); assert.equal(rows[0].cancellationReason,'Sifarişi səhv verdim'); assert.equal(credits[0].status,'cancelled');
   assert.equal((await request('/1/cancel',{reason:'other',details:'təkrar'})).status,409);
   assert.equal((await request('/admin/1',{status:'confirmed'},3,'admin','PATCH')).status,409);
   clock=new Date('2026-09-14T06:00:00Z');
@@ -88,8 +90,8 @@ test('orders: ownership, trusted prices, idempotency, cancellation and return li
   const deadline=new Date(+clock+14*86400000);
   assert.equal(canReturn(rows[1],new Date(+deadline+1)),false);
   clock=deadline;
-  assert.equal((await request('/2/return',{reason:'faulty',details:'Məhsul işə düşmür'})).status,200);
-  assert.equal((await request('/2/return',{reason:'faulty',details:'Məhsul işə düşmür'})).status,409);
+  assert.equal((await request('/2/return',{reason:'other',details:'Məhsul işə düşmür'})).status,200);
+  assert.equal((await request('/2/return',{reason:'other',details:'Məhsul işə düşmür'})).status,409);
   assert.equal(rows[1].status,'delivered'); assert.ok(rows[1].returnRequestedAt);
   assert.equal((await request('/admin/2',{status:'returned'},3,'admin','PATCH')).status,200);
 });
