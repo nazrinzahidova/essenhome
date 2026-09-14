@@ -63,6 +63,7 @@ function createCreditOrdersRouter(db) {
       }
       const items = input.items.map(i=>({...i,name:byId.get(i.productId).name,price:Number(byId.get(i.productId).price)}));
       const total = items.reduce((sum,i)=>sum+Math.round(i.price*100)*i.quantity,0)/100;
+      if (total < policy.creditMinimum) return res.status(400).json({message:'Kredit müraciəti üçün məhsulların cəmi minimum 199.99 AZN olmalıdır.'});
       const {requestKey,firstName,lastName,fatherName,phone,fin,hasSima} = input;
       const saved = await db.$transaction(async tx => {
         const shippingFee = policy.shippingCost(total);

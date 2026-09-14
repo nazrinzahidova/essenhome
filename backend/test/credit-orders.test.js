@@ -4,8 +4,8 @@ const express=require('express');
 const jwt=require('jsonwebtoken');
 const {createCreditOrdersRouter}=require('../routes/creditOrders');
 test('credit submission validates, prices on server, deduplicates and restricts admin access',async t=>{
-  process.env.JWT_SECRET='credit-local-test-only';const rows=[];
-  const orderRows=[];const db={order:{create:async({data})=>{const row={id:orderRows.length+1,...data};orderRows.push(row);return row;}},product:{findMany:async()=>[{id:1,name:'Test product',price:125.5,stock:5}]},creditApplication:{
+  process.env.JWT_SECRET='credit-local-test-only';const rows=[];let productPrice=125.5;
+  const orderRows=[];const db={order:{create:async({data})=>{const row={id:orderRows.length+1,...data};orderRows.push(row);return row;}},product:{findMany:async()=>[{id:1,name:'Test product',price:productPrice,stock:5}]},creditApplication:{
     findUnique:async({where})=>rows.find(r=>where.id?r.id===where.id:r.requestKey===where.requestKey),
     create:async({data})=>{const row={...data,id:'application-1',number:rows.length+1,status:'new',createdAt:new Date()};rows.push(row);return row;},
     findMany:async()=>rows,count:async()=>rows.length,update:async({data})=>Object.assign(rows[0],data),
@@ -34,4 +34,16 @@ test('credit submission validates, prices on server, deduplicates and restricts 
   assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE',headers})).status,200);assert.equal(rows.length,0);
   const afterDelete=await (await fetch(base+'/admin',{headers})).json();assert.equal(afterDelete.count,0);assert.deepEqual(afterDelete.items,[]);
   assert.equal((await fetch(base+'/admin/application-1',{method:'DELETE',headers})).status,404);
+  // Shipping and client-supplied prices/totals must not make an under-minimum basket eligible.
+  const beforeOrders=orderRows.length;
+  productPrice=199.98;
+  const minimumBody={...body,requestKey:require('crypto').randomUUID(),items:[{productId:1,quantity:1,price:9999}],total:9999};
+  assert.equal((await submit(minimumBody)).status,400);
+  assert.equal(rows.length,0);assert.equal(orderRows.length,beforeOrders);
+  productPrice=199.99;
+  assert.equal((await submit(minimumBody)).status,201);
+  assert.equal(rows[0].total,199.99);
+  productPrice=200;
+  assert.equal((await submit({...minimumBody,requestKey:require('crypto').randomUUID()})).status,201);
+  assert.equal(rows[1].total,200);
 });

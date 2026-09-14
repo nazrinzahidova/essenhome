@@ -234,7 +234,7 @@
 <link rel="stylesheet" href="/store-footer.css?v=20260909-1">
 <link rel="stylesheet" href="/account.css?v=20260910-2">
 <script defer src="/account.js?v=20260914-orders-1"></script>
-<script src="/order-policy.js?v=20260914-1"></script></head>
+<script src="/order-policy.js?v=20260914-2"></script></head>
 <body>
 
 <header class="eh-header"><div class="eh-top"><a href="/index.html" aria-label="Essen Home ana səhifə"><img src="/img/logo.png" alt="Essen Home"></a><div class="eh-account"><button class="eh-monthly" type="button">Aylıq Ödəniş</button><details class="eh-language"><summary><span class="eh-language-label">AZ</span> ⌄</summary><div><a href="/index.html" data-language="az">AZ</a><a href="/ru/index.html" data-language="ru">RU</a></div></details><button id="openLoginModal" type="button" aria-label="Hesab"><i class="fa-regular fa-circle-user"></i></button></div></div><div class="eh-bar"><button class="eh-catalog-toggle" type="button" aria-expanded="false" aria-controls="eh-catalog"><svg xmlns="http://www.w3.org/2000/svg"  fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -360,7 +360,8 @@
   <div class="checkout-options">
     <button type="submit" data-checkout-method="cash">Nağd (qapıda)</button>
     <button type="submit" data-checkout-method="card">Nağdsız (qapıda)</button>
-    <button type="button" id="creditCheckoutOption">Kredit</button>
+    <button type="button" id="creditCheckoutOption" aria-describedby="creditMinimumNote">Kredit</button>
+    <p id="creditMinimumNote" hidden>Kredit üçün minimum məbləğ: 199.99 AZN.</p>
   </div>
   </form><p id="orderCheckoutMessage" role="status"></p><div id="orderCheckoutSuccess" hidden></div>
   <p><a href="/delivery-returns.html">Çatdırılma və qaytarma şərtləri</a></p>
@@ -706,5 +707,5 @@
 </div>
   </div>
 
-<script src="/order-checkout.js?v=20260914-1"></script><script src="credit-checkout.js?v=20260914-1"></script></body>
+<script src="/order-checkout.js?v=20260914-2"></script><script src="credit-checkout.js?v=20260914-1"></script></body>
 </html>

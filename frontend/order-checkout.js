@@ -7,6 +7,15 @@
   const message = document.getElementById('orderCheckoutMessage');
   const success = document.getElementById('orderCheckoutSuccess');
   let items = [], pendingLogin = null, sending = false, pending = null, key = '';
+  const creditButton = document.getElementById('creditCheckoutOption');
+  const creditNote = document.getElementById('creditMinimumNote');
+  const creditSubtotal = () => items.reduce((sum, item) => sum + Math.round(Number(item.price) * 100) * Number(item.qty), 0) / 100;
+  function updateCreditOption() {
+    const subtotal = creditSubtotal();
+    const eligible = Number.isFinite(subtotal) && subtotal >= EssenOrderPolicy.creditMinimum;
+    creditButton.disabled = sending || !!pending || !eligible;
+    creditNote.hidden = eligible || !!pending;
+  }
   const storageKey = () => 'essen:pending-order:' + (localStorage.getItem('activeUser') || '');
   const savePending = () => { try { pending ? sessionStorage.setItem(storageKey(), JSON.stringify(pending)) : sessionStorage.removeItem(storageKey()); } catch {} };
   async function refreshDate() {
@@ -23,6 +32,7 @@
     sending = value;
     form.querySelectorAll('button,input,textarea').forEach(n => { n.disabled = value; });
     document.getElementById('checkoutClose').disabled = value;
+    updateCreditOption();
   }
   dialog.addEventListener('cancel', event => { if (sending) event.preventDefault(); });
   async function open(snapshot) {
@@ -46,6 +56,7 @@
       address.value = pending?.address || address.value;
       await refreshDate();
       if (pending) message.textContent = 'Əvvəlki sorğunun nəticəsi alınmayıb. Eyni sifarişi təkrar yoxlamaq üçün ödəniş düyməsinə basın.';
+      updateCreditOption();
       dialog.showModal();
     } catch (error) { alert(error.message); }
     finally { button.disabled = false; }
@@ -55,6 +66,8 @@
   async function creditContext() {
     if (sending) return null;
     if (pending) { message.textContent = 'Əvvəlki sifarişin nəticəsini yoxlayın.'; return null; }
+    const subtotal = creditSubtotal();
+    if (!Number.isFinite(subtotal) || subtotal < EssenOrderPolicy.creditMinimum) { message.textContent = 'Kredit müraciəti üçün məhsulların cəmi minimum 199.99 AZN olmalıdır.'; return null; }
     try { await refreshDate(); } catch (e) { message.textContent = e.message; return null; }
     if (!form.reportValidity()) return null;
     return { items, deliveryDate: date.value, address: address.value.trim() };

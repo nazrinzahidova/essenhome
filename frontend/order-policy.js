@@ -6,6 +6,7 @@
   const freeThreshold = 199.99;
   const shippingFee = 4.99;
   const returnDays = 14;
+  const creditMinimum = 199.99;
   const cutoffTime = '10:00:00+04:00';
   const deliveryDescription = 'Bakı vaxtı ilə saat 10:00-dan əvvəl həmin gün, 10:00-dan etibarən isə növbəti gündən başlayaraq çatdırılma tarixi seçilə bilər.';
   const returnDescription = 'Məhsul təhvil alındıqdan sonra 14 gün ərzində əsaslandırılmış səbəb göstərilməklə qaytarıla bilər. Müraciətdə səbəb qeyd edilməlidir.';
@@ -27,6 +28,6 @@
     if (value < earliestDate(now)) throw new Error('Bu tarix artıq seçilə bilməz. Çatdırılma tarixini yeniləyin.');
     return value;
   }
-  return { freeThreshold, shippingFee, returnDays, cutoffTime, deliveryDescription, returnDescription,
+  return { freeThreshold, shippingFee, returnDays, creditMinimum, cutoffTime, deliveryDescription, returnDescription,
     earliestDate, validDate, validateDate, shippingCost: subtotal => Number(subtotal) >= freeThreshold ? 0 : shippingFee };
 });
