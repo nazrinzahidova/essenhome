@@ -16,13 +16,15 @@
   </form><div id="creditSuccess" role="status" hidden></div>`;
   document.body.append(dialog);
   const form = dialog.querySelector('form'), error = document.getElementById('creditError'), success=document.getElementById('creditSuccess');
-  let items=[], requestKey='', sending=false;
+  let items=[], requestKey='', sending=false, checkoutContext=null;
   document.getElementById('creditClose').onclick=()=>{if(!sending)dialog.close();};
   dialog.addEventListener('cancel',event=>{if(sending)event.preventDefault();});
   document.getElementById('creditCheckoutOption').onclick=async()=>{
     const option=document.getElementById('creditCheckoutOption');option.disabled=true;
     try {
-      items=await fetchCart();
+      checkoutContext=await window.EssenCheckout.creditContext();
+      if(!checkoutContext)return;
+      items=checkoutContext.items;
       if(!items.length){document.getElementById('checkoutDialog').close();await renderCart();return;}
       requestKey=crypto.randomUUID();form.reset();form.hidden=false;success.hidden=true;error.hidden=true;
       document.getElementById('creditSummary').textContent=items.map(i=>`${i.name} × ${i.qty}`).join(' · ');
@@ -35,9 +37,9 @@
     sending=true;const button=document.getElementById('creditSubmit');button.disabled=true;button.textContent='Göndərilir...';error.hidden=true;
     const values=Object.fromEntries(new FormData(form));
     try {
-      const response=await fetch('/api/credit-orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...values,hasSima:values.hasSima==='yes',requestKey,items:items.map(i=>({productId:Number(i.id),quantity:Number(i.qty),color:i.color||''}))})});
+      const response=await fetch('/api/credit-orders',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+localStorage.getItem('token')},body:JSON.stringify({...values,deliveryDate:checkoutContext.deliveryDate,address:checkoutContext.address,hasSima:values.hasSima==='yes',requestKey,items:items.map(i=>({productId:Number(i.id),quantity:Number(i.qty),color:i.color||''}))})});
       const data=await response.json();if(!response.ok)throw new Error(data.message||'Müraciət göndərilmədi. Yenidən cəhd edin.');
-      form.reset();form.hidden=true;success.hidden=false;success.textContent=`Müraciətiniz qəbul edildi. Əməkdaşımız sizinlə əlaqə saxlayacaq. Müraciət nömrəsi: ${data.code}`;
+      form.reset();form.hidden=true;success.hidden=false;success.textContent=`Müraciətiniz qəbul edildi. Əməkdaşımız sizinlə əlaqə saxlayacaq. Müraciət nömrəsi: ${data.code}`;const orders=document.createElement('a');orders.href='/orders.html';orders.textContent=' Sifarişlərimə bax';success.append(orders);
     }catch(err){error.textContent=err.message==='Failed to fetch'?'Bağlantı alınmadı. Yenidən cəhd edin.':err.message;error.hidden=false;}
     finally{sending=false;button.disabled=false;button.textContent='Rəsmiləşdir';}
   };

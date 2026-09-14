@@ -5,7 +5,7 @@
   const menu = document.createElement('div');
   menu.id = 'essen-account-menu';
   menu.hidden = true;
-  menu.innerHTML = '<a href="/profile.html">Şəxsi məlumatlarım</a><a href="/favourites.html">Seçilmişlər</a><button type="button" data-logout>Çıxış</button>';
+  menu.innerHTML = '<a href="/profile.html">Şəxsi məlumatlarım</a><a href="/orders.html">Sifarişlərim</a><a href="/favourites.html">Seçilmişlər</a><button type="button" data-logout>Çıxış</button>';
   document.body.append(menu);
   const token = () => localStorage.getItem('token');
   function closeMenu() { menu.hidden = true; button.setAttribute('aria-expanded', 'false'); }

@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { IMAGE_SELECT, serializeProduct } = require('../lib/productImages');
+const { organization, offerPolicies } = require('../lib/merchantPolicies');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -30,7 +31,7 @@ function renderProduct(template, product) {
     ...(item.brand ? { brand: { '@type': 'Brand', name: item.brand } } : {}),
     offers: { '@type': 'Offer', url, priceCurrency: 'AZN', price: item.price,
       availability: `https://schema.org/${Number(item.stock) > 0 ? 'InStock' : 'OutOfStock'}`,
-      seller: { '@type': 'Organization', name: 'Essen Home', url: ORIGIN } }
+      seller: organization(), ...offerPolicies(item.price) }
   };
   const metadata = `<meta name="description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
 <meta name="robots" content="index,follow,max-image-preview:large">
@@ -56,6 +57,14 @@ ${item.description ? `<h2>Əsas göstəricilər</h2><p style="white-space:pre-li
 
 function createSeoRouter(prisma) {
   const router = express.Router();
+  router.get('/api/delivery-options', (_req, res) => res.set('Cache-Control', 'no-store').json({
+    minDate: require('../../frontend/order-policy').earliestDate(), serverNow: new Date().toISOString()
+  }));
+  router.get('/delivery-returns.html', (_req, res) => {
+    const policyTemplate = fs.readFileSync(path.join(__dirname, '../../frontend/delivery-returns.html'), 'utf8');
+    const schema = JSON.stringify({ '@context': 'https://schema.org', ...organization() }).replace(/</g, '\\u003c');
+    res.type('html').send(policyTemplate.replace('</head>', `<script type="application/ld+json">${schema}</script></head>`));
+  });
   const template = fs.readFileSync(path.join(__dirname, '../../frontend/product.html'), 'utf8');
   const unavailable = res => res.status(503).set('Retry-After', '60').type('text').send('Müvəqqəti xəta. Bir az sonra yenidən yoxlayın.');
   router.get('/catalog.html', (req, res) => {
@@ -89,7 +98,7 @@ function createSeoRouter(prisma) {
     } catch (error) { console.error('Sitemap failed:', error.message); unavailable(res); }
   });
   router.get('/sitemap-pages.xml', (_req, res) => res.type('application/xml').send(xml('urlset',
-    ['/', '/catalog.html'].map(page => `<url><loc>${ORIGIN}${page}</loc></url>`).join(''))));
+    ['/', '/catalog.html', '/delivery-returns.html'].map(page => `<url><loc>${ORIGIN}${page}</loc></url>`).join(''))));
   router.get(/^\/sitemap-products-([1-9]\d*)\.xml$/, async (req, res) => {
     try {
       const page = Number(req.params[0]);
@@ -109,7 +118,7 @@ function createSeoRouter(prisma) {
     } catch (error) { console.error('Product page failed:', error.message); unavailable(res); }
   });
   router.use((req, res, next) => {
-    if (/^\/(cart|favourites|compare|admin|login|register)(\.html|\/|$)/i.test(req.path)) res.set('X-Robots-Tag', 'noindex, follow');
+    if (/^\/(cart|orders|profile|favourites|compare|admin|login|register)(\.html|\/|$)/i.test(req.path)) res.set('X-Robots-Tag', 'noindex, follow');
     next();
   });
   return router;

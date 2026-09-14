@@ -10,6 +10,8 @@ datasource db {
 }
 
 model CreditApplication {
+  orderId Int? @unique
+  order Order? @relation(fields: [orderId], references: [id])
   number Int @unique @default(autoincrement())
   id String @id @default(uuid())
   requestKey String @unique
@@ -156,6 +158,18 @@ model ProductPlacement {
 }
 
 model Order {
+  requestKey String? @unique
+  requestHash String?
+  paymentMethod String?
+  deliveryDate String? @db.VarChar(10)
+  address String?
+  shippingFee Float @default(0)
+  cancellationReason String?
+  cancelledAt DateTime?
+  deliveredAt DateTime?
+  returnReason String?
+  returnRequestedAt DateTime?
+  creditApplication CreditApplication?
   id        Int      @id @default(autoincrement())
   userId    Int
   status    String   @default("pending")
@@ -167,6 +181,8 @@ model Order {
 }
 
 model OrderItem {
+  name String?
+  color String?
   id        Int   @id @default(autoincrement())
   orderId   Int
   productId Int

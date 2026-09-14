@@ -269,18 +269,11 @@ router.get('/orders', authMiddleware, adminCheck, async (req, res) => {
   }
 });
 
-// Sifariş statusunu yenilə
+// Keep the legacy admin endpoint subject to the same order lifecycle rules.
 router.put('/orders/:id', authMiddleware, adminCheck, async (req, res) => {
   try {
-    const { status } = req.body;
-    const order = await prisma.order.update({
-      where: { id: parseInt(req.params.id) },
-      data: { status }
-    });
-    res.json(order);
-  } catch (err) {
-    res.status(500).json({ message: 'Server xətası' });
-  }
+    const ok = await require('../lib/orderLifecycle').changeStatus(prisma, Number(req.params.id), req.body.status);
+    res.status(ok ? 200 : 409).json(ok ? { ok: true } : { message: 'Bu status dəyişikliyi mümkün deyil.' });
+  } catch { res.status(503).json({ message: 'Status saxlanmadı.' }); }
 });
-
 module.exports = router;

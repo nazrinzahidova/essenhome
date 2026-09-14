@@ -1,0 +1,21 @@
+ALTER TABLE "Order" ADD COLUMN IF NOT EXISTS "requestKey" TEXT,
+ ADD COLUMN IF NOT EXISTS "requestHash" TEXT,
+ ADD COLUMN IF NOT EXISTS "paymentMethod" TEXT,
+ ADD COLUMN IF NOT EXISTS "deliveryDate" VARCHAR(10),
+ ADD COLUMN IF NOT EXISTS "address" TEXT,
+ ADD COLUMN IF NOT EXISTS "shippingFee" DOUBLE PRECISION NOT NULL DEFAULT 0,
+ ADD COLUMN IF NOT EXISTS "cancellationReason" TEXT,
+ ADD COLUMN IF NOT EXISTS "cancelledAt" TIMESTAMP(3),
+ ADD COLUMN IF NOT EXISTS "deliveredAt" TIMESTAMP(3),
+ ADD COLUMN IF NOT EXISTS "returnReason" TEXT,
+ ADD COLUMN IF NOT EXISTS "returnRequestedAt" TIMESTAMP(3);
+CREATE UNIQUE INDEX IF NOT EXISTS "Order_requestKey_key" ON "Order"("requestKey");
+ALTER TABLE "OrderItem" ADD COLUMN IF NOT EXISTS "name" TEXT, ADD COLUMN IF NOT EXISTS "color" TEXT;
+ALTER TABLE "CreditApplication" ADD COLUMN IF NOT EXISTS "orderId" INTEGER;
+CREATE UNIQUE INDEX IF NOT EXISTS "CreditApplication_orderId_key" ON "CreditApplication"("orderId");
+DO $$ BEGIN
+ IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'CreditApplication_orderId_fkey') THEN
+  ALTER TABLE "CreditApplication" ADD CONSTRAINT "CreditApplication_orderId_fkey"
+   FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ END IF;
+END $$;

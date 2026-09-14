@@ -2,6 +2,7 @@ const express = require('express');
 const crypto = require('crypto');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminCheck');
+const policy = require('../../frontend/order-policy');
 
 function applicationCode(row) { return String(row.number).padStart(6, '0'); }
 
@@ -18,6 +19,10 @@ function validate(body) {
   if (!/^[A-Z0-9]{7}$/.test(value.fin)) throw new Error('FIN kod 7 hərf və ya rəqəmdən ibarət olmalıdır.');
   if (typeof body.hasSima !== 'boolean') throw new Error('SİMA var və ya yoxdur seçin.');
   value.hasSima = body.hasSima;
+  if (!policy.validDate(body.deliveryDate)) throw new Error('Çatdırılma tarixini seçin.');
+  value.deliveryDate = body.deliveryDate;
+  value.address = typeof body.address === 'string' ? body.address.trim() : '';
+  if (value.address.length < 5 || value.address.length > 500) throw new Error('Çatdırılma ünvanını daxil edin (5–500 simvol).');
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(body.requestKey || '')) throw new Error('Formanı yenidən açıb cəhd edin.');
   value.requestKey = body.requestKey;
   if (!Array.isArray(body.items) || !body.items.length || body.items.length > 50) throw new Error('Səbət boşdur və ya məhsul sayı çoxdur.');
@@ -35,7 +40,7 @@ function createCreditOrdersRouter(db) {
   const router = express.Router();
   const attempts = new Map();
   router.use((_req,res,next) => {res.set('Cache-Control','no-store');next();});
-  router.post('/', async (req,res) => {
+  router.post('/', auth, async (req,res) => {
     const now = Date.now(), ip = req.ip;
     for (const [key,entry] of attempts) if (entry.until < now) attempts.delete(key);
     const entry = attempts.get(ip) || {count:0, until:now+15*60*1000};
@@ -43,10 +48,11 @@ function createCreditOrdersRouter(db) {
     entry.count++; attempts.set(ip,entry);
     let input;
     try { input = validate(req.body || {}); } catch(error) { return res.status(400).json({message:error.message}); }
-    const requestHash = crypto.createHash('sha256').update(JSON.stringify(input)).digest('hex');
+    const requestHash = crypto.createHash('sha256').update(JSON.stringify({userId:req.user.id,...input})).digest('hex');
     try {
       const previous = await db.creditApplication.findUnique({where:{requestKey:input.requestKey}});
       if (previous) return previous.requestHash === requestHash ? res.json({id:previous.id,code:applicationCode(previous)}) : res.status(409).json({message:'Müraciət dəyişib. Formanı yenidən açın.'});
+      try { policy.validateDate(input.deliveryDate); } catch (error) { return res.status(400).json({message:error.message}); }
       const products = await db.product.findMany({where:{id:{in:[...new Set(input.items.map(i=>i.productId))]}}});
       const byId = new Map(products.map(p=>[p.id,p]));
       const quantities = new Map();
@@ -58,7 +64,12 @@ function createCreditOrdersRouter(db) {
       const items = input.items.map(i=>({...i,name:byId.get(i.productId).name,price:Number(byId.get(i.productId).price)}));
       const total = items.reduce((sum,i)=>sum+Math.round(i.price*100)*i.quantity,0)/100;
       const {requestKey,firstName,lastName,fatherName,phone,fin,hasSima} = input;
-      const saved = await db.creditApplication.create({data:{requestKey,requestHash,firstName,lastName,fatherName,phone,fin,hasSima,items,total}});
+      const saved = await db.$transaction(async tx => {
+        const shippingFee = policy.shippingCost(total);
+        const order = await tx.order.create({data:{userId:req.user.id,paymentMethod:'credit',deliveryDate:input.deliveryDate,address:input.address,
+          shippingFee,total:Math.round((total+shippingFee)*100)/100,items:{create:items}},include:{items:true}});
+        return tx.creditApplication.create({data:{requestKey,requestHash,firstName,lastName,fatherName,phone,fin,hasSima,items,total,orderId:order.id}});
+      });
       res.status(201).json({id:saved.id,code:applicationCode(saved)});
     } catch(error) {
       if (error.code === 'P2002') {
@@ -71,13 +82,31 @@ function createCreditOrdersRouter(db) {
   router.get('/admin',auth,admin,async(req,res)=>{
     try {
       const page = Math.max(1,Math.min(100000,parseInt(req.query.page,10)||1));
-      const [items,count] = await Promise.all([db.creditApplication.findMany({orderBy:[{createdAt:'desc'},{id:'desc'}],skip:(page-1)*25,take:25}),db.creditApplication.count()]);
+      const [items,count] = await Promise.all([db.creditApplication.findMany({orderBy:[{createdAt:'desc'},{id:'desc'}],skip:(page-1)*25,take:25,include:{order:{select:{deliveryDate:true,address:true,status:true,cancellationReason:true,returnReason:true}}}}),db.creditApplication.count()]);
       res.json({items,count,page});
     } catch {res.status(503).json({message:'Kredit sifarişləri yüklənmədi.'});}
   });
   router.patch('/admin/:id',auth,admin,async(req,res)=>{
     if (!['new','contacted','completed','cancelled'].includes(req.body.status)) return res.status(400).json({message:'Status düzgün deyil.'});
-    try {await db.creditApplication.update({where:{id:req.params.id},data:{status:req.body.status}});res.json({ok:true});}
+    try {
+      const row=await db.creditApplication.findUnique({where:{id:req.params.id},include:{order:true}});
+      if(!row)return res.status(404).json({message:'Müraciət tapılmadı.'});
+      if(row.order && req.body.status==='cancelled') {
+        const ok=await require('../lib/orderLifecycle').changeStatus(db,row.orderId,'cancelled');
+        return res.status(ok?200:409).json(ok?{ok:true}:{message:'Sifariş artıq ləğv edilə bilməz.'});
+      }
+      if(row.order?.status==='cancelled')return res.status(409).json({message:'Ləğv edilmiş sifariş yenidən açıla bilməz.'});
+      const updated=await db.$transaction(async tx=>{
+        if(row.order) {
+          // Lock the linked order before updating the credit status, using the same lock order as cancellation.
+          const locked=await tx.order.updateMany({where:{id:row.orderId,status:row.order.status},data:{status:row.order.status}});
+          if(!locked.count)return false;
+        }
+        await tx.creditApplication.update({where:{id:req.params.id},data:{status:req.body.status}});
+        return true;
+      });
+      res.status(updated?200:409).json(updated?{ok:true}:{message:'Sifariş dəyişib. Siyahını yeniləyin.'});
+    }
     catch {res.status(404).json({message:'Müraciət tapılmadı və ya yenilənmədi.'});}
   });
   router.delete('/admin/:id',auth,admin,async(req,res)=>{
