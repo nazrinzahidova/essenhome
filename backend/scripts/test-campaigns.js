@@ -22,6 +22,7 @@ async function main() {
     await pool.query('CREATE TABLE "User" ("id" SERIAL PRIMARY KEY,"name" TEXT,"email" TEXT,"phone" TEXT,"role" TEXT DEFAULT \'user\')');
     const sql=fs.readFileSync(path.join(__dirname,'../prisma/migrations/20260919120000_qr_campaign/migration.sql'),'utf8');
     await pool.query(sql);
+    await pool.query(fs.readFileSync(path.join(__dirname,'../prisma/migrations/20260919180000_campaign_fin_encryption/migration.sql'),'utf8'));
     const app=express();app.use(express.json());app.use('/api/campaigns',require('../routes/campaigns')(pool));
     server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});
     const base=`http://127.0.0.1:${server.address().port}/api/campaigns`;
@@ -66,7 +67,10 @@ async function main() {
     assert.deepEqual(entries.map(x=>Number(x.number)),Array.from({length:entries.length},(_,i)=>i+1));
     assert(entries.every(x=>/^[a-f0-9]{64}$/.test(x.finHash)&&/^\*{5}/.test(x.finMasked)));
     assert(!JSON.stringify(entries).includes('ABC2345'));
-    await assert.rejects(pool.query('DELETE FROM "CampaignEntry" WHERE "id"=$1',[first.data.id]),/never deleted/);
+    assert.equal(c.decryptFin(entries[0].finEncrypted,entries[0].campaignId,entries[0].finHash),'ABC2345');
+    assert.throws(()=>c.decryptFin(entries[0].finEncrypted,999,entries[0].finHash));
+    assert(!JSON.stringify(first.data).includes('finEncrypted'));
+    assert(!JSON.stringify((await call('/me',2)).data).includes('ABC2345'));
     await assert.rejects(pool.query('UPDATE "CampaignEntry" SET "number"=999 WHERE "id"=$1',[first.data.id]),/immutable/);
     assert.equal((await call(`/admin/entries/${first.data.id}`,1,{status:'cancelled'},'PATCH')).status,200);
     assert.equal((await call('/activate',3,{fin:'ABC2345',scanToken:duplicateToken})).status,409);
@@ -74,6 +78,7 @@ async function main() {
     // DB-level uniqueness is independent of application checks.
     await assert.rejects(pool.query('INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number") VALUES ($1,40,$2,$3,$4,999)',[campaign.id,c.readScan(await makeScan(40)),entries[0].finHash,entries[0].finMasked]),e=>e.code==='23505');
     const listed=await call(`/admin/entries?campaignId=${campaign.id}&q=K-0000001`,1);assert.equal(listed.status,200);assert.equal(listed.data.total,1);assert(!JSON.stringify(listed.data).includes('finHash'));assert.equal(listed.data.items[0].finMasked,'*****45');
+    assert.equal(listed.data.items[0].fin,'ABC2345');assert(!JSON.stringify(listed.data).includes('finEncrypted'));
     const stats=await call(`/admin/stats?campaignId=${campaign.id}`,1);assert.equal(stats.data.participants,entries.length);assert.equal(stats.data.cancelled,1);
     const scans=await call(`/admin/scans?campaignId=${campaign.id}&device=mobile&browser=Chrome&os=Android`,1);assert.equal(scans.status,200);assert(scans.data.total>0);
     const parallelLimits=await Promise.allSettled(Array.from({length:20},()=>c.rateLimit(pool,'test-limit',5)));assert.equal(parallelLimits.filter(x=>x.status==='fulfilled').length,5);
@@ -86,6 +91,11 @@ async function main() {
     await pool.query('DELETE FROM "User" WHERE "id"=2');
     assert.equal((await pool.query('SELECT "userId" FROM "CampaignEntry" WHERE "id"=$1',[first.data.id])).rows[0].userId,null);
     await assert.rejects(c.activate(pool,3,{fin:'ABC2345',scanToken:duplicateToken}),e=>e.status===409);
+    await pool.query('DELETE FROM "CampaignEntry" WHERE "id"=$1',[first.data.id]);
+    assert.equal((await pool.query('SELECT "number" FROM "CampaignRetiredNumber"')).rows[0].number,'1');
+    const replacement=await c.activate(pool,3,{fin:'ABC2345',scanToken:duplicateToken});
+    assert.equal(replacement.participantNumber,c.number(entries.length+2));
+    await assert.rejects(pool.query('INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number") VALUES ($1,40,$2,$3,$4,1)',[campaign.id,c.readScan(await makeScan(40)),entries[0].finHash,entries[0].finMasked]),/cannot be reused/);
     await call(`/admin/campaigns/${campaign.id}`,1,{active:false},'PATCH');assert.equal((await call(`/sources/${source.id}`)).status,404);
     await assert.rejects(c.activate(pool,41,{fin:'TUV2345',scanToken:await makeScan(41)}),e=>e.status===409);
     await pool.query('UPDATE "User" SET "role"=\'user\' WHERE "id"=1');assert.equal((await call('/admin/campaigns',1)).status,403);

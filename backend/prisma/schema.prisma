@@ -295,6 +295,11 @@ model QrScan {
   @@index([userId])
 }
 
+model CampaignRetiredNumber {
+  number BigInt @id
+  retiredAt DateTime @default(now()) @db.Timestamp(3)
+}
+
 model CampaignEntry {
   id Int @id @default(autoincrement())
   campaignId Int
@@ -302,6 +307,7 @@ model CampaignEntry {
   scanId String @unique
   finHash String
   finMasked String
+  finEncrypted String?
   number BigInt @unique
   status String @default("active")
   createdAt DateTime @default(now()) @db.Timestamp(3)

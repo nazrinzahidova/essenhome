@@ -71,7 +71,7 @@
     const date=value=>value?new Date(value).toLocaleString('az-AZ'):'—';
     const labels={active:'Aktiv',cancelled:'Ləğv edilib',scanned:'Skan edilib',registered:'Giriş edilib',activated:'Aktivləşdirilib'};
     data.items.forEach(row=>{
-      const tr=document.createElement('tr');[row.participantNumber,row.name,row.phone,row.email,row.finMasked,row.source,`${row.device} / ${row.browser} / ${row.os}`,date(row.scannedAt),date(row.createdAt),labels[kind==='entries'?row.status:row.scanStatus]].forEach(value=>tr.append(node('td',value)));
+      const tr=document.createElement('tr');[row.participantNumber,row.name,row.phone,row.email,row.fin || (row.finMasked ? `${row.finMasked} (köhnə qeyd)` : null),row.source,`${row.device} / ${row.browser} / ${row.os}`,date(row.scannedAt),date(row.createdAt),labels[kind==='entries'?row.status:row.scanStatus]].forEach(value=>tr.append(node('td',value)));
       const td=document.createElement('td');if(kind==='entries')action(td,row.status==='active'?'Ləğv et':'Bərpa et',async()=>{await api(`/entries/${row.id}`,{status:row.status==='active'?'cancelled':'active'},'PATCH');await load();});tr.append(td);$('qr-rows').append(tr);
     });
   }

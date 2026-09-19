@@ -14,6 +14,23 @@ function secret() {
   return value;
 }
 function hash(value) { return crypto.createHmac('sha256', secret()).update(value).digest('hex'); }
+function encryptionKey() {
+  return crypto.hkdfSync('sha256', Buffer.from(secret()), Buffer.from('essen-campaign-fin-v1'), Buffer.from('aes-256-gcm'), 32);
+}
+function encryptFin(fin, campaignId, finHash) {
+  const iv=crypto.randomBytes(12), cipher=crypto.createCipheriv('aes-256-gcm',encryptionKey(),iv);
+  cipher.setAAD(Buffer.from(`${campaignId}:${finHash}`));
+  const encrypted=Buffer.concat([cipher.update(fin,'utf8'),cipher.final()]);
+  return ['v1',iv.toString('base64url'),cipher.getAuthTag().toString('base64url'),encrypted.toString('base64url')].join('.');
+}
+function decryptFin(value, campaignId, finHash) {
+  if(!value)return null;
+  const [version,iv,tag,encrypted]=value.split('.');
+  if(version!=='v1')throw problem(503,'FIN məlumatını açmaq mümkün olmadı.');
+  const cipher=crypto.createDecipheriv('aes-256-gcm',encryptionKey(),Buffer.from(iv,'base64url'));
+  cipher.setAAD(Buffer.from(`${campaignId}:${finHash}`));cipher.setAuthTag(Buffer.from(tag,'base64url'));
+  return Buffer.concat([cipher.update(Buffer.from(encrypted,'base64url')),cipher.final()]).toString('utf8');
+}
 async function checkKey(db) {
   const fingerprint = hash('campaign-key-check-v1');
   await db.query('INSERT INTO "CampaignConfig" ("id", "keyFingerprint") VALUES (1,$1) ON CONFLICT DO NOTHING', [fingerprint]);
@@ -70,10 +87,10 @@ async function activate(pool, userId, body) {
     }
     if (duplicate.rows.length) throw problem(409, DUPLICATE_FIN);
     const counter = await db.query('UPDATE "CampaignCounter" SET "value"="value"+1 WHERE "id"=1 RETURNING "value"');
-    const entry = await db.query(`INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number") VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [scan.campaignId,userId,scanId,finHash,`*****${fin.slice(-2)}`,counter.rows[0].value]);
+    const entry = await db.query(`INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number","finEncrypted") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [scan.campaignId,userId,scanId,finHash,`*****${fin.slice(-2)}`,counter.rows[0].value,encryptFin(fin,scan.campaignId,finHash)]);
     await db.query('UPDATE "QrScan" SET "userId"=$2,"status"=\'activated\' WHERE "id"=$1', [scanId,userId]);
     await db.query('COMMIT'); return publicEntry(entry.rows[0]);
   } catch (error) { await db.query('ROLLBACK'); if (error.code === '23505') throw problem(409, DUPLICATE_FIN); throw error; }
   finally { db.release(); }
 }
-module.exports = { normalizeFin, hash, checkKey, number, publicEntry, scanToken, readScan, deviceInfo, rateLimit, activate, problem };
+module.exports = { normalizeFin, hash, encryptFin, decryptFin, checkKey, number, publicEntry, scanToken, readScan, deviceInfo, rateLimit, activate, problem };

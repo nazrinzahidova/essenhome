@@ -121,8 +121,8 @@ function createRouter(pool = new Pool({ ...require('../lib/dbConfig')(), max: 2 
     const page=Math.max(1,Math.min(100000,Number.parseInt(req.query.page,10)||1));
     const joins=`FROM "QrScan" s JOIN "QrSource" q ON q."id"=s."sourceId" LEFT JOIN "CampaignEntry" e ON e."scanId"=s."id" LEFT JOIN "User" u ON u."id"=${entries?'e':'s'}."userId" WHERE ${where}`;
     const total=(await pool.query(`SELECT COUNT(*)::int AS total ${joins}`,values)).rows[0].total;
-    const {rows}=await pool.query(`SELECT s."id" AS "scanId",s."device",s."browser",s."os",s."createdAt" AS "scannedAt",s."status" AS "scanStatus",q."name" AS source,u."name",u."email",u."phone",e."id",e."number",e."finMasked",e."status",e."createdAt" ${joins} ORDER BY ${entries?'e."number"':'s."createdAt"'} DESC LIMIT 50 OFFSET $${values.length+1}`,[...values,(page-1)*50]);
-    res.json({total,page,items:rows.map(({number,...row})=>({...row,participantNumber:number?c.number(number):null}))});
+    const {rows}=await pool.query(`SELECT s."id" AS "scanId",s."device",s."browser",s."os",s."createdAt" AS "scannedAt",s."status" AS "scanStatus",q."name" AS source,u."name",u."email",u."phone",e."id",e."number",e."finMasked",e."finEncrypted",e."finHash",e."campaignId",e."status",e."createdAt" ${joins} ORDER BY ${entries?'e."number"':'s."createdAt"'} DESC LIMIT 50 OFFSET $${values.length+1}`,[...values,(page-1)*50]);
+    res.json({total,page,items:rows.map(({number,finEncrypted,finHash,campaignId,...row})=>({...row,fin:c.decryptFin(finEncrypted,campaignId,finHash),participantNumber:number?c.number(number):null}))});
   }));
   router.patch('/admin/entries/:id',run(async(req,res) => {
     if(!['active','cancelled'].includes(req.body.status)) throw c.problem(400,'Status yanlışdır.');
