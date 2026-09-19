@@ -1,0 +1,100 @@
+// Uses only an explicitly supplied disposable local database.
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const { Pool } = require('pg');
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const c = require('../lib/campaign');
+async function main() {
+  const url=new URL(process.env.CAMPAIGN_TEST_DATABASE_URL || '');
+  assert(['localhost','127.0.0.1'].includes(url.hostname),'Test database must be local');
+  process.env.CAMPAIGN_HMAC_SECRET=crypto.randomBytes(32).toString('hex');
+  process.env.JWT_SECRET=crypto.randomBytes(32).toString('hex');
+  process.env.PUBLIC_SITE_URL='https://example.test';
+  const schema=`qr_test_${crypto.randomBytes(8).toString('hex')}`;
+  const root=new Pool({connectionString:url.href});
+  await root.query(`CREATE SCHEMA "${schema}"`);
+  const pool=new Pool({connectionString:url.href,max:20,options:`-c search_path=${schema} -c timezone=UTC`});
+  let server;
+  try {
+    await pool.query('CREATE TABLE "User" ("id" SERIAL PRIMARY KEY,"name" TEXT,"email" TEXT,"phone" TEXT,"role" TEXT DEFAULT \'user\')');
+    const sql=fs.readFileSync(path.join(__dirname,'../prisma/migrations/20260919120000_qr_campaign/migration.sql'),'utf8');
+    await pool.query(sql);
+    const app=express();app.use(express.json());app.use('/api/campaigns',require('../routes/campaigns')(pool));
+    server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s));});
+    const base=`http://127.0.0.1:${server.address().port}/api/campaigns`;
+    async function call(route,user,body,method='POST'){
+      const token=user?jwt.sign({id:user,role:user===1?'admin':'user'},process.env.JWT_SECRET):null;
+      const response=await fetch(base+route,{method:body?method:'GET',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});
+      return {status:response.status,data:await response.json()};
+    }
+    for(let i=1;i<=50;i++)await pool.query('INSERT INTO "User" ("name","email","phone","role") VALUES ($1,$2,$3,$4)',[`User ${i}`,`test${i}@example.test`,`99450123${String(i).padStart(4,'0')}`,i===1?'admin':'user']);
+    assert.equal((await call('/admin/campaigns')).status,401);
+    assert.equal((await call('/admin/campaigns',2)).status,403);
+    const campaign=(await call('/admin/campaigns',1,{name:'Test kampaniya'})).data;
+    assert(campaign.id);
+    const source=(await call('/admin/sources',1,{name:'Mağaza',campaignId:campaign.id})).data;
+    const qr=await call(`/admin/sources/${source.id}/qr`,1);
+    assert.equal(qr.status,200);assert(qr.data.svg.includes('<svg'));assert(qr.data.url.includes(source.id));
+    const visit=crypto.randomUUID();
+    const scan=(await call(`/sources/${source.id}/scans`,null,{visitId:visit})).data;
+    const again=(await call(`/sources/${source.id}/scans`,null,{visitId:visit})).data;
+    assert.equal(c.readScan(scan.scanToken),c.readScan(again.scanToken));
+    assert.equal((await pool.query('SELECT COUNT(*)::int AS n FROM "QrScan"')).rows[0].n,1);
+    assert.equal((await call('/claim',2,{scanToken:scan.scanToken})).status,200);
+    assert.equal((await call('/claim',3,{scanToken:scan.scanToken})).status,403);
+    assert.equal((await call('/activate',2,{fin:'I123456',scanToken:scan.scanToken})).status,400);
+    assert.equal((await call('/activate',2,{fin:'ABC2345',scanToken:'fake'})).status,400);
+    const first=await call('/activate',2,{fin:' abC2345 ',scanToken:scan.scanToken});assert.equal(first.status,200);assert.equal(first.data.participantNumber,'K-0000001');
+    const refreshed=await call('/activate',2,{fin:'ABC2345',scanToken:scan.scanToken});assert.deepEqual(refreshed.data,first.data);
+    assert.equal((await call('/me',2)).data[0].participantNumber,'K-0000001');
+    assert.deepEqual((await call('/me',3)).data,[]);
+    async function makeScan(user){const id=crypto.randomUUID();await pool.query('INSERT INTO "QrScan" ("id","sourceId","visitId","userId","device","browser","os") VALUES ($1,$2,$3,$4,\'mobile\',\'Chrome\',\'Android\')',[id,source.id,crypto.randomUUID(),user]);return c.scanToken(id);}
+    const duplicateToken=await makeScan(3);
+    const duplicate=await call('/activate',3,{fin:'ABC2345',scanToken:duplicateToken});assert.equal(duplicate.status,409);assert.equal(duplicate.data.message,'Eyni FIN kod yalnız bir dəfə istifadə oluna bilər.');
+    const attempts=await Promise.all(Array.from({length:12},async(_,i)=>({user:4+i,scanToken:await makeScan(4+i)})));
+    const raced=await Promise.allSettled(attempts.map(x=>c.activate(pool,x.user,{fin:'XYZ2345',scanToken:x.scanToken})));
+    assert.equal(raced.filter(x=>x.status==='fulfilled').length,1);assert(raced.filter(x=>x.status==='rejected').every(x=>x.reason.status===409));
+    const distinct=await Promise.all(Array.from({length:12},async(_,i)=>{const user=16+i;return c.activate(pool,user,{fin:`AB${String(i+10000)}`,scanToken:await makeScan(user)});}));
+    assert.equal(new Set(distinct.map(x=>x.participantNumber)).size,12);
+    const sameUserTokens=await Promise.all(Array.from({length:6},()=>makeScan(30)));
+    const sameUser=await Promise.all(sameUserTokens.map(scanToken=>c.activate(pool,30,{fin:'QRS2345',scanToken})));
+    assert.equal(new Set(sameUser.map(x=>x.participantNumber)).size,1);
+    let entries=(await pool.query('SELECT * FROM "CampaignEntry" ORDER BY "number"')).rows;
+    assert.deepEqual(entries.map(x=>Number(x.number)),Array.from({length:entries.length},(_,i)=>i+1));
+    assert(entries.every(x=>/^[a-f0-9]{64}$/.test(x.finHash)&&/^\*{5}/.test(x.finMasked)));
+    assert(!JSON.stringify(entries).includes('ABC2345'));
+    await assert.rejects(pool.query('DELETE FROM "CampaignEntry" WHERE "id"=$1',[first.data.id]),/never deleted/);
+    await assert.rejects(pool.query('UPDATE "CampaignEntry" SET "number"=999 WHERE "id"=$1',[first.data.id]),/immutable/);
+    assert.equal((await call(`/admin/entries/${first.data.id}`,1,{status:'cancelled'},'PATCH')).status,200);
+    assert.equal((await call('/activate',3,{fin:'ABC2345',scanToken:duplicateToken})).status,409);
+    assert.equal((await call('/me',2)).data[0].status,'cancelled');
+    // DB-level uniqueness is independent of application checks.
+    await assert.rejects(pool.query('INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number") VALUES ($1,40,$2,$3,$4,999)',[campaign.id,c.readScan(await makeScan(40)),entries[0].finHash,entries[0].finMasked]),e=>e.code==='23505');
+    const listed=await call(`/admin/entries?campaignId=${campaign.id}&q=K-0000001`,1);assert.equal(listed.status,200);assert.equal(listed.data.total,1);assert(!JSON.stringify(listed.data).includes('finHash'));assert.equal(listed.data.items[0].finMasked,'*****45');
+    const stats=await call(`/admin/stats?campaignId=${campaign.id}`,1);assert.equal(stats.data.participants,entries.length);assert.equal(stats.data.cancelled,1);
+    const scans=await call(`/admin/scans?campaignId=${campaign.id}&device=mobile&browser=Chrome&os=Android`,1);assert.equal(scans.status,200);assert(scans.data.total>0);
+    const parallelLimits=await Promise.allSettled(Array.from({length:20},()=>c.rateLimit(pool,'test-limit',5)));assert.equal(parallelLimits.filter(x=>x.status==='fulfilled').length,5);
+    const beforeSecret=process.env.CAMPAIGN_HMAC_SECRET;process.env.CAMPAIGN_HMAC_SECRET='x'.repeat(64);await assert.rejects(c.checkKey(pool),e=>e.status===503);process.env.CAMPAIGN_HMAC_SECRET=beforeSecret;
+    const nextCampaign=(await call('/admin/campaigns',1,{name:'İkinci kampaniya'})).data;
+    const nextSource=(await call('/admin/sources',1,{name:'İkinci mənbə',campaignId:nextCampaign.id})).data;
+    const nextScan=(await call(`/sources/${nextSource.id}/scans`,null,{visitId:crypto.randomUUID()})).data;
+    const nextEntry=await c.activate(pool,2,{fin:'ABC2345',scanToken:nextScan.scanToken});
+    assert.equal(nextEntry.participantNumber,c.number(entries.length+1));
+    await pool.query('DELETE FROM "User" WHERE "id"=2');
+    assert.equal((await pool.query('SELECT "userId" FROM "CampaignEntry" WHERE "id"=$1',[first.data.id])).rows[0].userId,null);
+    await assert.rejects(c.activate(pool,3,{fin:'ABC2345',scanToken:duplicateToken}),e=>e.status===409);
+    await call(`/admin/campaigns/${campaign.id}`,1,{active:false},'PATCH');assert.equal((await call(`/sources/${source.id}`)).status,404);
+    await assert.rejects(c.activate(pool,41,{fin:'TUV2345',scanToken:await makeScan(41)}),e=>e.status===409);
+    await pool.query('UPDATE "User" SET "role"=\'user\' WHERE "id"=1');assert.equal((await call('/admin/campaigns',1)).status,403);
+    for(const value of [null,{},'123','ABC234I','ABC234O','ABC23Ə5'])assert.throws(()=>c.normalizeFin(value));
+    assert.equal(c.normalizeFin(' abc2345 '),'ABC2345');assert.equal(c.number('10000000'),'K-10000000');
+    console.log('PASS: migration; authentication and revoked roles; QR generation; scan deduplication; scan ownership; FIN validation, masking and HMAC; repeat activation; concurrent duplicate FIN; concurrent unique numbers; concurrent same user; DB unique constraints; cancellation and immutable reservations; account ownership; admin search, filters and stats; shared rate limits; key-change guard; inactive campaign.');
+  } finally {
+    if(server)await new Promise(resolve=>server.close(resolve));
+    await pool.end();await root.query(`DROP SCHEMA "${schema}" CASCADE`);await root.end();
+  }
+}
+main().catch(error=>{console.error(error);process.exitCode=1;});

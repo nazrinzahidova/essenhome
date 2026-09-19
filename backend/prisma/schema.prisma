@@ -48,6 +48,8 @@ model User {
   compares   Compare[]
   chatSessions ChatSession[]
   otpChallenges OtpChallenge[]
+  campaignEntries CampaignEntry[]
+  qrScans QrScan[]
 }
 
 model OtpChallenge {
@@ -254,4 +256,82 @@ model Brand {
   logoMime String?
   active Boolean @default(false)
   position Int @default(1000)
+}
+
+model Campaign {
+  id Int @id @default(autoincrement())
+  name String
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  sources QrSource[]
+  entries CampaignEntry[]
+}
+
+model QrSource {
+  id String @id
+  campaignId Int
+  name String
+  active Boolean @default(true)
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  scans QrScan[]
+}
+
+model QrScan {
+  id String @id
+  sourceId String
+  visitId String
+  userId Int?
+  device String
+  browser String
+  os String
+  status String @default("scanned")
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  source QrSource @relation(fields: [sourceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  entry CampaignEntry?
+  @@unique([sourceId, visitId], map: "QrScan_sourceId_visitId_key")
+  @@index([sourceId, createdAt])
+  @@index([userId])
+}
+
+model CampaignEntry {
+  id Int @id @default(autoincrement())
+  campaignId Int
+  userId Int?
+  scanId String @unique
+  finHash String
+  finMasked String
+  number BigInt @unique
+  status String @default("active")
+  createdAt DateTime @default(now()) @db.Timestamp(3)
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  scan QrScan @relation(fields: [scanId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@unique([campaignId, finHash], map: "CampaignEntry_campaignId_finHash_key")
+  @@unique([campaignId, userId], map: "CampaignEntry_campaignId_userId_key")
+  @@index([campaignId, createdAt])
+}
+
+model CampaignCounter {
+  id Int @id
+  value BigInt @default(0)
+}
+
+model CampaignConfig {
+  id Int @id
+  keyFingerprint String
+}
+
+model CampaignRateLimit {
+  key String @id
+  count Int
+  expiresAt DateTime @db.Timestamp(3)
+  @@index([expiresAt])
+}
+
+model QrCampaignMigration {
+  name String @id
+  checksum String
+  appliedAt DateTime @default(now()) @db.Timestamp(3)
 }
