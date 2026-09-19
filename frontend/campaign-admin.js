@@ -33,6 +33,7 @@
   tab.onclick=safe(async()=>{
     for(const id of ['productView','chatView','homeSectionsView','creditOrdersView'])if($(id))$(id).style.display='none';
     if($('usersView'))$('usersView').hidden=true;
+    if($('brandsView'))$('brandsView').hidden=true;
     tabs.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
     tab.classList.add('active');view.style.display='block';await loadCampaigns();
   });
