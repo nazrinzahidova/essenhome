@@ -2,7 +2,7 @@
   'use strict';
   const source = new URLSearchParams(location.search).get('campaign');
   const token = () => localStorage.getItem('token');
-  let scanToken = null, campaign = null, ready = null, authenticatedThisVisit = false;
+  let scanToken = null, campaign = null, ready = null;
   const panel = document.createElement('dialog');
   panel.id = 'qr-campaign-panel';
   panel.innerHTML = `<form method="dialog"><button class="qr-close" aria-label="Bağla">×</button></form><h2>Şansını aktivləşdir!</h2><div id="qr-content"></div><p id="qr-message" role="status" aria-live="polite"></p>`;
@@ -25,7 +25,7 @@
     text('p',`İştirakçı nömrəniz: ${entry.participantNumber}`,'qr-number');
   }
   async function show() {
-    if(!token() || (source && !authenticatedThisVisit)) { login(); return; }
+    if(!token()) { login(); return; }
     content.replaceChildren(); message.textContent='Yüklənir…';
     try {
       if(ready) await ready;
@@ -56,7 +56,7 @@
   const account=document.createElement('button'); account.id='qr-campaign-account';account.textContent='QR Kampaniya · İştirakçı nömrələrim';account.onclick=()=>{if(typeof closeAccountPanel==='function')closeAccountPanel();show();};
   document.querySelector('#mobile-account-panel .map-content')?.append(account);
   async function refreshAccount(){if(!token())return;try{const entries=await api('/me');account.textContent=entries.length?`QR Kampaniya · ${entries.map(e=>e.participantNumber).join(', ')}`:'QR Kampaniya · İştirakçı nömrələrim';}catch{}}
-  window.addEventListener('essen:login',()=>{authenticatedThisVisit=true;refreshAccount();if(source || sessionStorage.getItem('qr-login-pending')){sessionStorage.removeItem('qr-login-pending');show();}});
+  window.addEventListener('essen:login',()=>{refreshAccount();if(source || sessionStorage.getItem('qr-login-pending')){sessionStorage.removeItem('qr-login-pending');show();}});
   if(source) {
     document.querySelectorAll('#loginModal [data-auth-step="phone"] .essen-auth-lead, #loginModal [data-auth-step="email"] .essen-auth-lead').forEach(lead=>{
       lead.textContent='Kampaniyadan yararlanmaq üçün qeydiyyatdan keç';
