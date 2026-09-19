@@ -11,7 +11,7 @@
       const data=await response.json();if(current!==version || token!==localStorage.getItem('token'))return;
       if(!response.ok)throw new Error(data.message || 'İştirak məlumatları yüklənmədi.');
       if(!data.length)content.textContent='Kampaniyada iştirak etmək üçün QR kodunu skan edin.';
-      for(const entry of data){const p=document.createElement('p');p.style.marginTop='12px';p.textContent=`${entry.campaignName} · İştirakçı nömrəniz: ${entry.participantNumber} · ${entry.status==='active'?'Aktiv':'Ləğv edilib'}`;content.append(p);}
+      for(const entry of data){const p=document.createElement('p');p.style.marginTop='12px';p.textContent=`İştirakçı nömrəniz: ${entry.participantNumber} · ${entry.status==='active'?'Aktiv':'Ləğv edilib'}`;content.append(p);}
     }catch(e){if(current===version)content.textContent=e.message;}
   }
   window.addEventListener('essen:login',load);window.addEventListener('essen:logout',()=>{version++;content.replaceChildren();});window.addEventListener('storage',load);load();

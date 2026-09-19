@@ -5,7 +5,7 @@
   let scanToken = null, campaign = null, ready = null;
   const panel = document.createElement('dialog');
   panel.id = 'qr-campaign-panel';
-  panel.innerHTML = `<form method="dialog"><button class="qr-close" aria-label="Bağla">×</button></form><h2>QR Kampaniya</h2><div id="qr-content"></div><p id="qr-message" role="status" aria-live="polite"></p>`;
+  panel.innerHTML = `<form method="dialog"><button class="qr-close" aria-label="Bağla">×</button></form><h2>Şansını aktivləşdir!</h2><div id="qr-content"></div><p id="qr-message" role="status" aria-live="polite"></p>`;
   document.body.append(panel);
   const style=document.createElement('style');
   style.textContent=`#qr-campaign-panel{margin:auto;border:1px solid #eee;border-radius:16px;padding:28px;width:min(440px,calc(100% - 32px));font:14px Poppins,sans-serif;color:#111;max-height:85vh;overflow:auto}#qr-campaign-panel::backdrop{background:#0008}#qr-campaign-panel h2{font-size:22px;margin:0 30px 20px 0}#qr-campaign-panel p{margin:12px 0}#qr-campaign-panel input{border:1px solid #ddd;border-radius:8px;padding:12px;width:100%;margin:10px 0;text-transform:uppercase}#qr-campaign-panel .qr-action{background:#e8222e;color:white;border:0;border-radius:8px;padding:12px 18px;cursor:pointer;width:100%;margin-top:10px}#qr-campaign-panel button:disabled{opacity:.5;cursor:wait}#qr-campaign-panel .qr-close{position:absolute;right:18px;top:12px;background:none;border:0;font-size:28px;cursor:pointer}#qr-message{color:#b71c1c}#qr-campaign-account{background:none;border:0;text-align:left;font:inherit;cursor:pointer;color:#e8222e;padding:12px;width:100%}.qr-number{font-weight:600;font-size:20px}`;
@@ -25,24 +25,25 @@
     text('p',`İştirakçı nömrəniz: ${entry.participantNumber}`,'qr-number');
   }
   async function show() {
-    if(!panel.open) panel.showModal();
+    if(!token()) { login(); return; }
     content.replaceChildren(); message.textContent='Yüklənir…';
     try {
       if(ready) await ready;
       message.textContent='';
-      if(!token()) { text('p','Davam etmək üçün hesabınıza daxil olun və ya qeydiyyatdan keçin.'); const b=text('button','Giriş / Qeydiyyat','qr-action'); b.onclick=login; return; }
+      if(!token()) { login(); return; }
       const entries=await api('/me');
+      if(!panel.open) panel.showModal();
       if(!source) {
         if(!entries.length) text('p','İştirak etmək üçün kampaniyanın QR kodunu skan edin.');
-        entries.forEach(e=>{text('h3',e.campaignName);text('p',`İştirakçı nömrəniz: ${e.participantNumber}`,'qr-number');text('p',e.status==='active'?'Aktiv':'Ləğv edilib');}); return;
+        entries.forEach(e=>{text('p',`İştirakçı nömrəniz: ${e.participantNumber}`,'qr-number');text('p',e.status==='active'?'İştirak şansınız aktivdir!':'Ləğv edilib');}); return;
       }
       const own=entries.find(e=>e.campaignId===campaign.campaignId);
       if(own) {success(own);return;}
       await api('/claim',{scanToken});
-      text('p',campaign.campaignName);
-      text('h3','FIN kodunu daxil et'); text('p','Kampaniyada iştirak şansını aktivləşdir');
+      text('h3','İştiraka bir addım qaldı!');
+      text('p','FIN kodunu daxil et, kampaniyada iştirak şansını aktivləşdir!');
       const form=document.createElement('form');
-      form.innerHTML='<label for="qr-fin">FIN kod</label><input id="qr-fin" name="fin" maxlength="7" minlength="7" pattern="[A-HJ-NP-Za-hj-np-z0-9]{7}" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="qr-action" type="submit">Aktivləşdir</button>';
+      form.innerHTML='<label for="qr-fin">FIN kodunu daxil et</label><input id="qr-fin" name="fin" placeholder="7 simvollu FIN kodun" maxlength="7" minlength="7" pattern="[A-HJ-NP-Za-hj-np-z0-9]{7}" autocomplete="off" autocapitalize="characters" spellcheck="false" required><button class="qr-action" type="submit">İştirak şansımı aktivləşdir</button>';
       content.append(form);
       form.onsubmit=async event=>{
         event.preventDefault(); const button=form.querySelector('button'), input=form.querySelector('input'); button.disabled=true; message.textContent='';
@@ -50,7 +51,7 @@
         catch(error) {message.textContent=error.message;if(error.status===401)login();}
         finally {button.disabled=false;}
       };
-    } catch(error) {message.textContent=error.message;if(error.status===401){const b=text('button','Yenidən daxil olun','qr-action');b.onclick=login;}}
+    } catch(error) {if(error.status===401){login();return;}message.textContent=error.message;if(!panel.open)panel.showModal();}
   }
   const account=document.createElement('button'); account.id='qr-campaign-account';account.textContent='QR Kampaniya · İştirakçı nömrələrim';account.onclick=()=>{if(typeof closeAccountPanel==='function')closeAccountPanel();show();};
   document.querySelector('#mobile-account-panel .map-content')?.append(account);
@@ -65,6 +66,8 @@
       const key=`qr-visit:${source}`;let visit=sessionStorage.getItem(key);if(!visit){visit=crypto.randomUUID();sessionStorage.setItem(key,visit);}
       const result=await api(`/sources/${encodeURIComponent(source)}/scans`,{visitId:visit});scanToken=result.scanToken;
     })();
+    // Scanning is recorded while registration is open; consume errors until show() awaits it.
+    ready.catch(()=>{});
     show();
   }
   refreshAccount();
