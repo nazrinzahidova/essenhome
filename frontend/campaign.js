@@ -2,7 +2,7 @@
   'use strict';
   const source = new URLSearchParams(location.search).get('campaign');
   const token = () => localStorage.getItem('token');
-  let scanToken = null, campaign = null, ready = null;
+  let scanToken = null, campaign = null, ready = null, authenticatedThisVisit = false;
   const panel = document.createElement('dialog');
   panel.id = 'qr-campaign-panel';
   panel.innerHTML = `<form method="dialog"><button class="qr-close" aria-label="Bağla">×</button></form><h2>Şansını aktivləşdir!</h2><div id="qr-content"></div><p id="qr-message" role="status" aria-live="polite"></p>`;
@@ -25,7 +25,7 @@
     text('p',`İştirakçı nömrəniz: ${entry.participantNumber}`,'qr-number');
   }
   async function show() {
-    if(!token()) { login(); return; }
+    if(!token() || (source && !authenticatedThisVisit)) { login(); return; }
     content.replaceChildren(); message.textContent='Yüklənir…';
     try {
       if(ready) await ready;
@@ -55,11 +55,8 @@
   }
   const account=document.createElement('button'); account.id='qr-campaign-account';account.textContent='QR Kampaniya · İştirakçı nömrələrim';account.onclick=()=>{if(typeof closeAccountPanel==='function')closeAccountPanel();show();};
   document.querySelector('#mobile-account-panel .map-content')?.append(account);
-  // A small account action gives desktop users the same access as the mobile account panel.
-  const desktop=document.createElement('button');desktop.type='button';desktop.textContent='QR Kampaniya';desktop.style.cssText='font:inherit;color:#e8222e;background:none;border:0;cursor:pointer';desktop.onclick=show;
-  document.getElementById('openLoginModal')?.parentElement?.append(desktop);
   async function refreshAccount(){if(!token())return;try{const entries=await api('/me');account.textContent=entries.length?`QR Kampaniya · ${entries.map(e=>e.participantNumber).join(', ')}`:'QR Kampaniya · İştirakçı nömrələrim';}catch{}}
-  window.addEventListener('essen:login',()=>{refreshAccount();if(source || sessionStorage.getItem('qr-login-pending')){sessionStorage.removeItem('qr-login-pending');show();}});
+  window.addEventListener('essen:login',()=>{authenticatedThisVisit=true;refreshAccount();if(source || sessionStorage.getItem('qr-login-pending')){sessionStorage.removeItem('qr-login-pending');show();}});
   if(source) {
     ready=(async()=>{
       campaign=await api(`/sources/${encodeURIComponent(source)}`);
