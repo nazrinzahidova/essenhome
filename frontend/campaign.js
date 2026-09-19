@@ -58,6 +58,9 @@
   async function refreshAccount(){if(!token())return;try{const entries=await api('/me');account.textContent=entries.length?`QR Kampaniya · ${entries.map(e=>e.participantNumber).join(', ')}`:'QR Kampaniya · İştirakçı nömrələrim';}catch{}}
   window.addEventListener('essen:login',()=>{authenticatedThisVisit=true;refreshAccount();if(source || sessionStorage.getItem('qr-login-pending')){sessionStorage.removeItem('qr-login-pending');show();}});
   if(source) {
+    document.querySelectorAll('#loginModal [data-auth-step="phone"] .essen-auth-lead, #loginModal [data-auth-step="email"] .essen-auth-lead').forEach(lead=>{
+      lead.textContent='Kampaniyadan yararlanmaq üçün qeydiyyatdan keç';
+    });
     ready=(async()=>{
       campaign=await api(`/sources/${encodeURIComponent(source)}`);
       const key=`qr-visit:${source}`;let visit=sessionStorage.getItem(key);if(!visit){visit=crypto.randomUUID();sessionStorage.setItem(key,visit);}
