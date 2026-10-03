@@ -83,19 +83,20 @@ function createSeoRouter(prisma) {
     res.type('html').send(policyTemplate.replace('</head>', `<script type="application/ld+json">${schema}</script></head>`));
   });
   const readProductTemplate = () => fs.readFileSync(path.join(__dirname, '../../frontend/product.html'), 'utf8');
-  async function catalogProducts() {
+  async function catalogProducts(homepageOnly = false) {
     const [products, sections] = await Promise.all([
       prisma.product.findMany({ include: { placements: true, images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] } }, orderBy: [{ sortPosition: 'asc' }, { id: 'asc' }] }),
       prisma.homeSection.findMany({ where: { active: true }, include: { products: { select: { productId: true } } } })
     ]);
     const featured = new Set(sections.flatMap(section => section.products.map(link => link.productId)));
+    if (homepageOnly) return products.filter(item => featured.has(item.id));
     return products.filter(item => featured.has(item.id) || ![item.subcategory, ...(item.placements || []).map(place => place.subcategory)].some(value => /smartfon|notbuk|noutbuk/i.test(value || '')));
   }
   const belongsTo = (item, category, subcategory) => [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])].some(place => (!category || place.category === category) && (!subcategory || place.subcategory === subcategory));
   const unavailable = res => res.status(503).set('Retry-After', '60').type('text').send('Müvəqqəti xəta. Bir az sonra yenidən yoxlayın.');
   router.get('/meta-catalog.xml', async (_req, res) => {
     try {
-      res.set('Cache-Control', 'no-store').type('application/xml').send(renderMetaCatalog(await catalogProducts()));
+      res.set('Cache-Control', 'no-store').type('application/xml').send(renderMetaCatalog(await catalogProducts(true)));
     } catch (error) { console.error('Meta catalog failed:', error.message); unavailable(res); }
   });
   router.get('/catalog.html', async (req, res) => {

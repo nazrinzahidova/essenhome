@@ -1,0 +1,24 @@
+<!doctype html><html lang="az"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Essen Home — kataloq görünüşü</title><style>*{box-sizing:border-box}body{margin:0;background:#f5f6f8;color:#152238;font-family:Arial,sans-serif}header{background:white;padding:28px max(24px,calc((100vw - 1280px)/2));border-bottom:1px solid #e2e6eb}h1{font-size:26px;margin:0 0 10px}header p{margin:0;color:#64748b;line-height:1.5}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px;max-width:1328px;padding:24px;margin:auto}.card{display:flex;flex-direction:column;background:white;border:1px solid #e2e6eb;border-radius:16px;overflow:hidden;color:inherit;text-decoration:none}.card img{width:100%;height:230px;object-fit:contain;padding:18px}.card div{padding:18px}.card h2{font-size:16px;line-height:1.5;margin:0;min-height:48px}.card p{font-weight:bold;font-size:23px;margin:14px 0}.card span{display:block;background:#173a6a;color:white;border-radius:9px;padding:12px;text-align:center;font-size:14px}.card:hover{border-color:#173a6a}</style><meta name="robots" content="noindex,nofollow"><header><h1>Essen Home — ana səhifə məhsulları</h1><p id="status">Məhsullar yüklənir...</p></header><main class="grid" id="products"></main><script>
+async function loadCatalog(){
+ const status=document.getElementById('status');
+ try {
+  const response=await fetch('/meta-catalog.xml',{cache:'no-store'});
+  if(!response.ok)throw new Error('Kataloq açıla bilmədi');
+  const xml=new DOMParser().parseFromString(await response.text(),'application/xml');
+  if(xml.querySelector('parsererror'))throw new Error('Məlumat xətası');
+  const items=Array.from(xml.querySelectorAll('item'));
+  const grid=document.getElementById('products');grid.replaceChildren();
+  for(const item of items){
+   const value=key=>item.getElementsByTagNameNS('http://base.google.com/ns/1.0',key)[0]?.textContent||'';
+   const card=document.createElement('a');card.className='card';card.href=value('link');card.target='_blank';card.rel='noopener';
+   const img=document.createElement('img');img.src=value('image_link');img.alt=value('title');img.loading='lazy';
+   const body=document.createElement('div');const title=document.createElement('h2');title.textContent=value('title');
+   const price=document.createElement('p');price.textContent=value('price').replace(' AZN',' ₼');
+   const button=document.createElement('span');button.textContent='Məhsula bax →';
+   body.append(title,price,button);card.append(img,body);grid.append(card);
+  }
+  status.textContent=items.length+' məhsul · Yalnız ana səhifədəki məhsullar. Kartı klikləyəndə məhsulun sayt səhifəsi açılır.';
+ }catch(error){status.textContent='Kataloq yüklənmədi. Səhifəni yeniləyin.';}
+}
+loadCatalog();setInterval(loadCatalog,60000);
+</script></html>
