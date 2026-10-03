@@ -51,9 +51,21 @@ async function ensureGuestSession() {
   if (!guestSessionPromise) {
     const identity = chatIdentity, generation = chatGeneration;
     guestSessionPromise = (async () => {
-      const response = await fetch(identity ? '/api/chats/session' : '/api/chats/guest/session', {method:'POST',credentials:'same-origin',headers:identity ? {Authorization:'Bearer '+identity} : {}});
-      if (!response.ok) throw new Error(response.status === 401 ? 'Çat üçün hesabınıza yenidən daxil olun.' : 'Çat açıla bilmədi. Yenidən cəhd edin.');
+      let useGuest = !identity;
+      let response = await fetch(identity ? '/api/chats/session' : '/api/chats/guest/session', {method:'POST',credentials:'same-origin',headers:identity ? {Authorization:'Bearer '+identity} : {}});
+      if (identity && response.status === 400) {
+        const reason = await response.clone().json().catch(() => ({}));
+        if (reason.message === 'Profilinizdə telefon nömrəsi yoxdur') {
+          useGuest = true;
+          response = await fetch('/api/chats/guest/session', {method:'POST',credentials:'same-origin'});
+        }
+      }
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(response.status === 401 ? 'Çat üçün hesabınıza yenidən daxil olun.' : (error.message || 'Çat açıla bilmədi. Yenidən cəhd edin.'));
+      }
       const session = await response.json();
+      session.useGuest = useGuest;
       if (generation !== chatGeneration || identity !== (localStorage.getItem('token') || '')) throw new Error('Hesab dəyişdi. Çatı yenidən açın.');
       clearInterval(chatPollTimer); chatPollTimer=setInterval(loadGuestMessages,3000);
       if (guestSessionId !== session.id) {
@@ -70,9 +82,9 @@ async function guestRequest(options = {}) {
   const identity=chatIdentity, generation=chatGeneration;
   let session=await ensureGuestSession();
   if (generation !== chatGeneration) throw new Error('Hesab dəyişdi. Çatı yenidən açın.');
-  const send = () => fetch(identity ? '/api/chats/'+session.id+'/messages' : '/api/chats/guest/messages', {...options,credentials:'same-origin',headers:{...options.headers,...(identity ? {Authorization:'Bearer '+identity} : {})}});
+  const send = () => fetch(!session.useGuest ? '/api/chats/'+session.id+'/messages' : '/api/chats/guest/messages', {...options,credentials:'same-origin',headers:{...options.headers,...(!session.useGuest ? {Authorization:'Bearer '+identity} : {})}});
   let response=await send();
-  if (response.status === 401 && !identity && generation === chatGeneration) {
+  if (response.status === 401 && session.useGuest && generation === chatGeneration) {
     guestSessionPromise=null;
     if (options.method !== 'POST') { guestHistoryReady=false;latestOperatorMessage=0;guestUnread=0;return []; }
     session=await ensureGuestSession();response=await send();

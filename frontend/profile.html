@@ -44,8 +44,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -65,9 +63,9 @@
 <div class="profile-field"><label for="profile-lastName">Soyad</label><input id="profile-lastName" name="lastName" type="text" autocomplete="family-name" placeholder="Soyadınızı daxil edin" required maxlength="100" aria-describedby="error-lastName"><span class="field-error" id="error-lastName"></span></div>
 <div class="profile-field"><label for="profile-phone">Telefon nömrəsi</label><input id="profile-phone" name="phone" type="tel" autocomplete="tel"  readonly aria-describedby="error-phone phone-note"><span class="field-error" id="error-phone"></span><small id="phone-note">Giriş üçün SMS ilə təsdiqlənmiş nömrəniz.</small></div>
 <div class="profile-field"><label for="profile-birthDate">Doğum tarixi</label><input id="profile-birthDate" name="birthDate" type="date" autocomplete="bday"  min="1900-01-01" aria-describedby="error-birthDate"><span class="field-error" id="error-birthDate"></span></div>
-<div class="profile-field"><label for="profile-email">E-poçt</label><input id="profile-email" name="email" type="email" autocomplete="email" placeholder="E-poçt ünvanınızı daxil edin" required maxlength="254" aria-describedby="error-email"><span class="field-error" id="error-email"></span></div></div></fieldset><button class="profile-save" id="profile-save" type="submit">Yadda saxla</button></form>
+<div class="profile-field"><label for="profile-email">E-poçt (istəyə bağlı)</label><input id="profile-email" name="email" type="email" autocomplete="email" placeholder="E-poçt ünvanınızı daxil edin" maxlength="254" aria-describedby="error-email"><span class="field-error" id="error-email"></span></div></div></fieldset><button class="profile-save" id="profile-save" type="submit">Yadda saxla</button></form>
 </div></section></main>
-<script src="/categories.js"></script><script src="/phone-auth.js?v=20260910-profile-1"></script><script src="/store-header.js?v=20260909-2"></script>  <div id="storeFooter" style="font-size:16px;line-height:1.5;margin-top:40px">
+<script src="/categories.js"></script><script src="/phone-auth.js?v=20260928-no-email-1"></script><script src="/store-header.js?v=20260909-2"></script>  <div id="storeFooter" style="font-size:16px;line-height:1.5;margin-top:40px">
 <footer class="w-full bg-white border-t border-gray-100">
   <div class="max-w-6xl mx-auto px-6 pt-14 pb-6">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">

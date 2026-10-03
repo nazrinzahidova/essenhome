@@ -195,7 +195,7 @@ const ADMIN_CATEGORY_TREE = {
     
     {
       group: "Ev üçün kiçik texnika",
-      items: ["Tozsoranlar","Robot tozsoranlar","Vertikal tozsoranlar","Yuyucu tozsoranlar","Buxarlı təmizləyicilər","Tiftik təmizləyən","Ütülər","Ütü masaları","Paltar üçün quruducu","Buxarlı generatorlar","Şaquli buxarlı ütülər","Tikiş maşınları","Robot pəncərə təmizləyənlər",]
+      items: ["Tozsoranlar","Robot tozsoranlar","Vertikal tozsoranlar","Yuyucu tozsoranlar","Buxarlı təmizləyicilər","Tiftik təmizləyən","Ütülər","Ütü masaları","Paltar üçün quruducu","Buxarlı generatorlar","Buxarlı ütülər","Tikiş maşınları","Robot pəncərə təmizləyənlər",]
     },
     {
       group: "Ev texnikası üçün məhsullar",
@@ -212,7 +212,7 @@ const ADMIN_CATEGORY_TREE = {
     },
     {
       group: "Mətbəx üçün kiçik texnika",
-      items: ["Mikrodalğalı sobalar","Stasionar blenderlər","Mini sobalar","Əl blenderləri","Ətçəkən maşınlar","Mikserlər","İzqara","Multibişiricilər","Tosterlər","Mini sobalar","Fritoz","Mətbəx tərəziləri","Sendviç və vafli hazırlayan","Doğrayıcı","Meyvə və tərəvəz qurudan","Mətbəx kombaynları","İnduksiya plitələri",]
+      items: ["Mikrodalğalı sobalar","Stasionar blenderlər","Mini sobalar","Əl blenderləri","Ətçəkən maşınlar","Mikserlər","İzqara","Multibişiricilər","Tosterlər","Mini sobalar","Fritoz","Mətbəx tərəziləri","Sendviç və vafli hazırlayan","Doğrayıcı","Meyvə və tərəvəz qurudan","Mətbəx kombaynları","Bişirmə panelləri",]
     },
     {
       group: "İçki hazırlanması",

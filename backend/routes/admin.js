@@ -154,13 +154,28 @@ router.post('/products', authMiddleware, adminCheck, upload.array('images', 10),
 
 // Məhsul sil
 router.delete('/products/:id', authMiddleware, adminCheck, async (req, res) => {
+  const productId = Number(req.params.id);
+  if (!Number.isSafeInteger(productId) || productId <= 0) {
+    return res.status(400).json({ message: 'Məhsul nömrəsi düzgün deyil.' });
+  }
   try {
-    await prisma.product.delete({
-      where: { id: parseInt(req.params.id) }
+    const result = await prisma.$transaction(async tx => {
+      const product = await tx.product.findUnique({ where: { id: productId }, select: { id: true } });
+      if (!product) return 'missing';
+      const ordered = await tx.orderItem.count({ where: { productId } });
+      if (ordered) return 'ordered';
+      await tx.cart.deleteMany({ where: { productId } });
+      await tx.product.delete({ where: { id: productId } });
+      return 'deleted';
     });
+    if (result === 'missing') return res.status(404).json({ message: 'Məhsul tapılmadı.' });
+    if (result === 'ordered') return res.status(409).json({ message: 'Bu məhsul sifarişdə istifadə olunub və silinə bilməz. Satışı dayandırmaq üçün stokunu 0 edin.' });
     res.json({ message: 'Məhsul silindi' });
   } catch (err) {
-    res.status(500).json({ message: 'Server xətası' });
+    if (err.code === 'P2003') return res.status(409).json({ message: 'Məhsul əlaqəli qeydlərə görə silinə bilmir. Sifariş tarixçəsi qorunur.' });
+    if (err.code === 'P2025') return res.status(404).json({ message: 'Məhsul tapılmadı.' });
+    console.error('Product deletion failed:', err.code || err.name);
+    res.status(500).json({ message: 'Məhsulu silmək mümkün olmadı. Bir az sonra yenidən cəhd edin.' });
   }
 });
 

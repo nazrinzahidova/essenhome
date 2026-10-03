@@ -62,7 +62,7 @@ async function rateLimit(db, key, maximum, minutes = 15) {
   if (result.rows[0].count > maximum) throw problem(429, 'Cəhd limiti dolub. Bir qədər sonra yenidən cəhd edin.');
 }
 async function activate(pool, userId, body) {
-  const fin = normalizeFin(body.fin);
+  const fin = body.fin == null || body.fin === '' ? null : normalizeFin(body.fin);
   const scanId = readScan(body.scanToken);
   const db = await pool.connect();
   try {
@@ -77,7 +77,7 @@ async function activate(pool, userId, body) {
     const existing = await db.query('SELECT * FROM "CampaignEntry" WHERE "campaignId"=$1 AND "userId"=$2', [scan.campaignId, userId]);
     if (existing.rows[0]) { await db.query('COMMIT'); return publicEntry(existing.rows[0]); }
     if (!scan.sourceActive || !scan.campaignActive) throw problem(409, 'Kampaniya və ya QR mənbə aktiv deyil.');
-    const finHash = hash(`fin:v1:${scan.campaignId}:${fin}`);
+    const finHash = fin ? hash(`fin:v1:${scan.campaignId}:${fin}`) : null;
     // One durable counter serializes successful registrations. Rollbacks consume no number.
     await db.query('SELECT "value" FROM "CampaignCounter" WHERE "id"=1 FOR UPDATE');
     const duplicate = await db.query('SELECT "userId", "finHash" FROM "CampaignEntry" WHERE "campaignId"=$1 AND ("finHash"=$2 OR "userId"=$3)', [scan.campaignId, finHash, userId]);
@@ -87,7 +87,7 @@ async function activate(pool, userId, body) {
     }
     if (duplicate.rows.length) throw problem(409, DUPLICATE_FIN);
     const counter = await db.query('UPDATE "CampaignCounter" SET "value"="value"+1 WHERE "id"=1 RETURNING "value"');
-    const entry = await db.query(`INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number","finEncrypted") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [scan.campaignId,userId,scanId,finHash,`*****${fin.slice(-2)}`,counter.rows[0].value,encryptFin(fin,scan.campaignId,finHash)]);
+    const entry = await db.query(`INSERT INTO "CampaignEntry" ("campaignId","userId","scanId","finHash","finMasked","number","finEncrypted") VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [scan.campaignId,userId,scanId,finHash,fin ? `*****${fin.slice(-2)}` : null,counter.rows[0].value,fin ? encryptFin(fin,scan.campaignId,finHash) : null]);
     await db.query('UPDATE "QrScan" SET "userId"=$2,"status"=\'activated\' WHERE "id"=$1', [scanId,userId]);
     await db.query('COMMIT'); return publicEntry(entry.rows[0]);
   } catch (error) { await db.query('ROLLBACK'); if (error.code === '23505') throw problem(409, DUPLICATE_FIN); throw error; }

@@ -1,5 +1,235 @@
 // Category fields share the existing Product.specs and Product.brand storage.
 const APPLIANCE_SPEC_SCHEMAS = [
+{
+  "category": "Buxarlı ütülər",
+  "rows": 10,
+  "keys": [
+    "Brend",
+    "İstehsalçı ölkə",
+    "Güc",
+    "Həcm",
+    "Buxarın ötürülmə sürəti",
+    "İsinmə vaxtı",
+    "Naqilin uzunluğu",
+    "Şaquli buxarlanma",
+    "Avtomatik sönmə",
+    "Damlama əleyhinə sistem",
+    "OptimalTemp",
+    "Çəki",
+    "Özünü təmizləmə sistemi",
+    "Altlığın materialı",
+    "Korpusun materialı",
+    "Növ",
+    "Rəng",
+    "Buxarın püsgürmə sürəti",
+    "Zəmanət"
+  ],
+  "title": "Buxarlı ütülər — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Əsas xüsusiyyətlər",
+      "fields": [
+        {
+          "key": "İstehsalçı ölkə",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Güc",
+          "placeholder": "məs: 1640 Vt"
+        },
+        {
+          "key": "Həcm",
+          "placeholder": "məs: 0.38 lt"
+        },
+        {
+          "key": "Buxarın ötürülmə sürəti",
+          "placeholder": "məs: 30 q/dəq"
+        },
+        {
+          "key": "İsinmə vaxtı",
+          "placeholder": "məs: 38 san"
+        },
+        {
+          "key": "Naqilin uzunluğu",
+          "placeholder": "məs: 1.6 m"
+        },
+        {
+          "key": "Şaquli buxarlanma",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Avtomatik sönmə",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Damlama əleyhinə sistem",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "OptimalTemp",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Çəki",
+          "placeholder": "məs: 1.1 kq"
+        },
+        {
+          "key": "Özünü təmizləmə sistemi",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Altlığın materialı",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Korpusun materialı",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Növ",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Rəng",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Buxarın püsgürmə sürəti",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Zəmanət",
+          "placeholder": "məs: 12 ay"
+        }
+      ]
+    }
+  ]
+},
+{
+  "category": "Bişirmə panelləri",
+  "rows": 12,
+  "keys": [
+    "Brend",
+    "Növ",
+    "Ocaq sayı",
+    "Ölçülər (H × E × D)",
+    "Quraşdırılma ölçüləri (E × D)",
+    "WOK ocaq gözü",
+    "Rəng",
+    "Elektroalışma",
+    "Taymer",
+    "Arxa sol ocağın gücü",
+    "Arxa sağ ocağın gücü",
+    "Ön sağ ocağın gücü",
+    "Ön sol ocağın gücü",
+    "Qazın maksimal gücü",
+    "Maksimal elektrik gücü",
+    "İdarəetmə panelinin yerləşməsi",
+    "Mərkəzi ocağın gücü",
+    "İdarəetmə növü",
+    "Barmaqlıqların materialı",
+    "Bişirmə səthinin materialı",
+    "Ocağın qaz nəzarəti",
+    "Zəmanət",
+    "İstehsalçı ölkə"
+  ],
+  "title": "Bişirmə panelləri — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Əsas xüsusiyyətlər",
+      "fields": [
+        {
+          "key": "Növ",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Ocaq sayı",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Ölçülər (H × E × D)",
+          "placeholder": "məs: 60 × 52 sm"
+        },
+        {
+          "key": "Quraşdırılma ölçüləri (E × D)",
+          "placeholder": "məs: 60 × 52 sm"
+        },
+        {
+          "key": "WOK ocaq gözü",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Rəng",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Elektroalışma",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Taymer",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Arxa sol ocağın gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "Arxa sağ ocağın gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "Ön sağ ocağın gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "Ön sol ocağın gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "Qazın maksimal gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "Maksimal elektrik gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "İdarəetmə panelinin yerləşməsi",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Mərkəzi ocağın gücü",
+          "placeholder": "məs: 3 kVt"
+        },
+        {
+          "key": "İdarəetmə növü",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Barmaqlıqların materialı",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Bişirmə səthinin materialı",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Ocağın qaz nəzarəti",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "Zəmanət",
+          "placeholder": "Dəyəri daxil edin"
+        },
+        {
+          "key": "İstehsalçı ölkə",
+          "placeholder": "Dəyəri daxil edin"
+        }
+      ]
+    }
+  ]
+},
   {
     "category": "Qabyuyan maşınlar",
     "rows": 18,
@@ -2624,7 +2854,117 @@ const APPLIANCE_SPEC_SCHEMAS = [
         ]
       }
     ]
-  }
+  },
+{
+  "category": "Quraşdırılan sobalar",
+  "rows": 10,
+  "keys": [
+    "Brend",
+    "Növ",
+    "Güc",
+    "İdarəetmə növü",
+    "Sobanın həcmi",
+    "Qril",
+    "Konveksiya",
+    "Proqramların sayı",
+    "Mikrodalğa funksiyası",
+    "Qapıda şüşə sayı",
+    "İsitmə rejimi",
+    "Enerji istifadə sinfi",
+    "Taymer",
+    "Displey",
+    "Rəng",
+    "Ölçülər (H × E × D)",
+    "Quraşdırma ölçüləri (H × E × D)",
+    "İstehsalçı ölkə",
+    "Təmizləmə üsulu",
+    "Zəmanət"
+  ],
+  "title": "Quraşdırılan soba xüsusiyyətləri",
+  "groups": [
+    {
+      "title": "Əsas xüsusiyyətlər",
+      "fields": [
+        {
+          "key": "Növ",
+          "placeholder": "məs: Elektrik"
+        },
+        {
+          "key": "Güc",
+          "placeholder": "məs: 2800 Vt"
+        },
+        {
+          "key": "İdarəetmə növü",
+          "placeholder": "məs: Elektromexaniki"
+        },
+        {
+          "key": "Sobanın həcmi",
+          "placeholder": "məs: 66 lt"
+        },
+        {
+          "key": "Qril",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Konveksiya",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Proqramların sayı",
+          "placeholder": "məs: 7"
+        },
+        {
+          "key": "Mikrodalğa funksiyası",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Qapıda şüşə sayı",
+          "placeholder": "məs: 2"
+        },
+        {
+          "key": "İsitmə rejimi",
+          "placeholder": "məs: Üst + alt isitmə; Alt isitmə; Qril + konveksiya"
+        },
+        {
+          "key": "Enerji istifadə sinfi",
+          "placeholder": "məs: A"
+        },
+        {
+          "key": "Taymer",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Displey",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Rəng",
+          "placeholder": "məs: Qara"
+        },
+        {
+          "key": "Ölçülər (H × E × D)",
+          "placeholder": "məs: 59.5 × 59.4 × 54.8 sm"
+        },
+        {
+          "key": "Quraşdırma ölçüləri (H × E × D)",
+          "placeholder": "məs: 59.7 × 56.8 × 55 sm"
+        },
+        {
+          "key": "İstehsalçı ölkə",
+          "placeholder": "məs: Türkiyə"
+        },
+        {
+          "key": "Təmizləmə üsulu",
+          "placeholder": "məs: Hidroliz (buxarla)"
+        },
+        {
+          "key": "Zəmanət",
+          "placeholder": "məs: 36 ay"
+        }
+      ]
+    }
+  ]
+}
 ];
 function applianceSpecification(item) {
  const category=String(item.subcategory || item.category || '').trim().toLocaleLowerCase('az');

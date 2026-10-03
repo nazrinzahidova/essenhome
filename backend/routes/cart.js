@@ -2,6 +2,22 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../lib/prisma');
 const authMiddleware = require('../middleware/auth');
+const { priceProducts, priceCart } = require('../lib/cartPricing');
+
+// A public, read-only quote uses current catalog prices, never client prices.
+router.post('/quote', (req, res, next) => req.headers.authorization ? authMiddleware(req, res, next) : next(), async (req, res) => {
+  const ids = req.body?.productIds;
+  if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !Number.isInteger(id) || id < 1 || id > 2147483647)) {
+    return res.status(400).json({ message: 'Məhsul siyahısı düzgün deyil.' });
+  }
+  try {
+    const products = await prisma.product.findMany({ where: { id: { in: [...new Set(ids)] } }, select: { id: true, price: true } });
+    res.set('Cache-Control','no-store').json(await priceProducts(prisma, products, req.user?.id));
+  } catch (error) {
+    console.error('Cart quote:', error.message);
+    res.status(503).json({ message: 'Səbət qiymətləri yüklənmədi. Yenidən cəhd edin.' });
+  }
+});
 
 
 // Səbəti gətir
@@ -11,7 +27,7 @@ router.get('/', authMiddleware, async (req, res) => {
       where: { userId: req.user.id },
       include: { product: true }
     });
-    res.json(cart);
+    res.set('Cache-Control','no-store').json(await priceCart(prisma, cart, req.user.id));
   } catch (err) {
     console.error('Cart GET xətası:', err);
     res.status(500).json({ message: 'Server xətası' });
@@ -44,7 +60,7 @@ router.post('/', authMiddleware, async (req, res) => {
         data: { quantity: existing.quantity + (parseInt(quantity) || 1) },
         include: { product: true }
       });
-      return res.json(updated);
+      return res.json((await priceCart(prisma, [updated], req.user.id))[0]);
     }
 
     const item = await prisma.cart.create({
@@ -56,7 +72,7 @@ router.post('/', authMiddleware, async (req, res) => {
       include: { product: true }
     });
 
-    res.status(201).json(item);
+    res.status(201).json((await priceCart(prisma, [item], req.user.id))[0]);
   } catch (err) {
     console.error('Cart POST xətası:', err);
     res.status(500).json({ message: 'Server xətası' });
@@ -89,7 +105,7 @@ router.put('/:id', authMiddleware, async (req, res) => {
       include: { product: true }
     });
 
-    res.json(updated);
+    res.json((await priceCart(prisma, [updated], req.user.id))[0]);
   } catch (err) {
     console.error('Cart PUT xətası:', err);
     res.status(500).json({ message: 'Server xətası' });

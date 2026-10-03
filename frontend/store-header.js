@@ -1,4 +1,26 @@
 (() => {
+  const view = document.getElementById('view');
+  if (!view) return;
+  const removeSku = () => {
+    const grid = view.querySelector('#specGrid');
+    if (!grid || !grid.children.length) return;
+    grid.querySelectorAll('.spec-row').forEach(row => {
+      if (row.querySelector('.spec-name')?.textContent.trim().toLowerCase() === 'sku') row.remove();
+    });
+    const notes = view.querySelector('.highlights');
+    if (notes) {
+      const heading = notes.querySelector('h2');
+      if (heading) heading.textContent = 'Əlavə qeydlər';
+      grid.closest('.spec-card').appendChild(notes);
+    }
+    observer.disconnect();
+  };
+  const observer = new MutationObserver(removeSku);
+  observer.observe(view, {childList:true, subtree:true});
+  removeSku();
+})();
+
+(() => {
   const header = document.querySelector('.eh-header');
   if (!header) return;
   const $ = id => document.getElementById(id);
@@ -36,7 +58,7 @@
         const needle = input.value.trim().toLocaleLowerCase('az');
         const matches = items.filter(item => [item.name,item.brand].join(' ').toLocaleLowerCase('az').includes(needle)).slice(0,6);
         results.replaceChildren();
-        for (const item of matches) { const link = document.createElement('a'); link.href='/product.html?id='+encodeURIComponent(item.id); link.textContent=item.name+' — '+item.price+' ₼'; results.append(link); }
+        for (const item of matches) { const link = document.createElement('a'); link.href=item.url || '/product.html?id='+encodeURIComponent(item.id); link.textContent=item.name+' — '+item.price+' ₼'; results.append(link); }
         const all = document.createElement('a'); all.href='/catalog.html?search='+encodeURIComponent(input.value.trim()); all.textContent='Bütün nəticələrə bax'; results.append(all); results.hidden=false;
       } catch { products=null; results.hidden=true; }
     },180);

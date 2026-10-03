@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="az">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kataloq — Essen Home</title>
+  <title>Məhsul kataloqu | Essen Home</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -110,8 +110,8 @@
 <body>
   <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
     <div class="catalog-header-row max-w-7xl mx-auto px-4 sm:px-6 h-20">
-      <a href="index.html" class="justify-self-start">
-        <img src="img/logo.png" alt="Essen Home" class="h-16 w-36">
+      <a href="index.html" class="justify-self-start flex items-center">
+        <img src="img/logo.png" alt="Essen Home" width="175" height="107" class="block h-16 w-auto max-w-full object-contain">
       </a>
       <form id="catalogSearchForm" class="relative w-full flex justify-self-center">
         <input id="catalogSearch" type="search" placeholder="Məhsul axtar..."
@@ -254,8 +254,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -263,8 +261,8 @@
     <p id="loginMessage" class="essen-auth-note" aria-live="polite"></p>
   </div>
 </div>
-<script src="/phone-auth.js?v=20260912-catalog-1"></script>
-  <script src="admin-categories.js?v=20260705-2"></script>
+<script src="/phone-auth.js?v=20260928-no-email-1"></script>
+  <script src="admin-categories.js?v=20260927-steam-1"></script>
   <script src="/sales-categories.js?v=20260912-1"></script>
   <script>
     const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
@@ -272,7 +270,9 @@
     const params = new URLSearchParams(window.location.search);
     const selectedLeader=Object.hasOwn(EssenSalesCategories.definitions,params.get('leader'))?params.get('leader'):'';
     const selectedCategory = params.get('category') || '';
-    const selectedSubcategory = params.get('subcategory') || '';
+    const requestedSubcategory = params.get('subcategory') || '';
+    const steamSubcategory = requestedSubcategory.trim().toLocaleLowerCase('az') === 'şaquli buxarlı ütülər' ? 'Buxarlı ütülər' : requestedSubcategory;
+    const selectedSubcategory = steamSubcategory.trim().toLocaleLowerCase('az') === 'induksiya plitələri' ? 'Bişirmə panelləri' : steamSubcategory;
     const searchQuery = params.get('search') || '';
     const selectedBrand = params.get('brand') || '';
     function brandKey(value) {
@@ -417,6 +417,27 @@
       );
     }
 
+
+  // Keep homepage phones and laptops visible; retain all products in the admin.
+  let homepageVisibilityIdsPromise = null;
+  async function visibleCatalogProducts(products) {
+    if (!homepageVisibilityIdsPromise) {
+      homepageVisibilityIdsPromise = fetch('/api/home-sections', { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) throw new Error('Ana səhifə məhsulları yüklənmədi');
+          return response.json();
+        })
+        .then(sections => new Set(sections.flatMap(section => section.products.map(product => Number(product.id)))))
+        .catch(error => { homepageVisibilityIdsPromise = null; throw error; });
+    }
+    const homepageIds = await homepageVisibilityIdsPromise;
+    return products.filter(product => {
+      const placements = [{ subcategory: product.subcategory }, ...(product.placements || [])];
+      const restricted = placements.some(placement => /smartfon|notbuk|noutbuk/i.test(placement.subcategory || ''));
+      return !restricted || homepageIds.has(Number(product.id));
+    });
+  }
+
     function filteredProducts(products) {
       return products.filter(product => {
         if(!EssenSalesCategories.matches(product,selectedLeader))return false;
@@ -462,6 +483,7 @@
       { id: 'nfc', title: 'NFC', keys: ['NFC'] },
       { id: 'wireless', title: 'Simsiz enerji', keys: ['Simsiz enerji'] }
     ];
+    let currentFilterDefinitions = [];
     let catalogProducts = [];
     const activeFilters = {};
 
@@ -480,7 +502,7 @@
     function splitValues(value) {
       if (Array.isArray(value)) return value.flatMap(splitValues);
       if (value && typeof value === 'object') return [value.name || value.value || ''].filter(Boolean);
-      const raw = String(value || '').trim();
+      const raw = String(value ?? '').trim();
       if (!raw) return [];
       try {
         const parsed = JSON.parse(raw);
@@ -506,7 +528,7 @@
     }
 
     function filterValues(product, definition) {
-      if (definition.source === 'brand') return splitValues(product.brand);
+      if (definition.source === 'brand') return splitValues(product.brand || specValue(product, ['Brend', 'Brand']));
       if (definition.source === 'colors') {
         return [...colorNames(specValue(product, definition.keys)), ...colorNames(product.colors)]
           .filter((value, index, all) =>
@@ -517,11 +539,19 @@
       return values;
     }
 
-    function isSmartphoneCatalog(products) {
-      return products.some(isSmartphoneProduct) &&
-        (normalized(selectedSubcategory).includes('smartfon') ||
-         normalized(selectedCategory).includes('smartfon') ||
-         products.every(isSmartphoneProduct));
+    function buildFilterDefinitions(products) {
+      const definitions = SMARTPHONE_FILTERS.filter(def => def.source === 'brand' || def.source === 'colors');
+      const seen = new Set(['rəng', 'rənglər', 'brend', 'brand', 'sku'].map(normalized));
+      products.forEach(product => {
+        const specs = product.specs && typeof product.specs === 'object' && !Array.isArray(product.specs) ? product.specs : {};
+        Object.keys(specs).forEach(key => {
+          const clean = key.trim(), canonical = normalized(clean);
+          if (!clean || seen.has(canonical)) return;
+          seen.add(canonical);
+          definitions.push({ id: 'spec' + definitions.length, title: clean, keys: [key], searchable: true });
+        });
+      });
+      return definitions.filter(def => products.some(product => filterValues(product, def).length));
     }
 
     function optionCounts(products, definition) {
@@ -530,7 +560,8 @@
         const unique = new Map(filterValues(product, definition).map(value => [normalized(value), value]));
         unique.forEach((label, key) => {
           const current = counts.get(key);
-          counts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
+          const displayLabel = key === 'true' ? 'Bəli' : key === 'false' ? 'Xeyr' : label;
+          counts.set(key, { label: current?.label || displayLabel, count: (current?.count || 0) + 1 });
         });
       });
       return [...counts.entries()]
@@ -563,7 +594,8 @@
     function renderSmartphoneFilters(products) {
       const panel = document.getElementById('smartphoneFilters');
       const layout = document.getElementById('catalogLayout');
-      const smartphoneMode = isSmartphoneCatalog(products);
+      currentFilterDefinitions = buildFilterDefinitions(products);
+      const smartphoneMode = products.length > 0;
       panel.classList.toggle('hidden', !smartphoneMode);
       layout.classList.toggle('with-filters', smartphoneMode);
       document.getElementById('openMobileFilters').classList.toggle('hidden', !smartphoneMode);
@@ -578,15 +610,15 @@
         </button>
         <div class="filter-content">
           <div class="price-row">
-            <input id="filterMinPrice" class="price-input" type="number" min="0" placeholder="${min} ₼">
+            <input id="filterMinPrice" aria-label="Minimum qiymət" class="price-input" type="number" min="0" placeholder="${min} ₼">
             <span>–</span>
-            <input id="filterMaxPrice" class="price-input" type="number" min="0" placeholder="${max} ₼">
+            <input id="filterMaxPrice" aria-label="Maksimum qiymət" class="price-input" type="number" min="0" placeholder="${max} ₼">
           </div>
           <button id="applyPriceFilter" type="button" class="apply-price">Tətbiq et</button>
         </div>
       </section>`;
       document.getElementById('dynamicFilters').innerHTML = price +
-        SMARTPHONE_FILTERS.map(def => filterSection(def, optionCounts(products, def))).join('');
+        currentFilterDefinitions.map(def => filterSection(def, optionCounts(products, def))).join('');
       bindSmartphoneFilters();
     }
 
@@ -646,7 +678,7 @@
       return products.filter(product => {
         const price = Number(product.price);
         if (price < min || price > max) return false;
-        return SMARTPHONE_FILTERS.every(definition => {
+        return currentFilterDefinitions.every(definition => {
           const selected = activeFilters[definition.id];
           if (!selected || !selected.size) return true;
           return filterValues(product, definition).some(value => selected.has(normalized(value)));
@@ -690,7 +722,7 @@
       const topBadge = productTopBadge(product);
       return `
         <article class="product-card bg-white border border-gray-200 rounded-2xl overflow-hidden flex flex-col">
-          <a href="product.html?id=${product.id}" class="relative h-44 bg-white flex flex-col">
+          <a href="${product.url || '/product.html?id=' + product.id}" class="relative h-44 bg-white flex flex-col">
             ${topBadge}
             <div class="flex-1 min-h-0 flex items-center justify-center">
               ${image}
@@ -698,7 +730,7 @@
           </a>
           <div class="p-3 flex flex-col flex-1">
             ${stockBadge(product)}
-            <a href="product.html?id=${product.id}" class="font-medium leading-5 min-h-10 line-clamp-2 hover:text-red-600">
+            <a href="${product.url || '/product.html?id=' + product.id}" class="font-medium leading-5 min-h-10 line-clamp-2 hover:text-red-600">
               ${escapeHtml(product.name)}
             </a>
             <div class="mt-auto pt-2">
@@ -740,7 +772,7 @@
       try {
         const response = await fetch(`${API}/api/products?${query.toString()}`);
         if (!response.ok) throw new Error('Məhsullar yüklənmədi');
-        const products = filteredProducts(await response.json());
+        const products = filteredProducts(await visibleCatalogProducts(await response.json()));
         catalogProducts = products;
         document.getElementById('loadingState').classList.add('hidden');
         renderSmartphoneFilters(products);
@@ -860,6 +892,7 @@
             if (!response.ok) throw new Error();
             return response.json();
           })
+          .then(visibleCatalogProducts)
           .catch(() => []);
       }
       return searchProductsPromise;
@@ -932,7 +965,7 @@
 
         button.append(imageBox, info);
         button.addEventListener('click', () => {
-          window.location.href = `product.html?id=${product.id}`;
+          window.location.href = product.url || `/product.html?id=${product.id}`;
         });
         results.appendChild(button);
       });

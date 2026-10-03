@@ -146,7 +146,7 @@
     }
   </style>
     <link rel="icon" type="image/svg+xml" href="img/essen-favicon.svg?v=20260907">
-<script src="appliance-specs.js?v=20260909-4"></script>
+<script src="appliance-specs.js?v=20261002-oven-1"></script>
 <script src="freezer-specs.js?v=20260908-1"></script>
 <script src="hood-specs.js?v=20260908-1"></script>
 <script src="vacuum-specs.js?v=20260909-1"></script>
@@ -200,8 +200,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -338,12 +336,25 @@
     }
     function render(item) {
       const images = imageList(item);
-      const specs = specEntries(item);
+      const specs = specEntries(item).filter(([key]) => key.trim().toLowerCase() !== 'sku');
       const model = modelValue(item);
       const discount = discountText(item);
       const inStock = Number(item.stock) > 0;
       document.title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
-      document.getElementById('crumbs').innerHTML = `<a href="index.html">Ana səhifə</a><span>›</span><a href="catalog.html">Kataloq</a><span>›</span><span id="crumbName"></span>`;
+      const crumbs = document.getElementById('crumbs');
+      crumbs.replaceChildren();
+      const addCrumb = (name, href) => {
+        if (crumbs.childNodes.length) { const separator = document.createElement('span'); separator.textContent = '›'; crumbs.append(separator); }
+        const node = document.createElement(href ? 'a' : 'span');
+        node.textContent = name;
+        if (href) node.href = href; else { node.id = 'crumbName'; node.setAttribute('aria-current', 'page'); }
+        crumbs.append(node);
+      };
+      addCrumb('Ana səhifə', '/');
+      const categoryParams = new URLSearchParams();
+      if (item.category) { categoryParams.set('category', item.category); addCrumb(item.category, '/catalog.html?' + categoryParams); }
+      if (item.subcategory && item.subcategory !== item.category) { categoryParams.set('subcategory', item.subcategory); addCrumb(item.subcategory, '/catalog.html?' + categoryParams); }
+      addCrumb(item.name);
       view.innerHTML = `
         <div class="product-layout">
           <section class="card gallery" aria-label="Məhsul qalereyası">
@@ -417,7 +428,7 @@
     }
     function showError(message) { view.innerHTML = `<div class="card state-card"><i class="fa-solid fa-box-open"></i><h2>${message}</h2><a href="catalog.html">Kataloqa qayıt</a></div>`; }
     async function init() {
-      const id = new URLSearchParams(location.search).get('id');
+      const id = document.querySelector('meta[name="product-id"]')?.content || new URLSearchParams(location.search).get('id');
       if (!id || !/^\d+$/.test(id)) return showError('Məhsul identifikatoru düzgün deyil');
       try { const response = await fetch(`/api/products/${encodeURIComponent(id)}`); if (!response.ok) throw new Error(); product = await response.json(); render(product); }
       catch { showError('Məhsul tapılmadı'); }
@@ -441,7 +452,7 @@
         const image = document.createElement('img'); image.src = item.image || ''; image.alt = '';
         const info = document.createElement('div'); const name = document.createElement('div'); name.className = 'search-name'; name.textContent = item.name; const meta = document.createElement('div'); meta.className = 'search-meta'; meta.textContent = [item.brand,item.subcategory].filter(Boolean).join(' · '); info.append(name,meta);
         const price = document.createElement('div'); price.className = 'search-price'; price.textContent = money(item.price);
-        row.append(image,info,price); const open = () => location.href = `product.html?id=${encodeURIComponent(item.id)}`; row.onclick = open; row.onkeydown = event => { if (event.key === 'Enter') open(); }; results.appendChild(row);
+        row.append(image,info,price); const open = () => location.href = item.url || `/product.html?id=${encodeURIComponent(item.id)}`; row.onclick = open; row.onkeydown = event => { if (event.key === 'Enter') open(); }; results.appendChild(row);
       });
     }
     const searchInput = document.getElementById('searchInput');
@@ -454,6 +465,6 @@
     updateCartCount();
     init();
   </script>
-<script src="/categories.js"></script><script src="/phone-auth.js?v=20260910-profile-1"></script><script src="/store-header.js?v=20260909-2"></script>
+<script src="/categories.js"></script><script src="/phone-auth.js?v=20260928-no-email-1"></script><script src="/store-header.js?v=20260909-2"></script>
 </body>
 </html>

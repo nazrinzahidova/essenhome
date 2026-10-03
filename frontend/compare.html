@@ -280,8 +280,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -421,7 +419,7 @@ function buildSpecFields(products) {
   products.forEach(p => {
     if (p.brand) fieldSet.add('Brend');
     Object.entries(p.specs || {}).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') fieldSet.add(key);
+      if (key.trim().toLowerCase() !== 'sku' && value !== null && value !== undefined && value !== '') fieldSet.add(key);
     });
   });
 
@@ -743,7 +741,7 @@ window.addEventListener('focus', updateCartBadge);
 window.addEventListener('pageshow', updateCartBadge);
 init();
 </script>
-<script src="/categories.js"></script><script src="/phone-auth.js?v=20260910-profile-1"></script><script src="/store-header.js?v=20260909-2"></script>
+<script src="/categories.js"></script><script src="/phone-auth.js?v=20260928-no-email-1"></script><script src="/store-header.js?v=20260909-2"></script>
   <div id="storeFooter" style="font-size:16px;line-height:1.5;margin-top:40px">
 <footer class="w-full bg-white border-t border-gray-100">
   <div class="max-w-6xl mx-auto px-6 pt-14 pb-6">

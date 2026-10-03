@@ -391,7 +391,11 @@ async function loadProducts() {
   try {
     const res = await fetch(`${API}/api/products`);
     if (!res.ok) throw new Error();
-    allProducts = await res.json();
+    allProducts = (await res.json()).sort((a, b) => {
+      const createdA = Date.parse(a.createdAt || a.created_at || '') || 0;
+      const createdB = Date.parse(b.createdAt || b.created_at || '') || 0;
+      return createdB - createdA || Number(b.id) - Number(a.id);
+    });
     syncAdminColorPaletteFromProducts(allProducts);
     // artıq mövcud olmayan id-ləri seçimdən təmizlə
     const validIds = new Set(allProducts.map(p => p.id));
@@ -533,24 +537,16 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', async () 
   delBtn.disabled = true;
 
   try {
-    const results = await Promise.allSettled(
-      ids.map(id => fetch(`${API}/api/admin/products/${id}`, {
-        method: 'DELETE',
-        headers: authHeaders()
-      }))
-    );
-
-    const failed = results.filter(r => r.status === 'rejected' || (r.value && !r.value.ok)).length;
+    const results = await Promise.allSettled(ids.map(requestProductDeletion));
+    const failures = results.filter(r => r.status === 'rejected');
+    const failed = failures.length;
     const succeeded = ids.length - failed;
-
-    selectedIds.clear();
-
-    if (failed === 0) {
+    results.forEach((result, index) => { if (result.status === 'fulfilled') selectedIds.delete(ids[index]); });
+    if (!failed) {
       showToast(succeeded === 1 ? 'Məhsul silindi' : `${succeeded} məhsul silindi`);
-    } else if (succeeded === 0) {
-      showToast('Silmək mümkün olmadı');
     } else {
-      showToast(`${succeeded} silindi, ${failed} alınmadı`);
+      const reason = failures[0].reason?.message || 'Silmək mümkün olmadı';
+      showToast(succeeded ? `${succeeded} silindi, ${failed} alınmadı. ${reason}` : reason);
     }
 
     loadProducts();
@@ -722,6 +718,33 @@ document.getElementById('f_subcategory').addEventListener('change', () => {
 function activeSpecificationTemplate() {
   const selectedSubcategory = document.getElementById('f_subcategory').value.trim();
   const subcategory = selectedSubcategory.toLocaleLowerCase('az');
+  if (subcategory === 'qəhvəbişirənlər') {
+    return { title: 'Qəhvəbişirən xüsusiyyətləri', groups: [{ title: 'Əsas xüsusiyyətlər', fields: [
+      { key: 'İstehsalçı ölkə', placeholder: 'məs: İtaliya' },
+      { key: 'Növ', placeholder: 'məs: Qəhvəbişirən' },
+      { key: 'Su səviyyəsinin göstəricisi', type: 'boolean' },
+      { key: 'Damcı əleyhinə sistem', type: 'boolean' },
+      { key: 'Displey', type: 'boolean' },
+      { key: 'Güc', placeholder: 'məs: 1450 Vt' },
+      { key: 'Su qabının həcmi', placeholder: 'məs: 1.8 lt' },
+      { key: 'Maksimal təzyiq', placeholder: 'məs: 15 bar' },
+      { key: 'Taxılın həcmi', placeholder: 'məs: 250 qr' },
+      { key: 'Qəhvə üyüdən', type: 'boolean' },
+      { key: 'Taymer', type: 'boolean' },
+      { key: 'Quraşdırılma növü', placeholder: 'məs: Solo' },
+      { key: 'İçki növü', placeholder: 'məs: Americano, cappuccino, espresso, latte' },
+      { key: 'Kapucinator', type: 'boolean' },
+      { key: 'Avtomatik təmizləmə', type: 'boolean' },
+      { key: 'İstifadə edilən qəhvə növü', placeholder: 'məs: Dənli' },
+      { key: 'İdarəetmə növü', placeholder: 'məs: Elektron' },
+      { key: 'Xüsusiyyətlər', placeholder: 'məs: Qəhvənin sərtliyinin tənzimlənməsi' },
+      { key: 'Korpusun materialı', placeholder: 'məs: Plastik' },
+      { key: 'Rəng', placeholder: 'məs: Gümüşü, qara' },
+      { key: 'Ölçülər (H × E × D)', placeholder: 'məs: 36 × 24 × 44 sm' },
+      { key: 'Zəmanət', placeholder: 'məs: 36 ay' }
+    ] }] };
+  }
+
   const appliance = applianceSpecification({subcategory:selectedSubcategory});
   if (appliance) return appliance;
   if (subcategory === 'qoruyucu örtük' || subcategory === 'apple qoruyucu örtükləri') {
@@ -1278,19 +1301,25 @@ form.addEventListener('submit', async (e) => {
 });
 
 // ============== SİLMƏ (tək məhsul) ==============
+async function requestProductDeletion(id) {
+  const res = await fetch(`${API}/api/admin/products/${id}`, {
+    method: 'DELETE', headers: authHeaders()
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(res.status === 401 ? 'Sessiya bitib. Yenidən daxil olun.' : (data.message || 'Silmək mümkün olmadı'));
+  }
+}
+
 async function deleteProduct(id) {
   if (!confirm('Bu məhsulu silmək istədiyinə əminsən?')) return;
   try {
-    const res = await fetch(`${API}/api/admin/products/${id}`, {
-      method: 'DELETE',
-      headers: authHeaders()
-    });
-    if (!res.ok) throw new Error();
+    await requestProductDeletion(id);
     selectedIds.delete(id);
     showToast('Məhsul silindi');
     loadProducts();
-  } catch {
-    showToast('Silmək mümkün olmadı');
+  } catch (err) {
+    showToast(err.message || 'Silmək mümkün olmadı');
   }
 }
 

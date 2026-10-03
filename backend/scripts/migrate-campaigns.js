@@ -10,7 +10,7 @@ async function migrate(){
   await db.query('BEGIN');
   await db.query("SELECT pg_advisory_xact_lock(19740919,1)");
   await db.query('CREATE TABLE IF NOT EXISTS "QrCampaignMigration" ("name" TEXT PRIMARY KEY,"checksum" TEXT NOT NULL,"appliedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP)');
-  for(const name of ['20260919120000_qr_campaign','20260919180000_campaign_fin_encryption']) {
+  for(const name of ['20260919120000_qr_campaign','20260919180000_campaign_fin_encryption','20260928190000_optional_registration_identity']) {
   const sql=fs.readFileSync(path.join(__dirname,'../prisma/migrations',name,'migration.sql'),'utf8');
   const checksum=crypto.createHash('sha256').update(sql).digest('hex');
   const applied=(await db.query('SELECT "checksum" FROM "QrCampaignMigration" WHERE "name"=$1',[name])).rows[0];
@@ -25,7 +25,7 @@ async function migrate(){
   }
   }
   await require('../lib/campaign').checkKey(db);
-  await db.query('COMMIT');console.log('QR campaign migration ready.');
+  await db.query('COMMIT');console.log('QR campaign migration ready; email-free registration and FIN-optional activation schema ready (20260928).');
  }catch(error){await db.query('ROLLBACK');throw error;}finally{await db.end();}
 }
 module.exports={migrateCampaigns:migrate};

@@ -36,7 +36,7 @@ model User {
   lastName  String?
   birthDate DateTime? @db.Date
   name      String
-  email     String   @unique
+  email     String?  @unique
   phone     String?  @unique
   password  String
   role      String   @default("user")
@@ -305,8 +305,8 @@ model CampaignEntry {
   campaignId Int
   userId Int?
   scanId String @unique
-  finHash String
-  finMasked String
+  finHash String?
+  finMasked String?
   finEncrypted String?
   number BigInt @unique
   status String @default("active")

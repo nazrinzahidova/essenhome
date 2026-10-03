@@ -61,7 +61,7 @@
       border-radius: 16px;
       overflow: hidden;
     }
-    .mySwiper .swiper-slide { opacity: 0.1; transition-property: transform, opacity; }
+    .mySwiper .swiper-slide { opacity: 0.2; transition-property: transform, opacity; }
     .mySwiper .swiper-slide-active { opacity: 1; }
     .mySwiper .swiper-slide img { object-fit: cover; }
     .swiper-slide img {
@@ -71,6 +71,34 @@
       object-fit: cover;
     }
     .swiper-slide { width: 50%; }
+
+    /* Clip only the blank outer canvas; keep the supplied posters unchanged. */
+    .mySwiper .swiper-slide.promotion-poster {
+      position: relative;
+      width: auto;
+      height: 100%;
+      aspect-ratio: 25 / 39;
+      flex-shrink: 0;
+    }
+    .mySwiper .promotion-poster img {
+      position: absolute;
+      width: 200%;
+      max-width: none;
+      height: auto;
+      left: -50%;
+      top: -14.102564%;
+    }
+    .mySwiper .swiper-slide.campaign-slide {
+      width: 50%;
+      height: 100%;
+      background: #fff;
+    }
+    .mySwiper .campaign-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
     .carousel-track { display: flex; gap: 12px; will-change: transform; }
     .brand-card { width: 80px; height: 80px; flex-shrink: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -555,8 +583,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -705,10 +731,10 @@
   <div class="w-full lg:w-[700px] h-[280px] sm:h-[380px] lg:h-[550px] border border-gray-300 rounded-2xl shrink-0 overflow-hidden" id="hero-swiper-wrap">
     <div class="swiper mySwiper w-full h-full">
       <div class="swiper-wrapper">
-        <div class="swiper-slide"><img src="img/promotions/samsung-s26-ultra-193151.png" alt="Samsung Galaxy S26 Ultra — 2550 ₼"/></div>
-        <div class="swiper-slide"><img src="img/promotions/samsung-tv32-192919.png" alt="Samsung TV 32'' — 829.99 ₼"/></div>
-        <div class="swiper-slide"><img src="img/promotions/sem-airfryer-192746.png" alt="SEM Airfryer 305 — 120 ₼"/></div>
-        <div class="swiper-slide"><img src="img/promotions/essen-esc01-192133.png" alt="ESSEN ESC-01 doğrayıcı — 49.99 ₼"/></div>
+        <div class="swiper-slide campaign-slide"><img src="img/promotions/qrkampaniya.png?v=66d32a9772cf" alt="Essen QR kampaniyası — qeydiyyatdan keç, seçilmiş məhsulları səbətdə yarı qiymətə əldə et" width="1044" height="1566"/></div>
+        <div class="swiper-slide campaign-slide"><img src="img/promotions/essen-blender-20260926-170017.png" alt="ESSEN HE-2052 blender seti — 109.99 ₼" width="967" height="1627"/></div>
+        <div class="swiper-slide campaign-slide"><img src="img/promotions/essen-dograyici-20260926-165903.png" alt="ESSEN ESC-01 doğrayıcı — 49.99 ₼" width="1024" height="1536"/></div>
+        <div class="swiper-slide campaign-slide"><img src="img/promotions/sem-airfryer-20260926-165343.png" alt="SEM Airfryer 305 — 99.99 ₼" width="1024" height="1536"/></div>
       </div>
       <div class="prev-btn !w-9 !h-9 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-100 text-black z-10 transition-all hover:bg-gray-50 absolute left-2 top-1/2 -translate-y-1/2 cursor-pointer">
         <i class="fa-solid fa-arrow-left-long text-[14px]"></i>
@@ -720,7 +746,7 @@
   </div>
 
   <div class="w-[245px] h-[550px] border border-gray-300 rounded-xl shrink-0 overflow-hidden relative" id="hero-banner-wrap">
-    <div class="weekly-offer-header" id="weekly-offer" data-ends-at="2026-09-30T23:59:00+04:00">
+    <div class="weekly-offer-header" id="weekly-offer" data-ends-at="2026-10-31T23:59:00+04:00">
       <div class="weekly-offer-countdown" role="timer" aria-label="Təklifin bitməsinə qalan vaxt">
         <div class="weekly-offer-unit"><strong data-days>--</strong><span>gün</span></div>
         <div class="weekly-offer-unit"><strong data-hours>--</strong><span>saat</span></div>
@@ -811,11 +837,13 @@
             </g>
           </svg>
         </div>
-        <a href="/haqqimizda" class="inline-flex items-center gap-2 text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2.5 hover:bg-gray-50 hover:border-gray-300 transition-all w-fit">
+        <a href="/haqqimizda.html" class="inline-flex items-center gap-2 text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2.5 hover:bg-gray-50 hover:border-gray-300 transition-all w-fit">
           <i class="fa-solid fa-circle-info"></i>
           Haqqımızda
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
+        <a href="https://wa.me/994102362610" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2.5 hover:bg-gray-50 hover:border-gray-300 transition-all w-fit"><span><span class="block">Əməkdaşlıq üçün (Topdan)</span><span class="block text-xs text-gray-400 mt-1">010 236 26 10</span></span></a>
+        <a href="https://wa.me/994102395263" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 text-sm text-gray-600 border border-gray-200 rounded-lg px-4 py-2.5 hover:bg-gray-50 hover:border-gray-300 transition-all w-fit"><span><span class="block">Əməkdaşlıq üçün (Korporativ)</span><span class="block text-xs text-gray-400 mt-1">010 239 52 63</span></span></a>
       </div>
       <div>
         <p class="text-xs font-medium text-gray-400 uppercase tracking-widest mb-6">Əlaqə</p>
@@ -850,7 +878,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
 <script src="admin-categories.js?v=20260705-2"></script>
-<script src="/phone-auth.js?v=20260910-profile-1"></script>
+<script src="/phone-auth.js?v=20260928-no-email-1"></script>
 <script>
   // ── LOGIN ──
   const openLoginModal = document.getElementById("openLoginModal");
@@ -1104,14 +1132,25 @@
   }
 
   // ── SWIPER ──
+  // Repeat the four campaigns once to keep the centered loop filled.
+  const heroTrack = document.querySelector('.mySwiper .swiper-wrapper');
+  const heroSlides = Array.from(heroTrack.children);
+  if (heroSlides.length === 4) {
+    heroSlides.forEach(slide => heroTrack.appendChild(slide.cloneNode(true)));
+  }
   var swiper = new Swiper(".mySwiper", {
-    slidesPerView: "auto", centeredSlides: true, spaceBetween: 10,
-    loop: true, speed: 800, effect: "coverflow",
+    slidesPerView: "auto",
+    centeredSlides: true,
+    spaceBetween: 10,
+    loop: true,
+    speed: 800,
+    effect: "coverflow",
     coverflowEffect: { rotate: 30, stretch: 0, depth: 100, modifier: 1, slideShadows: false },
-    autoplay: { delay: 3000, disableOnInteraction: false },
-    navigation: { nextEl: ".next-btn", prevEl: ".prev-btn" },
+    autoplay: { delay: 4000, disableOnInteraction: false },
+    allowTouchMove: true,
+    watchOverflow: true,
+    navigation: { nextEl: ".mySwiper .next-btn", prevEl: ".mySwiper .prev-btn" },
   });
-
   var bannerSwiper = new Swiper(".bannerSwiper", {
     loop: true,
     autoplay: { delay: 3500, disableOnInteraction: false },
@@ -1285,7 +1324,7 @@ function productTopBadge(product) {
         card.setAttribute('role', 'link');
         card.setAttribute('tabindex', '0');
         card.setAttribute('aria-label', `${p.name} məhsul səhifəsini aç`);
-        const openProduct = () => { window.location.href = `product.html?id=${encodeURIComponent(p.id)}`; };
+        const openProduct = () => { window.location.href = p.url || `/product.html?id=${encodeURIComponent(p.id)}`; };
         card.addEventListener('click', event => {
           // The favourite icon can be replaced before this event reaches the card.
           // Its original event path still includes the button that was clicked.
@@ -1299,7 +1338,7 @@ function productTopBadge(product) {
           }
         });
         card.innerHTML = `
-  <div style="position:relative;">
+  <div style="position:relative;padding-top:${isSmartphoneProduct(p) ? '0' : '36px'};">
     ${productTopBadge(p)}
     <div style="width:100%;height:${isSmartphoneProduct(p) ? '112px' : '144px'};background:#ffffff;display:flex;align-items:center;justify-content:center;">
       ${p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;padding:8px;" />` : ''}
@@ -1319,7 +1358,7 @@ function productTopBadge(product) {
             onclick="selectProductColor(this)"></span>`;
         }).join('')}
       </div>` : ''}
-    <p style="font-size:15px;font-weight:100;color:#1f2937;line-height:1.4;min-height:36px;margin-bottom:8px;"><a href="product.html?id=${encodeURIComponent(p.id)}" style="color:inherit;text-decoration:none;">${p.name}</a></p>
+    <p style="font-size:15px;font-weight:100;color:#1f2937;line-height:1.4;min-height:36px;margin-bottom:8px;"><a href="${p.url || '/product.html?id=' + encodeURIComponent(p.id)}" style="color:inherit;text-decoration:none;">${p.name}</a></p>
     ${p.oldPrice ? `<p style="font-size:12px;color:#9ca3af;text-decoration:line-through;margin-bottom:2px;">${p.oldPrice} ₼</p>` : ''}
     <p style="font-size:17px;font-weight:600;color:#e8222e;margin-bottom:4px;">${p.price} ₼</p>
     ${p.installment && !isSmartphoneProduct(p) ? `<p style="font-size:11px;color:#6b7280;margin-bottom:12px;">${p.installment}</p>` : ''}
@@ -1367,6 +1406,27 @@ function productTopBadge(product) {
     initFavButtons(); initCompareButtons();
   }
   // ── BACKEND-DƏN MƏHSULLAR ──
+
+  // Keep homepage phones and laptops visible; retain all products in the admin.
+  let homepageVisibilityIdsPromise = null;
+  async function visibleCatalogProducts(products) {
+    if (!homepageVisibilityIdsPromise) {
+      homepageVisibilityIdsPromise = fetch('/api/home-sections', { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) throw new Error('Ana səhifə məhsulları yüklənmədi');
+          return response.json();
+        })
+        .then(sections => new Set(sections.flatMap(section => section.products.map(product => Number(product.id)))))
+        .catch(error => { homepageVisibilityIdsPromise = null; throw error; });
+    }
+    const homepageIds = await homepageVisibilityIdsPromise;
+    return products.filter(product => {
+      const placements = [{ subcategory: product.subcategory }, ...(product.placements || [])];
+      const restricted = placements.some(placement => /smartfon|notbuk|noutbuk/i.test(placement.subcategory || ''));
+      return !restricted || homepageIds.has(Number(product.id));
+    });
+  }
+
   async function loadProducts() {
     try {
       const filter = currentProductFilter();
@@ -1380,7 +1440,7 @@ function productTopBadge(product) {
 
       const res = await fetch(`/api/products?${query.toString()}`);
       if (!res.ok) throw new Error('Məhsullar yüklənmədi');
-      let products = await res.json();
+      let products = await visibleCatalogProducts(await res.json());
 
       // Server hələ yenidən başladılmayıbsa belə seçim dərhal işləsin.
       products = products.filter(product => {
@@ -1455,6 +1515,7 @@ async function fetchAllProductsForSearch() {
   if (!allProductsPromise) {
     allProductsPromise = fetch("/api/products")
       .then(res => res.json())
+      .then(visibleCatalogProducts)
       .then(data => { allProductsCache = data; return data; })
       .catch(() => { allProductsCache = []; return []; });
   }
@@ -1480,7 +1541,7 @@ function renderSearchDropdown(dropdownEl, query, productMatches, loading) {
 
   if (productMatches.length) {
     productMatches.slice(0, 6).forEach(p => {
-      html += `<div class="sd-product-item" data-id="${p.id}">
+      html += `<div class="sd-product-item" data-id="${p.id}" data-product-url="${p.url || '/product.html?id=' + encodeURIComponent(p.id)}">
         <img src="${p.image || ''}" alt="${p.name}" onerror="this.style.display='none'"/>
         <div>
           <div class="sd-name">${p.name}</div>
@@ -1506,7 +1567,7 @@ function renderSearchDropdown(dropdownEl, query, productMatches, loading) {
   });
   dropdownEl.querySelectorAll('.sd-product-item').forEach(el => {
     el.addEventListener('click', () => {
-      window.location.href = `product.html?id=${el.getAttribute('data-id')}`;
+      window.location.href = el.getAttribute('data-product-url');
     });
   });
 }
@@ -1612,10 +1673,21 @@ window.addToCart = async function(productId, name, price, btnEl) {
   }
 
   if (saveLocally) {
+    try {
+      const quoteResponse = await fetch('/api/cart/quote', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({productIds:[Number(productId)]}) });
+      if (!quoteResponse.ok) throw Error('Quote failed');
+      const quote = (await quoteResponse.json()).find(p => p.id === Number(productId));
+      if (!quote || !Number.isFinite(Number(quote.price))) throw Error('Missing price');
+      price = Number(quote.price);
+    } catch {
+      alert('Səbət qiyməti alınmadı. Yenidən cəhd edin.');
+      return;
+    }
     const cart = readHomepageCart();
     const existing = cart.find(item => Number(item.id) === Number(productId) && (item.color || null) === color);
     if (existing) {
       existing.qty = Number(existing.qty || 1) + 1;
+      existing.price = Number(price);
       if (!existing.image && image) existing.image = image;
     } else {
       cart.push({ id: Number(productId), name, price: Number(price), image, qty: 1, color });
@@ -2055,5 +2127,63 @@ openLoginModal.addEventListener("click", function() {
 </script>
 <!-- ===== ESSEN CHATBOT WIDGET END ===== -->
 <script src="weekly-offer.js?v=20260907-2"></script>
-<script src="/campaign.js?v=20260919-5"></script></body>
+<script src="/campaign.js?v=20260928-auto-join-1"></script>
+<style>
+:is(#scrollRow, .home-product-row) { cursor: grab; user-select: none; touch-action: pan-x pan-y pinch-zoom; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+:is(#scrollRow, .home-product-row) img { -webkit-user-drag: none; }
+:is(#scrollRow, .home-product-row).is-dragging { cursor: grabbing; scroll-behavior: auto !important; }
+:is(#scrollRow, .home-product-row).is-dragging * { cursor: grabbing !important; }
+</style>
+<script>
+(() => {
+  let drag = null;
+  let blockedClick = null;
+  const rowSelector = '#scrollRow, .home-product-row';
+  function finishDrag(event) {
+    if (!drag || (event && event.pointerId !== undefined && event.pointerId !== drag.id)) return;
+    const state = drag;
+    drag = null;
+    state.row.classList.remove('is-dragging');
+    if (state.moved) blockedClick = { row: state.row, until: Date.now() + 500 };
+    if (state.row.hasPointerCapture(state.id)) state.row.releasePointerCapture(state.id);
+  }
+  document.addEventListener('pointerdown', event => {
+    blockedClick = null;
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    const row = event.target.closest(rowSelector);
+    if (!row || row.scrollWidth <= row.clientWidth || event.target.closest('button, input, select, textarea, .color-dot')) return;
+    const bounds = row.getBoundingClientRect();
+    if (event.clientY >= bounds.top + row.clientHeight) return;
+    drag = {row, id: event.pointerId, x: event.clientX, scroll: row.scrollLeft, moved: false};
+  });
+  document.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    if (!(event.buttons & 1)) { finishDrag(event); return; }
+    const distance = event.clientX - drag.x;
+    if (!drag.moved && Math.abs(distance) < 6) return;
+    if (!drag.moved) {
+      drag.moved = true;
+      drag.row.classList.add('is-dragging');
+      drag.row.setPointerCapture(drag.id);
+    }
+    event.preventDefault();
+    drag.row.scrollLeft = drag.scroll - distance;
+  }, {passive: false});
+  document.addEventListener('pointerup', finishDrag);
+  document.addEventListener('pointercancel', finishDrag);
+  document.addEventListener('lostpointercapture', finishDrag);
+  window.addEventListener('blur', () => finishDrag());
+  document.addEventListener('dragstart', event => {
+    if (event.target.closest(rowSelector)) event.preventDefault();
+  });
+  document.addEventListener('click', event => {
+    if (blockedClick && Date.now() < blockedClick.until && blockedClick.row.contains(event.target)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      blockedClick = null;
+    }
+  }, true);
+})();
+</script>
+</body>
 </html>

@@ -1,3 +1,4 @@
+const { priceProducts } = require('../lib/cartPricing');
 const express = require('express');
 const crypto = require('crypto');
 const auth = require('../middleware/auth');
@@ -54,7 +55,8 @@ function createCreditOrdersRouter(db) {
       if (previous) return previous.requestHash === requestHash ? res.json({id:previous.id,code:applicationCode(previous)}) : res.status(409).json({message:'Müraciət dəyişib. Formanı yenidən açın.'});
       try { policy.validateDate(input.deliveryDate); } catch (error) { return res.status(400).json({message:error.message}); }
       const products = await db.product.findMany({where:{id:{in:[...new Set(input.items.map(i=>i.productId))]}}});
-      const byId = new Map(products.map(p=>[p.id,p]));
+      const pricedProducts = await priceProducts(db, products, req.user.id);
+      const byId = new Map(pricedProducts.map(p=>[p.id,p]));
       const quantities = new Map();
       for (const item of input.items) quantities.set(item.productId,(quantities.get(item.productId)||0)+item.quantity);
       for (const [id,qty] of quantities) {

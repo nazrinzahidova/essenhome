@@ -95,16 +95,16 @@ const CATEGORY_TREE = {
   "Ev texnikası": [
     { group: "Ev üçün böyük texnika", items: ["Paltaryuyan maşınlar","Quruducu maşınlar"] },
     { group: "İqlim texnikası", items: ["Kondisionerlər","Ventilyatorlar","Kombi sistemləri","Hava təmizləyicilər və nəmləndiricilər","Qaz kolonkaları","Elektrikli su qızdırıcıları","Qızdırıcı ventilyatorlar"] },
-    { group: "Ev üçün kiçik texnika", items: ["Tozsoranlar","Robot tozsoranlar","Vertikal tozsoranlar","Yuyucu tozsoranlar","Tiftik təmizləyən","Ütülər","Buxarlı generatorlar","Şaquli buxarlı ütülər","Buxarlı təmizləyicilər","Tikiş maşınları","Robot pəncərə təmizləyənlər"] },
+    { group: "Ev üçün kiçik texnika", items: ["Tozsoranlar","Robot tozsoranlar","Vertikal tozsoranlar","Yuyucu tozsoranlar","Tiftik təmizləyən","Ütülər","Buxarlı generatorlar","Buxarlı ütülər","Buxarlı təmizləyicilər","Tikiş maşınları","Robot pəncərə təmizləyənlər"] },
     { group: "Məişət məhsulları", items: ["Paltar üçün quruducu","Ütü masaları"] },
     { group: "İqlim aksesuarları", items: ["Seksiyalı radiatorlar","Panel radiatorlar","İsti döşəmə","Hava təmizləyicisi filtri"] },
-    { group: "Geyimə qulluq", items: ["Paltar üçün quruducu","Ütü masaları","Tiftik təmizləyən","Ütülər","Buxarlı təmizləyicilər","Şaquli buxarlı ütülər","Buxarlı generatorlar","Tikiş maşınları"] },
+    { group: "Geyimə qulluq", items: ["Paltar üçün quruducu","Ütü masaları","Tiftik təmizləyən","Ütülər","Buxarlı təmizləyicilər","Buxarlı ütülər","Buxarlı generatorlar","Tikiş maşınları"] },
     { group: "Ev texnikası üçün məhsullar", items: ["Tozsoran üçün başlıq","Tozsoran üçün filtr","Buxarlı təmizləyici üçün başlıq","Tozsoran üçün torba","Ütü üçün aksesuarlar"] }
   ],
 
   "Mətbəx texnikası": [
     { group: "Böyük texnika", items: ["Soyuducular","Dondurucular","Paltaryuyan maşınlar","Aspiratorlar","Solo sobalar","Qabyuyan maşınlar","Şərab soyuducuları","İçki soyuducuları","Dispenserlər","Tibbi soyuducular"] },
-    { group: "Yemək hazırlanması", items: ["Mikrodalğalı sobalar","Stasionar blenderlər","Mini sobalar","Əl blenderləri","Ətçəkən maşınlar","Mikserlər","İzqara","Multibişiricilər","Tosterlər","Fritoz","Mətbəx tərəziləri","Sendviç və vafli hazırlayan","Doğrayıcı","Meyvə və tərəvəz qurudan","Mətbəx kombaynları","İnduksiya plitələri"] },
+    { group: "Yemək hazırlanması", items: ["Mikrodalğalı sobalar","Stasionar blenderlər","Mini sobalar","Əl blenderləri","Ətçəkən maşınlar","Mikserlər","İzqara","Multibişiricilər","Tosterlər","Fritoz","Mətbəx tərəziləri","Sendviç və vafli hazırlayan","Doğrayıcı","Meyvə və tərəvəz qurudan","Mətbəx kombaynları","Bişirmə panelləri"] },
     { group: "İçki hazırlanması", items: ["Elektrikli çaydanlar","İnduksion çaydanlar","Stasionar blenderlər","Sitrus press","Dəm çaydanları və French Press-lər","Şirəçəkənlər","Termopotlar"] },
     { group: "Qəhvə hazırlanması", items: ["Qəhvəbişirənlər","Kapsullu qəhvəbişirənlər","Damcılı qəhvəbişirənlər","Turka","Qəhvəüyüdənlər","Qəhvə","Qəhvəbişirən üçün kapsul"] },
     { group: "Quraşdırılan texnika", items: ["Quraşdırılan sobalar","Quraşdırılan plitələr","Aspiratorlar","Quraşdırılan soyuducular","Quraşdırılan qabyuyan maşınlar","Quraşdırılan paltaryuyan maşınlar","Quraşdırılan mikrodalğalı sobalar","Quraşdırılan qəhvəbişirənlər","Qida tullantıları üçün üyüdücülər"] },

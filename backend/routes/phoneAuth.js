@@ -128,20 +128,20 @@ router.post(['/otp/register', '/complete-registration'], async (req, res) => {
   const firstName = String(req.body?.firstName || '').trim();
   const lastName = String(req.body?.lastName || '').trim();
   const birthDate = otp.parseBirthDate(req.body?.birthDate);
-  const email = String(req.body?.email || '').trim().toLowerCase();
+  const email = String(req.body?.email || '').trim().toLowerCase() || null;
   if (!firstName || firstName.length > 100) return res.status(400).json({ message: 'Adınızı düzgün daxil edin.' });
   if (!lastName || lastName.length > 100) return res.status(400).json({ message: 'Soyadınızı düzgün daxil edin.' });
   if (req.body?.birthDate && !birthDate) return res.status(400).json({ message: 'Doğum tarixini GG/AA/İİİİ formatında düzgün daxil edin.' });
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: 'E-poçt ünvanını düzgün daxil edin.' });
+  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) return res.status(400).json({ message: 'E-poçt ünvanını düzgün daxil edin.' });
   try {
     const password = await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 10);
     const result = await withPhone(phone, async (db, now) => {
       const challenge = await latest(db, phone);
       if (!challenge || challenge.id !== verification.challengeId || challenge.status !== 'sent' || !challenge.consumedAt || challenge.registrationUsedAt || now - challenge.consumedAt > 600000) return failure(401, 'Təsdiq sessiyası etibarsızdır. Yeni kod göndərin.');
-      await lock(db, 'registration-email:' + email);
+      if (email) await lock(db, 'registration-email:' + email);
       const existing = await findUser(db, phone);
       if (existing) return failure(409, 'Bu telefon artıq qeydiyyatdan keçib. Yeni kodla daxil olun.');
-      if (await db.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })) return failure(409, 'Bu e-mail artıq istifadə olunur.');
+      if (email && await db.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } })) return failure(409, 'Bu e-mail artıq istifadə olunur.');
       const user = await db.user.create({ data: { name: `${firstName} ${lastName}`, firstName, lastName, birthDate, email, phone, password } });
       await db.otpChallenge.update({ where: { id: challenge.id }, data: { registrationUsedAt: now, userId: user.id } });
       return { body: session(user) };

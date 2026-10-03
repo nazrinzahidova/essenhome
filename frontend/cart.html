@@ -278,8 +278,6 @@
         <input id="authFirstName" class="essen-auth-input" autocomplete="given-name" maxlength="100" required>
         <label class="essen-auth-label" for="authLastName">Soyad</label>
         <input id="authLastName" class="essen-auth-input" autocomplete="family-name" maxlength="100" required>
-        <label class="essen-auth-label" for="authEmail">E-poçt</label>
-        <input id="authEmail" class="essen-auth-input" type="email" autocomplete="email"  required>
         <button class="essen-auth-primary" type="submit">Hesab yarat</button>
       </form>
       <button class="essen-auth-back" type="button" data-auth-back="phone">← Nömrəni dəyiş</button>
@@ -430,7 +428,23 @@
         }));
       } catch { return []; }
     } else {
-      return getLocalCart();
+      const local = getLocalCart();
+      if (!local.length) return local;
+      try {
+        const response = await fetch('/api/cart/quote', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({productIds:[...new Set(local.map(i => Number(i.id)))]}) });
+        if (!response.ok) throw Error('Quote failed');
+        const prices = new Map((await response.json()).map(p => [p.id,p]));
+        const priced = local.map(item => {
+          const quote = prices.get(Number(item.id));
+          if (!quote || !Number.isFinite(Number(quote.price))) throw Error('Product unavailable');
+          return {...item,price:Number(quote.price),basePrice:Number(quote.basePrice),cartDiscountPercent:quote.cartDiscountPercent};
+        });
+        localStorage.setItem('essenCart', JSON.stringify(priced));
+        return priced;
+      } catch {
+        alert('Səbət qiymətləri yenilənmədi. Səhifəni yeniləyib təkrar cəhd edin.');
+        return [];
+      }
     }
   }
 
@@ -654,7 +668,7 @@
 
   renderCart();
 </script>
-<script src="/categories.js"></script><script src="/phone-auth.js?v=20260910-profile-1"></script><script src="/store-header.js?v=20260909-2"></script>
+<script src="/categories.js"></script><script src="/phone-auth.js?v=20260928-no-email-1"></script><script src="/store-header.js?v=20260909-2"></script>
   <div id="storeFooter" style="font-size:16px;line-height:1.5;margin-top:40px">
 <footer class="w-full bg-white border-t border-gray-100">
   <div class="max-w-6xl mx-auto px-6 pt-14 pb-6">

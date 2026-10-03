@@ -62,10 +62,10 @@ router.post('/link-guest', auth, async (req,res)=>{
 router.post('/session', auth, async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    if (!user?.phone) return res.status(400).json({ message: 'Profilinizdə telefon nömrəsi yoxdur' });
+    if (!user) return res.status(401).json({ message: 'Çat üçün hesabınıza yenidən daxil olun.' });
     await linkGuest(req,user);
     let session = await prisma.chatSession.findFirst({ where: { userId: user.id, status: 'open' } });
-    if (!session) session = await prisma.chatSession.create({ data: { chatKey: crypto.randomUUID(), userId: user.id, name: registeredName(user, user.name), phone: String(user.phone).replace(/\D/g, '') } });
+    if (!session) session = await prisma.chatSession.create({ data: { chatKey: crypto.randomUUID(), userId: user.id, name: registeredName(user, user.name), phone: String(user.phone || '').replace(/\D/g, '') } });
     res.json({ id: session.id, name: session.name, phone: session.phone });
   } catch (err) { console.error('Chat session error:', err); res.status(500).json({ message: 'Çat açıla bilmədi' }); }
 });

@@ -137,7 +137,7 @@ window.EssenPhoneAuth = {
     $('emailDesignForm').addEventListener('submit', event => {
       event.preventDefault();
       run(event.submitter || event.target.querySelector('[type=submit]'), 'Hesab yaradılır...', async version => {
-        const data = await request('/complete-registration', { firstName: $('authFirstName').value, lastName: $('authLastName').value, email: $('authEmail').value, registrationToken });
+        const data = await request('/complete-registration', { firstName: $('authFirstName').value, lastName: $('authLastName').value, registrationToken });
         if (version === generation) complete(data);
       });
     });

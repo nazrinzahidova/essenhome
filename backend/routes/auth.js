@@ -26,11 +26,11 @@ router.put('/me', authMiddleware, async (req, res) => {
   const body = req.body || {};
   const firstName = typeof body.firstName === 'string' ? body.firstName.trim() : '';
   const lastName = typeof body.lastName === 'string' ? body.lastName.trim() : '';
-  const email = typeof body.email === 'string' ? normalizeEmail(body.email) : '';
+  const email = typeof body.email === 'string' ? normalizeEmail(body.email) || null : null;
   const errors = {};
   if (!firstName || firstName.length > 100) errors.firstName = 'Adı daxil edin (ən çox 100 simvol).';
   if (!lastName || lastName.length > 100) errors.lastName = 'Soyadı daxil edin (ən çox 100 simvol).';
-  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = 'E-poçt ünvanını düzgün daxil edin.';
+  if (email && (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) errors.email = 'E-poçt ünvanını düzgün daxil edin.';
   let birthDate = null;
   if (body.birthDate !== '' && body.birthDate !== null && body.birthDate !== undefined) {
     const match = typeof body.birthDate === 'string' && /^(\d{4})-(\d{2})-(\d{2})$/.exec(body.birthDate);
@@ -41,7 +41,7 @@ router.put('/me', authMiddleware, async (req, res) => {
   if (Object.hasOwn(body, 'phone')) errors.phone = 'Telefon nömrəsinin dəyişdirilməsi SMS təsdiqi tələb edir.';
   if (Object.keys(errors).length) return res.status(400).json({ message: 'Məlumatları yoxlayın.', errors });
   try {
-    const duplicate = await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, id: { not: req.user.id } }, select: { id: true } });
+    const duplicate = email && await prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' }, id: { not: req.user.id } }, select: { id: true } });
     if (duplicate) return res.status(409).json({ message: 'Bu e-poçt ünvanı artıq istifadə olunur.', errors: { email: 'Bu e-poçt ünvanı artıq istifadə olunur.' } });
     const user = await prisma.user.update({
       where: { id: req.user.id },

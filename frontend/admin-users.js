@@ -12,8 +12,16 @@
     const timeout=setTimeout(()=>current.abort(),20000);body.replaceChildren();$('usersStatus').textContent='İstifadəçilər yüklənir…';$('usersPrev').disabled=$('usersNext').disabled=true;
     try{
       const response=await fetch('/api/admin/users?'+new URLSearchParams({q:$('usersSearch').value.trim(),page:String(page)}),{cache:'no-store',headers:authHeaders(),signal:current.signal});
+      if(current!==controller || token!==getToken())return;
+      if(response.status===401){
+        // Use the existing logout flow to stop polling and clear stale session data.
+        $('logoutBtn').click();
+        $('loginError').textContent='Giriş sessiyanız etibarlı deyil. Yenidən daxil olun.';
+        $('loginError').style.display='block';
+        return;
+      }
       const data=await response.json();if(current!==controller || token!==getToken())return;
-      if(!response.ok)throw new Error(data.message || 'İstifadəçilər yüklənmədi.');
+      if(!response.ok)throw new Error(data.message || data.error || 'İstifadəçilər yüklənmədi.');
       $('usersTotal').textContent=data.total.toLocaleString('az-AZ');pages=Math.max(1,Math.ceil(data.filtered/data.limit));
       $('usersStatus').textContent=data.filtered ? `${data.filtered} istifadəçi${$('usersSearch').value.trim() ? ' tapıldı' : ''}` : 'Uyğun istifadəçi tapılmadı.';
       for(const user of data.users){const row=document.createElement('tr');for(const value of [user.userCode,user.fullName || '—',user.email || '—',user.phone || '—',date(user.birthDate),date(user.createdAt)]){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}body.append(row);}

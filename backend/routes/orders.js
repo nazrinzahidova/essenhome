@@ -1,3 +1,4 @@
+const { priceProducts } = require('../lib/cartPricing');
 const express = require('express');
 const crypto = require('crypto');
 const auth = require('../middleware/auth');
@@ -35,7 +36,8 @@ function createOrdersRouter(db, now = () => new Date()) {
         const quantities = new Map();
         input.items.forEach(i => quantities.set(i.productId, (quantities.get(i.productId) || 0) + i.quantity));
         const products = await tx.product.findMany({ where: { id: { in: [...quantities.keys()] } } });
-        const byId = new Map(products.map(p => [p.id, p]));
+        const pricedProducts = await priceProducts(tx, products, req.user.id);
+      const byId = new Map(pricedProducts.map(p => [p.id, p]));
         for (const [id, qty] of quantities) {
           const p = byId.get(id);
           if (!p || qty > 20 || p.stock < qty || !Number.isFinite(Number(p.price)) || Number(p.price) < 0) throw Object.assign(Error('Məhsul mövcud deyil və ya stok kifayət etmir. Səbəti yeniləyin.'), { status: 409 });
