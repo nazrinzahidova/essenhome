@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { IMAGE_SELECT, serializeProduct, productPath } = require('../lib/productImages');
 const { organization, offerPolicies } = require('../lib/merchantPolicies');
+const { renderMetaCatalog } = require('../lib/metaCatalog');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -92,6 +93,11 @@ function createSeoRouter(prisma) {
   }
   const belongsTo = (item, category, subcategory) => [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])].some(place => (!category || place.category === category) && (!subcategory || place.subcategory === subcategory));
   const unavailable = res => res.status(503).set('Retry-After', '60').type('text').send('Müvəqqəti xəta. Bir az sonra yenidən yoxlayın.');
+  router.get('/meta-catalog.xml', async (_req, res) => {
+    try {
+      res.set('Cache-Control', 'no-store').type('application/xml').send(renderMetaCatalog(await catalogProducts()));
+    } catch (error) { console.error('Meta catalog failed:', error.message); unavailable(res); }
+  });
   router.get('/catalog.html', async (req, res) => {
     try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
