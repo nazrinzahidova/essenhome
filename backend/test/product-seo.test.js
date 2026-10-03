@@ -16,7 +16,7 @@ let p=await db.product.findUnique({where:{id}});assert.equal(p.seoTitle,'Custom 
 let html=await(await fetch(base+'/product.html?id='+id)).text();assert(html.includes('<title>Custom SEO title</title>'));assert(html.includes('name="description" content="Custom SEO description"'));assert(html.includes('<h1>SEO test product</h1>'));
 assert.equal((await save('PUT',{seoTitle:'Changed <title>',seoDescription:'Text "quoted"'})).status,200);html=await(await fetch(base+'/product.html?id='+id)).text();assert(html.includes('Changed &lt;title&gt;'));assert(html.includes('Text &quot;quoted&quot;'));
 assert.equal((await save('PUT',{})).status,200);assert.equal((await db.product.findUnique({where:{id}})).seoTitle,'Changed <title>');
-assert.equal((await save('PUT',{seoTitle:'',seoDescription:''})).status,200);p=await db.product.findUnique({where:{id}});assert.equal(p.seoTitle,null);assert.equal(p.seoDescription,null);html=await(await fetch(base+'/product.html?id='+id)).text();assert(html.includes('<title>SEO test product | Essen Home</title>'));
+assert.equal((await save('PUT',{seoTitle:'',seoDescription:''})).status,200);p=await db.product.findUnique({where:{id}});assert.equal(p.seoTitle,null);assert.equal(p.seoDescription,null);html=await(await fetch(base+'/product.html?id='+id)).text();assert(html.includes('<title>SEO test product — qiyməti və kreditlə satış | Essen Home</title>'));
 assert.equal((await save('PUT',{seoTitle:'x'.repeat(201)})).status,400);
 });
 

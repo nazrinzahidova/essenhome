@@ -13,7 +13,7 @@ const xml = (root, body) => `<?xml version="1.0" encoding="UTF-8"?><${root} xmln
 function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item);
-  const title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
+  const title = item.seoTitle?.trim() || `${item.name} — qiyməti və kreditlə satış | Essen Home`;
   const specs = item.specs && typeof item.specs === 'object' ? item.specs : {};
   const modelKey = Object.keys(specs).find(key => ['model', 'modeli', 'model adı', 'model adi'].includes(key.trim().toLocaleLowerCase('az')));
   const model = item.model || (modelKey ? specs[modelKey] : '');
@@ -62,7 +62,8 @@ ${image ? `<meta name="twitter:image" content="${escape(image)}">` : ''}
 ${image ? `<img src="${escape(image)}" alt="${escape(item.name)}" style="max-width:100%;max-height:320px;object-fit:contain">` : ''}
 <p>${escape(item.price)} AZN</p><p>${Number(item.stock) > 0 ? 'Stokda var' : 'Stokda yoxdur'}</p>
 ${item.brand ? `<p>Brend: ${escape(item.brand)}</p>` : ''}
-${item.description ? `<h2>Əsas göstəricilər</h2><p style="white-space:pre-line">${escape(item.description)}</p>` : ''}
+${Object.entries(specs).filter(([key, value]) => key.trim().toLowerCase() !== 'sku' && value !== null && value !== undefined && value !== '').length ? '<h2>Xüsusiyyətlər</h2><dl>' + Object.entries(specs).filter(([key, value]) => key.trim().toLowerCase() !== 'sku' && value !== null && value !== undefined && value !== '').map(([key,value]) => '<dt>' + escape(key) + '</dt><dd>' + escape(Array.isArray(value) ? value.join(', ') : typeof value === 'object' ? Object.values(value).join(', ') : value) + '</dd>').join('') + '</dl>' : ''}
+${item.description ? `<h2>Əlavə qeydlər</h2><p style="white-space:pre-line">${escape(item.description)}</p>` : ''}
 <a href="/catalog.html">Digər məhsullar</a></article>`;
   return template.replace('<head>', '<head><base href="/">').replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escape(title)}</title>`)
     .replace(/(<nav[^>]*id="crumbs"[^>]*>)[\s\S]*?<\/nav>/, () => '<nav class="crumbs" id="crumbs" aria-label="Səhifə yolu">' + breadcrumbHtml + '</nav>')
@@ -80,28 +81,47 @@ function createSeoRouter(prisma) {
     const schema = JSON.stringify({ '@context': 'https://schema.org', ...organization() }).replace(/</g, '\\u003c');
     res.type('html').send(policyTemplate.replace('</head>', `<script type="application/ld+json">${schema}</script></head>`));
   });
-  const template = fs.readFileSync(path.join(__dirname, '../../frontend/product.html'), 'utf8');
+  const readProductTemplate = () => fs.readFileSync(path.join(__dirname, '../../frontend/product.html'), 'utf8');
+  async function catalogProducts() {
+    const [products, sections] = await Promise.all([
+      prisma.product.findMany({ include: { placements: true, images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] } }, orderBy: [{ sortPosition: 'asc' }, { id: 'asc' }] }),
+      prisma.homeSection.findMany({ where: { active: true }, include: { products: { select: { productId: true } } } })
+    ]);
+    const featured = new Set(sections.flatMap(section => section.products.map(link => link.productId)));
+    return products.filter(item => featured.has(item.id) || ![item.subcategory, ...(item.placements || []).map(place => place.subcategory)].some(value => /smartfon|notbuk|noutbuk/i.test(value || '')));
+  }
+  const belongsTo = (item, category, subcategory) => [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])].some(place => (!category || place.category === category) && (!subcategory || place.subcategory === subcategory));
   const unavailable = res => res.status(503).set('Retry-After', '60').type('text').send('Müvəqqəti xəta. Bir az sonra yenidən yoxlayın.');
-  router.get('/catalog.html', (req, res) => {
+  router.get('/catalog.html', async (req, res) => {
+    try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
     const subcategory = typeof req.query.subcategory === 'string' ? req.query.subcategory.trim() : '';
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (subcategory) params.set('subcategory', subcategory);
     const url = `${ORIGIN}/catalog.html${params.size ? '?' + params.toString() : ''}`;
-    const title = `${subcategory || category || 'Məhsul kataloqu'} | Essen Home`;
-    const description = `${subcategory || category || 'Məişət texnikası və elektronika'}. Essen Home məhsullarının qiymətlərini və xüsusiyyətlərini müqayisə edin.`;
+    const label = subcategory || category || 'Məişət texnikası və elektronika';
+    const title = `${subcategory || category || 'Məhsul kataloqu'} — qiymətlər və kreditlə satış | Essen Home`;
+    const description = `${label}: modelləri, qiymətləri və xüsusiyyətləri müqayisə edin. Essen Home-da nağd və kreditlə əldə edin.`;
+    const items = (await catalogProducts()).filter(item => belongsTo(item, category, subcategory)).map(serializeProduct);
     const filtered = Object.keys(req.query).some(key => !['category', 'subcategory', 'gclid', 'fbclid'].includes(key) && !key.startsWith('utm_'));
     const tags = `<title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}">
-<meta name="robots" content="${filtered ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
+<meta name="robots" content="${filtered || !items.length ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
 <link rel="canonical" href="${escape(url)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Essen Home">
 <meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}">
 <meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${ORIGIN}/img/logo.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}">
 <meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${ORIGIN}/img/logo.png">`;
-    res.type('html').send(fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags));
+    const links = items.map(item => `<article class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><a href="${escape(productUrl(item))}">${item.image ? `<img src="${escape(new URL(item.image, ORIGIN).href)}" alt="${escape(item.name)}" loading="lazy" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain">` : ''}<h2>${escape(item.name)}</h2></a><p>${escape(item.price)} ₼</p></article>`).join('');
+    const schema = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: label, url, description, mainEntity: { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items.map((item,index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: productUrl(item) })) } };
+    let html = fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags);
+    html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(subcategory || category || 'Bütün məhsullar') + '</h1>');
+    html = html.replace(/(<div id="productGrid" class=")hidden ([^"]*">)[\s\S]*?<\/div>/, (_,open,rest) => open + rest + links + '</div>');
+    html = html.replace('</head>', () => '<script type="application/ld+json">' + JSON.stringify(schema).replace(/</g, '\\u003c') + '</script></head>');
+    res.set('Cache-Control', 'no-store').type('html').send(html);
+    } catch (error) { console.error('Catalog SEO failed:', error.message); unavailable(res); }
   });
   router.get('/robots.txt', (_req, res) => res.type('text').send(`User-agent: *\nAllow: /\n\nSitemap: ${ORIGIN}/sitemap.xml\n`));
   router.get('/sitemap.xml', async (_req, res) => {
@@ -112,8 +132,20 @@ function createSeoRouter(prisma) {
       res.type('application/xml').send(xml('sitemapindex', `<sitemap><loc>${ORIGIN}/sitemap-pages.xml</loc></sitemap>${entries}`));
     } catch (error) { console.error('Sitemap failed:', error.message); unavailable(res); }
   });
-  router.get('/sitemap-pages.xml', (_req, res) => res.type('application/xml').send(xml('urlset',
-    ['/', '/catalog.html', '/delivery-returns.html'].map(page => `<url><loc>${ORIGIN}${page}</loc></url>`).join(''))));
+  router.get('/sitemap-pages.xml', async (_req, res) => {
+    try {
+      const urls = new Set(['/', '/catalog.html', '/delivery-returns.html', '/haqqimizda']);
+      for (const item of await catalogProducts()) {
+        for (const place of [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])]) {
+          if (!place.category) continue;
+          const params = new URLSearchParams({ category: place.category });
+          urls.add('/catalog.html?' + params.toString());
+          if (place.subcategory) { params.set('subcategory', place.subcategory); urls.add('/catalog.html?' + params.toString()); }
+        }
+      }
+      res.set('Cache-Control', 'no-store').type('application/xml').send(xml('urlset', [...urls].map(page => `<url><loc>${escape(ORIGIN + page)}</loc></url>`).join('')));
+    } catch (error) { console.error('Category sitemap failed:', error.message); unavailable(res); }
+  });
   router.get(/^\/sitemap-products-([1-9]\d*)\.xml$/, async (req, res) => {
     try {
       const page = Number(req.params[0]);
@@ -136,7 +168,7 @@ function createSeoRouter(prisma) {
         query.delete('id');
         return res.redirect(301, canonicalPath + (query.size ? '?' + query.toString() : ''));
       }
-      res.set('Cache-Control', 'no-store').type('html').send(renderProduct(template, item));
+      res.set('Cache-Control', 'no-store').type('html').send(renderProduct(readProductTemplate(), item));
     } catch (error) { console.error('Product page failed:', error.message); unavailable(res); }
   };
   router.get('/product.html', productPage);

@@ -8,9 +8,9 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   let failed = false;
   const db = { product: {
     count: async () => { if (failed) throw Error('offline'); return rows.length; },
-    findMany: async ({ skip, take }) => rows.slice(skip, skip + take),
+    findMany: async ({ skip, take }) => skip === undefined ? rows : rows.slice(skip, skip + take),
     findUnique: async ({ where }) => { if (failed) throw Error('offline'); return rows.find(row => row.id === where.id); }
-  } };
+  }, homeSection: { findMany: async () => [] } };
   const app = express();
   app.use(createSeoRouter(db));
   // This must precede static serving, as in the production server.
@@ -22,10 +22,10 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   let response = await get('/product.html?id=707');
   assert.equal(response.status, 200);
   let html = await response.text();
-  assert.match(html, /<title>Beko WSRE 6512 PRS \| Essen Home<\/title>/);
+  assert.match(html, /<title>Beko WSRE 6512 PRS — qiyməti və kreditlə satış \| Essen Home<\/title>/);
   assert.match(html, /<h1>Beko WSRE 6512 PRS<\/h1>/);
-  assert.match(html, /rel="canonical" href="https:\/\/essenhome.az\/product.html\?id=707"/);
-  const schema = text => JSON.parse(text.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
+  assert.match(html, /rel="canonical" href="https:\/\/essenhome.az\/mehsullar\/beko-wsre-6512-prs-707"/);
+  const schema = text => JSON.parse(text.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])[0];
   assert.equal(schema(html).offers.price, 650);
   assert.equal(schema(html).image[0], 'https://essenhome.az/api/product-images/42');
   assert.match(html, /id="productFooter"/);
@@ -33,7 +33,7 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   assert.match(html, /max-image-preview:large/);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   const categoryHtml = await (await get('/catalog.html?category=Kondisioner')).text();
-  assert.match(categoryHtml, /<title>Kondisioner \| Essen Home<\/title>/);
+  assert.match(categoryHtml, /<title>Kondisioner — qiymətlər və kreditlə satış \| Essen Home<\/title>/);
   assert.match(categoryHtml, /catalog.html\?category=Kondisioner/);
   assert.match(await (await get('/catalog.html?search=test')).text(), /noindex,follow/);
   assert.equal((await get('/cart.html')).headers.get('x-robots-tag'), 'noindex, follow');
@@ -47,11 +47,11 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   assert.ok(!html.includes('<script>alert(1)</script>'));
   assert.match(await (await get('/robots.txt')).text(), /Sitemap: https:\/\/essenhome.az\/sitemap.xml/);
   assert.match(await (await get('/sitemap.xml')).text(), /sitemap-products-1.xml/);
-  assert.match(await (await get('/sitemap-products-1.xml')).text(), /product.html\?id=707/);
+  assert.match(await (await get('/sitemap-products-1.xml')).text(), /-707/ );
   rows.push({ id: 708, updatedAt: new Date('2026-09-09') });
-  assert.match(await (await get('/sitemap-products-1.xml')).text(), /product.html\?id=708/);
+  assert.match(await (await get('/sitemap-products-1.xml')).text(), /-708/ );
   rows.splice(0, 1);
-  assert.doesNotMatch(await (await get('/sitemap-products-1.xml')).text(), /id=707/);
+  assert.doesNotMatch(await (await get('/sitemap-products-1.xml')).text(), /-707/ );
   for (const url of ['/product.html?id=707', '/product.html', '/product.html?id=abc', '/product.html?id=999999999999999999', '/sitemap-products-2.xml']) assert.equal((await get(url)).status, 404);
   failed = true;
   assert.equal((await get('/product.html?id=708')).status, 503);
