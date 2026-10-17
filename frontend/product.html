@@ -64,6 +64,10 @@
     .action { min-height:48px; border-radius:11px; cursor:pointer; border:1px solid var(--red); font-weight:600; transition:.15s; }
     .cart-btn { color:var(--red); background:#fff; }
     .buy-btn { color:#fff; background:var(--red); }
+    .whatsapp-btn { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:48px; margin-top:10px; padding:12px; border:1px solid #128c46; border-radius:11px; text-align:center; color:#fff; background:#128c46; font-weight:600; transition:.15s; }
+    .whatsapp-btn:hover { background:#107b3e; border-color:#107b3e; }
+    .whatsapp-btn:focus-visible { outline:3px solid #128c46; outline-offset:3px; }
+    .whatsapp-btn i { font-size:21px; }
     .action:disabled { opacity:.45; cursor:not-allowed; }
     .highlights { margin-top:22px; }
     .highlights h2 { margin:0 0 12px; font-size:20px; }
@@ -370,6 +374,7 @@
             ${stockBadge(item)}
             <div class="price-line"><span class="price" id="price"></span><span class="old-price" id="oldPrice"></span><span class="discount" id="discount"></span></div>
             <div class="actions"><button class="action cart-btn" id="addCart" ${inStock ? '' : 'disabled'}><i class="fa-solid fa-cart-plus"></i> Səbətə əlavə et</button><button class="action buy-btn" id="buyNow" ${inStock ? '' : 'disabled'}>İndi al</button></div>
+            <a class="whatsapp-btn" id="whatsappOrder" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i> WhatsApp ilə sifariş et</a>
         <section class="credit-card" id="creditCalculator" aria-labelledby="creditTitle" hidden>
           <h2 id="creditTitle">Hissəli alış kalkulyatoru</h2>
           <div class="credit-panel">
@@ -385,6 +390,7 @@
         ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${applianceSpecification(item) ? 'appliance-spec-grid' : isWashingMachineProduct(item) ? 'washer-spec-grid' : isFridgeProduct(item) ? 'fridge-spec-grid' : isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid" style="--appliance-rows:${applianceSpecification(item)?.rows || 1}"></div></section>` : ''}`;
       setText('crumbName', item.name);
       setText('productName', item.name);
+      document.getElementById('whatsappOrder').href = 'https://wa.me/994102414782?text=' + encodeURIComponent('Salam! ' + String(item.name ?? '') + ' məhsulunu sifariş etmək istəyirəm.');
       setText('price', money(item.price));
       initCreditCalculator(item.price);
       if (clean(item.description)) setText('description', item.description);
