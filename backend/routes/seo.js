@@ -141,7 +141,7 @@ function createSeoRouter(prisma) {
   });
   router.get('/sitemap-pages.xml', async (_req, res) => {
     try {
-      const urls = new Set(['/', '/catalog.html', '/delivery-returns.html', '/haqqimizda']);
+      const urls = new Set(['/', '/catalog.html', '/delivery-returns.html', '/haqqimizda.html', '/korporativ-satislar.html', '/topdan-satislar.html']);
       for (const item of await catalogProducts()) {
         for (const place of [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])]) {
           if (!place.category) continue;
@@ -188,3 +188,4 @@ function createSeoRouter(prisma) {
 }
 
 module.exports = { createSeoRouter, renderProduct };
+
