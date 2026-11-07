@@ -1,10 +1,21 @@
 async function homeRequest(path = '/admin', method = 'GET', body) {
+  const token = getToken();
   const response = await fetch(`/api/home-sections${path}`, {
     method, cache: 'no-store', headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) })
   });
+  if (response.status === 401) {
+    const message = 'Giriş sessiyanız etibarlı deyil. Yenidən daxil olun.';
+    if (token === getToken()) {
+      document.getElementById('logoutBtn').click();
+      const loginError = document.getElementById('loginError');
+      loginError.textContent = message;
+      loginError.style.display = 'block';
+    }
+    throw new Error(message);
+  }
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.message || 'Əməliyyat alınmadı. Yenidən cəhd edin.');
+  if (!response.ok) throw new Error(data.message || data.error || 'Əməliyyat alınmadı. Yenidən cəhd edin.');
   return data;
 }
 const homeTab = document.getElementById('homeSectionsTab');
