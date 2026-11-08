@@ -46,7 +46,7 @@ async function loadHomeSectionAdmin() {
     if (!sections.length) list.textContent = 'Hələ bölmə yoxdur. İlk bölməni yaradın.';
     sections.forEach((section, index) => {
       const row = document.createElement('div'); row.className = 'home-section-edit';
-      row.innerHTML = `<input type="text" maxlength="120" aria-label="Bölmə adı"><span>${section._count.products} məhsul</span><label><input type="checkbox"> Aktiv</label><button class="btn-ghost" data-action="save">Saxla</button><button class="btn-ghost" data-action="up" aria-label="Yuxarı">↑</button><button class="btn-ghost" data-action="down" aria-label="Aşağı">↓</button><button class="btn-danger-outline" data-action="delete">Sil</button>`;
+      row.innerHTML = `<input type="text" maxlength="120" aria-label="Bölmə adı"><span>${section._count.products} məhsul</span><label><input type="checkbox"> Aktiv</label><button class="btn-ghost" data-action="save">Adı və statusu saxla</button><button class="btn-ghost" data-action="up" aria-label="Yuxarı">↑</button><button class="btn-ghost" data-action="down" aria-label="Aşağı">↓</button><button class="btn-danger-outline" data-action="delete">Bölməni sil</button>`;
       row.querySelector('input[type=text]').value = section.name;
       row.querySelector('input[type=checkbox]').checked = section.active;
       row.querySelector('[data-action=up]').disabled = index === 0;
@@ -69,7 +69,7 @@ async function loadHomeSectionAdmin() {
           await loadHomeSectionAdmin();
         } catch (error) { showToast(error.message); await loadHomeSectionAdmin(); }
       });
-      const orderButton=document.createElement('button');orderButton.type='button';orderButton.className='btn-ghost';orderButton.textContent='Məhsulların sırası';orderButton.onclick=event=>{event.stopPropagation();openProductOrder(section.id,section.name);};row.append(orderButton);
+      const orderButton=document.createElement('button');orderButton.type='button';orderButton.className='btn-ghost';orderButton.textContent='Bölmənin məhsulları';orderButton.onclick=event=>{event.stopPropagation();openProductOrder(section.id,section.name);};row.append(orderButton);
       list.append(row);
     });
   } catch (error) { list.textContent = error.message; }
