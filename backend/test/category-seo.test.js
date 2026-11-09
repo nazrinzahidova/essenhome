@@ -16,7 +16,7 @@ test('SEO delivers crawlable category content, visibility rules, category sitema
  const schema=html=>JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
  let html=await(await get('/catalog.html?category=Appliances&subcategory=Washers')).text();
  assert.match(html,/<h2>Test washer<\/h2>/);assert.match(html,/href="https:\/\/essenhome.az\/washers\/test-washer-1"/);assert.doesNotMatch(html,/id="productGrid" class="hidden/);assert.equal(schema(html).mainEntity.numberOfItems,1);
- html=await(await get('/catalog.html?category=Phones')).text();assert.match(html,/<h2>Featured phone<\/h2>/);assert.doesNotMatch(html,/<h2>Hidden phone<\/h2>/);
+ html=await(await get('/catalog.html?category=Phones')).text();assert.match(html,/<h2>Smartfon Featured phone<\/h2>/);assert.doesNotMatch(html,/Hidden phone/);
  html=await(await get('/catalog.html?category=TV')).text();assert.match(html,/<a href="[^"]+ue32f6000fuxru-5" data-product-id="5"><h2>Samsung 32 düym televizor UE32F6000FUXRU<\/h2><\/a>/);
  for(const url of ['/catalog.html?search=washer','/catalog.html?category=Empty'])assert.match(await(await get(url)).text(),/noindex,follow/);
  html=await(await get('/sitemap-pages.xml')).text();assert.match(html,/&amp;subcategory=Washers/);assert.match(html,/category=Phones/);assert.doesNotMatch(html,/category=Laptops/);
@@ -32,7 +32,7 @@ test('product pages expose each saved specification and use meaningful search hi
  const structured=html=>JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])[0];
  const washerSpecs={'Çamaşırların maksimum yüklənməsi':'11 kq','Çamaşırların qurutma zamanı maksimum yüklənməsi':'7 kq','Maksimal sıxma sürəti':'1400 dövr/dəq','Ölçülər':'85 × 60 × 55 sm','SKU':'internal',Empty:' — ',Blank:[],Zero:0,Steam:false};
  const washer=render('LG paltaryuyan və qurudan maşın',washerSpecs);
- assert.match(washer,/<title>LG paltaryuyan və qurudan maşın 11 kq \| Essen Home<\/title>/);
+ assert.match(washer,/<title>LG paltaryuyan və qurudan maşın — 11 kq \| Essen Home<\/title>/);
  assert.match(washer,/name="description" content="[^"]*Yuma tutumu: 11 kq, Qurutma tutumu: 7 kq, Maksimal sıxma sürəti: 1400 dövr\/dəq/);
  assert.match(washer,/<dt>Ölçülər<\/dt><dd>85 × 60 × 55 sm<\/dd>/);
  const props=Object.fromEntries(structured(washer).additionalProperty.map(({name,value})=>[name,value]));
@@ -43,7 +43,7 @@ test('product pages expose each saved specification and use meaningful search hi
  assert.match(phone,/<title>Samsung 256GB \| Essen Home<\/title>/);
  assert.match(phone,/<dt>Qoşulma<\/dt><dd>Wi-Fi, Bluetooth<\/dd>/);
  const tv=render('Premier televizor',{'Ekranın diaqonalı':'55 düym','Ekran icazəsi':'4K UHD'});
- assert.match(tv,/<title>Premier televizor 55 düym \| Essen Home<\/title>/);
+ assert.match(tv,/<title>Premier televizor — 55 düym \| Essen Home<\/title>/);
  assert.match(tv,/name="description" content="[^"]*4K UHD/);
  const samsungSpecs={'Ekranın diaqonalı':'32" (81 sm)'};
  const samsung=render('Televizor Samsung UE32F6000FUXRU',samsungSpecs,{brand:'Samsung',seoTitle:'Televizor Samsung UE32F6000FUXRU - 577.99 | ESSEN HOME'});
@@ -52,6 +52,15 @@ test('product pages expose each saved specification and use meaningful search hi
  assert.match(samsung,/name="description" content="Samsung 32 düym televizor/);
  assert.equal(structured(samsung).additionalProperty[0].value,'32" (81 sm)');
  assert.equal(structured(samsung).model,'UE32F6000FUXRU');
+ const phoneWithModel=render('Samsung Galaxy A08 (SM-A085) 6/128 GB',{'Ekran':'6.7"','Daxili yaddaş':'128 GB'},{brand:'Samsung',subcategory:'Smartfonlar'});
+ assert.match(phoneWithModel,/<h1>Smartfon Samsung Galaxy A08 \(SM-A085\) 6\/128 GB<\/h1>/);
+ assert.equal(structured(phoneWithModel).model,'SM-A085');
+ const conditioner=render('Kondisioner Shahs SH-12H',{'Səmərəlilik':'12000 BTU'},{brand:'Shahs',seoTitle:'Kondisioner Shahs SH-12H | ESSEN HOME'});
+ assert.match(conditioner,/<title>Kondisioner Shahs SH-12H — 12000 BTU \| Essen Home<\/title>/);
+ assert.equal(structured(conditioner).model,'SH-12H');
+ const cooktop=render('Bişirmə paneli Elleti VC 2060',{'Ocaq sayı':'4 ədəd'},{brand:'Elleti'});
+ assert.match(cooktop,/<h1>Bişirmə paneli Elleti VC 2060 — 4 ocaq<\/h1>/);
+ assert.equal(structured(cooktop).model,'VC 2060');
  const customTv=render('Televizor Samsung UE32F6000FUXRU',samsungSpecs,{brand:'Samsung',seoTitle:'Manual Samsung TV title'});
  assert.match(customTv,/<title>Manual Samsung TV title<\/title>/);
  const unknownTv=render('Televizor Samsung UE32F6000FUXRU',{'Ekranın diaqonalı':'81 sm'},{brand:'Samsung'});

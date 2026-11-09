@@ -4,7 +4,7 @@ const path = require('path');
 const { IMAGE_SELECT, serializeProduct, productPath } = require('../lib/productImages');
 const { organization, offerPolicies } = require('../lib/merchantPolicies');
 const { renderMetaCatalog } = require('../lib/metaCatalog');
-const { productSpecifications, specificationHighlights, televisionModelName, televisionSearchName } = require('../lib/productSpecifications');
+const { productSpecifications, specificationHighlights, productModel, televisionSearchName } = require('../lib/productSpecifications');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -13,25 +13,30 @@ const productUrl = item => ORIGIN + productPath(item);
 const xml = (root, body) => `<?xml version="1.0" encoding="UTF-8"?><${root} xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</${root}>`;
 
 function productSearchHeading(item, specs) {
+  const { headline, summary } = specificationHighlights(specs, item.subcategory);
+  const model = productModel(item, specs);
   const tvName = televisionSearchName(item, specs);
   const savedTitle = item.seoTitle?.trim();
-  const priceOnlyTitle = savedTitle?.startsWith(item.name) && /^\s*-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
-  const customTitle = tvName && priceOnlyTitle ? '' : savedTitle;
-  return { displayName: !customTitle && tvName ? tvName : item.name, customTitle, tvName };
+  const genericTitle = savedTitle?.startsWith(item.name) && /^\s*(?:-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*)?\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
+  const customTitle = genericTitle ? '' : savedTitle;
+  const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
+  const words = value => value.toLocaleLowerCase('az').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+  const brand = item.brand?.trim();
+  let displayName = item.name;
+  if (brand && !` ${words(displayName)} `.includes(` ${words(brand)} `)) displayName = `${brand} ${displayName}`;
+  if (item.subcategory === 'Smartfonlar' && !/smartfon/i.test(displayName)) displayName = `Smartfon ${displayName}`;
+  if (model && !compact(displayName).includes(compact(model))) displayName += ` ${model}`;
+  if (tvName) displayName = customTitle ? item.name : tvName;
+  else if (headline && !compact(displayName).includes(compact(headline))) displayName += ` — ${headline}`;
+  return { displayName, customTitle, headline, summary, model };
 }
 
 function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item);
   const specs = productSpecifications(item.specs);
-  const { headline, summary } = specificationHighlights(specs);
-  const { displayName, customTitle, tvName } = productSearchHeading(item, specs);
-  const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
-  const headlineName = headline && !compact(item.name).includes(compact(headline)) ? `${item.name} ${headline}` : item.name;
-  const title = customTitle || (tvName || headline ? `${tvName || headlineName} | Essen Home` : `${item.name} — qiyməti və kreditlə satış | Essen Home`);
-  const namedModel = televisionModelName(item);
-  const modelFromName = /^(?=[A-Z0-9.-]*[A-Z])(?=[A-Z0-9.-]*\d)[A-Z0-9][A-Z0-9.-]{3,}$/.test(namedModel) ? namedModel : '';
-  const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1] || modelFromName;
+  const { displayName, customTitle, headline, summary, model } = productSearchHeading(item, specs);
+  const title = customTitle || (headline || displayName !== item.name ? `${displayName} | Essen Home` : item.seoTitle?.trim() || `${item.name} — qiyməti və kreditlə satış | Essen Home`);
   const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
   const specificationDescription = `${displayName}. ${summary.join(', ')}. Essen Home.`;
   const savedDescription = item.seoDescription?.trim();

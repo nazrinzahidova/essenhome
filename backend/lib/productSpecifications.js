@@ -2,8 +2,10 @@ const headlineFields = [
   [/^çamaşırların maksimum yüklənməsi$|^yuma tutumu$/, 'Yuma tutumu'],
   [/^ekranın diaqonalı$|^ekran ölçüsü$|^ekran$/, 'Ekran'],
   [/^daxili yaddaş$|^yaddaş tutumu$|^ssd tutumu$/, 'Yaddaş'],
-  [/^ümumi (faydalı )?(həcm|tutum)$|^tutum(u)?$|^həcm(i)?$/, 'Tutum'],
-  [/^soyutma gücü$|^güc(ü)?$/, 'Güc']
+  [/^ümumi (faydalı )?(həcm|tutum)$|^tutum(u)?$|^həcm(i)?$|^kasanın həcmi$|^su qabının həcmi$/, 'Tutum'],
+  [/^səmərəlilik$/, 'Səmərəlilik'],
+  [/^soyutma (rejiminin )?gücü$|^güc(ü)?$/, 'Güc'],
+  [/^ocaq sayı$|^akkumulyatorun tutumu$|^batareya tutumu$|^platforma$|^uyğunluq$/, null]
 ];
 
 const summaryFields = [
@@ -48,14 +50,29 @@ function televisionSearchName(item, specs) {
   return `${item.brand.trim()} ${size} düym televizor ${model}`;
 }
 
-function specificationHighlights(specs) {
+function productModel(item, specs) {
+  const explicit = specValue(item.model) || specs.find(([name]) => /^(model(i| adı| adi)?|model kodu|model nömrəsi)$/i.test(name))?.[1];
+  if (explicit) return explicit;
+  const code = /^(?=[A-Z0-9./-]*[A-Z])(?=[A-Z0-9./-]*\d)[A-Z0-9][A-Z0-9./-]{3,}$/;
+  const parenthesized = [...item.name.matchAll(/\(([^()]+)\)/g)].map(match => match[1].trim()).filter(value => code.test(value));
+  const brand = item.brand?.trim();
+  const name = ` ${item.name}`;
+  const afterBrand = brand ? name.toLowerCase().lastIndexOf(` ${brand.toLowerCase()} `) : -1;
+  const suffix = afterBrand >= 0 ? name.slice(afterBrand + brand.length + 2).trim() : '';
+  const namedCode = code.test(suffix) || /^[A-Z]{2,5} \d{3,6}$/.test(suffix);
+  return parenthesized.length === 1 ? parenthesized[0] : namedCode ? suffix : '';
+}
+
+function specificationHighlights(specs, subcategory) {
   const highlights = new Map();
   let headline = '';
   for (const [pattern, label] of summaryFields) {
     const match = specs.find(([name, value]) => pattern.test(name.toLocaleLowerCase('az')) && value.length <= 40 && !/^(var|yox|xeyr|bəli)$/i.test(value));
     if (!match) continue;
     const [name, value] = match;
-    if (!headline && headlineFields.some(([field]) => field === pattern)) headline = value;
+    if (!headline && headlineFields.some(([field]) => field === pattern)) {
+      headline = name.toLocaleLowerCase('az') === 'ocaq sayı' && /^\d+(?:\s+ədəd)?$/.test(value) ? `${parseInt(value, 10)} ocaq` : value;
+    }
     highlights.set(label || name, value);
   }
   if (!highlights.size) {
@@ -66,7 +83,10 @@ function specificationHighlights(specs) {
       if (highlights.size === 3) break;
     }
   }
+  if (/^(smartfonlar|notbuklar|planşetlər)$/i.test(subcategory || '') && highlights.has('Yaddaş')) {
+    headline = highlights.get('Yaddaş').match(/\d+(?:[.,]\d+)?\s*(?:GB|TB)\b/i)?.[0] || highlights.get('Yaddaş');
+  }
   return { headline, summary: Array.from(highlights, ([name, value]) => `${name}: ${value}`) };
 }
 
-module.exports = { productSpecifications, specificationHighlights, televisionModelName, televisionSearchName };
+module.exports = { productSpecifications, specificationHighlights, productModel, televisionSearchName };
