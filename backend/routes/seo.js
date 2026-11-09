@@ -23,7 +23,8 @@ function renderProduct(template, product) {
   const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1];
   const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
   const specificationDescription = `${item.name}. ${summary.join(', ')}. Essen Home.`;
-  const customDescription = item.seoDescription?.trim();
+  const savedDescription = item.seoDescription?.trim();
+  const customDescription = summary.length && savedDescription === `${item.name} — nağd və kreditlə əldə edin` ? '' : savedDescription;
   const description = customDescription || (summary.length ? specificationDescription : defaultDescription);
   const metaDescription = customDescription || (description.length <= 170 ? description : description.slice(0, 170).replace(/\s+\S*$/, '') + '…');
   let image;

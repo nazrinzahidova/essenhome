@@ -39,6 +39,14 @@ function specificationHighlights(specs) {
     if (!headline && headlineFields.some(([field]) => field === pattern)) headline = value;
     highlights.set(label || name, value);
   }
+  if (!highlights.size) {
+    for (const [name, value] of specs) {
+      if (value.length <= 40 && !/^(var|yox|xeyr|bəli)$/i.test(value) && !/^(model(i| adı| adi)?|komplektasiya|istehsalçı ölkə|zəmanət)$/i.test(name)) {
+        highlights.set(name, value);
+      }
+      if (highlights.size === 3) break;
+    }
+  }
   return { headline, summary: Array.from(highlights, ([name, value]) => `${name}: ${value}`) };
 }
 

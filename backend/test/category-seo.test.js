@@ -19,7 +19,7 @@ test('SEO delivers crawlable category content, visibility rules, category sitema
  for(const url of ['/catalog.html?search=washer','/catalog.html?category=Empty'])assert.match(await(await get(url)).text(),/noindex,follow/);
  html=await(await get('/sitemap-pages.xml')).text();assert.match(html,/&amp;subcategory=Washers/);assert.match(html,/category=Phones/);assert.doesNotMatch(html,/category=Laptops/);
  html=await(await get(productPath(products[0]))).text();let initial=html.split('<section id="view">')[1].split('</section>')[0];assert.match(initial,/<dt>Capacity<\/dt><dd>6 kg<\/dd>/);assert.doesNotMatch(initial,/<dt>SKU<\/dt>/);assert(initial.indexOf('Xüsusiyyətlər')<initial.indexOf('Əlavə qeydlər'));assert.equal(schema(html)[0].offers.price,150);
- products[0].seoTitle='Custom title';products[0].seoDescription='Test washer — nağd və kreditlə əldə edin';html=await(await get(productPath(products[0]))).text();assert.match(html,/<title>Custom title<\/title>/);assert.match(html,/content="Test washer — nağd və kreditlə əldə edin"/);
+ products[0].seoTitle='Custom title';products[0].seoDescription='Test washer with installation instructions';html=await(await get(productPath(products[0]))).text();assert.match(html,/<title>Custom title<\/title>/);assert.match(html,/content="Test washer with installation instructions"/);
  products[0].name='Model </script><script>alert(1)</script>';html=await(await get('/catalog.html?category=Appliances')).text();assert(!html.includes('<script>alert(1)</script>'));assert.equal(schema(html).mainEntity.itemListElement[0].name,products[0].name);
  failed=true;assert.equal((await get('/catalog.html')).status,503);assert.equal((await get('/sitemap-pages.xml')).status,503);
 });
@@ -47,6 +47,8 @@ test('product pages expose each saved specification and use meaningful search hi
  assert.match(custom,/<title>Manual title<\/title>/);
  assert.match(custom,/name="description" content="Manual description"/);
  assert.equal(structured(custom).additionalProperty.length,6);
+ const generated=render('Elleti VC 2060',{'Bişirmə səthinin materialı':'Şüşə-keramika'},{seoDescription:'Elleti VC 2060 — nağd və kreditlə əldə edin'});
+ assert.match(generated,/name="description" content="[^"]*Bişirmə səthinin materialı: Şüşə-keramika/);
  const empty=render('Unspecified product',null);
  assert.match(empty,/<title>Unspecified product — qiyməti və kreditlə satış \| Essen Home<\/title>/);
  assert.equal(structured(empty).additionalProperty,undefined);
