@@ -4,7 +4,7 @@ const path = require('path');
 const { IMAGE_SELECT, serializeProduct, productPath } = require('../lib/productImages');
 const { organization, offerPolicies } = require('../lib/merchantPolicies');
 const { renderMetaCatalog } = require('../lib/metaCatalog');
-const { productSpecifications, specificationHighlights, televisionSearchName } = require('../lib/productSpecifications');
+const { productSpecifications, specificationHighlights, televisionModelName, televisionSearchName } = require('../lib/productSpecifications');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -12,20 +12,26 @@ const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': 
 const productUrl = item => ORIGIN + productPath(item);
 const xml = (root, body) => `<?xml version="1.0" encoding="UTF-8"?><${root} xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${body}</${root}>`;
 
+function productSearchHeading(item, specs) {
+  const tvName = televisionSearchName(item, specs);
+  const savedTitle = item.seoTitle?.trim();
+  const priceOnlyTitle = savedTitle?.startsWith(item.name) && /^\s*-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
+  const customTitle = tvName && priceOnlyTitle ? '' : savedTitle;
+  return { displayName: !customTitle && tvName ? tvName : item.name, customTitle, tvName };
+}
+
 function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item);
   const specs = productSpecifications(item.specs);
   const { headline, summary } = specificationHighlights(specs);
-  const tvName = televisionSearchName(item, specs);
+  const { displayName, customTitle, tvName } = productSearchHeading(item, specs);
   const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
   const headlineName = headline && !compact(item.name).includes(compact(headline)) ? `${item.name} ${headline}` : item.name;
-  const savedTitle = item.seoTitle?.trim();
-  const priceOnlyTitle = savedTitle?.startsWith(item.name) && /^\s*-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
-  const customTitle = tvName && priceOnlyTitle ? '' : savedTitle;
-  const displayName = !customTitle && tvName ? tvName : item.name;
   const title = customTitle || (tvName || headline ? `${tvName || headlineName} | Essen Home` : `${item.name} — qiyməti və kreditlə satış | Essen Home`);
-  const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1];
+  const namedModel = televisionModelName(item);
+  const modelFromName = /^(?=[A-Z0-9.-]*[A-Z])(?=[A-Z0-9.-]*\d)[A-Z0-9][A-Z0-9.-]{3,}$/.test(namedModel) ? namedModel : '';
+  const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1] || modelFromName;
   const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
   const specificationDescription = `${displayName}. ${summary.join(', ')}. Essen Home.`;
   const savedDescription = item.seoDescription?.trim();
@@ -135,7 +141,10 @@ function createSeoRouter(prisma) {
 <meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${ORIGIN}/img/logo.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}">
 <meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${ORIGIN}/img/logo.png">`;
-    const links = items.map(item => `<article class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><a href="${escape(productUrl(item))}">${item.image ? `<img src="${escape(new URL(item.image, ORIGIN).href)}" alt="${escape(item.name)}" loading="lazy" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain">` : ''}<h2>${escape(item.name)}</h2></a><p>${escape(item.price)} ₼</p></article>`).join('');
+    const links = items.map(item => {
+      const { displayName } = productSearchHeading(item, productSpecifications(item.specs));
+      return `<article class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><a href="${escape(productUrl(item))}" data-product-id="${item.id}">${item.image ? `<img src="${escape(new URL(item.image, ORIGIN).href)}" alt="${escape(item.name)}" loading="lazy" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain">` : ''}<h2>${escape(displayName)}</h2></a><p>${escape(item.price)} ₼</p></article>`;
+    }).join('');
     const schema = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: label, url, description, mainEntity: { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items.map((item,index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: productUrl(item) })) } };
     let html = fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags);
     html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(subcategory || category || 'Bütün məhsullar') + '</h1>');

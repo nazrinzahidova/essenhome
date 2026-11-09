@@ -29,17 +29,23 @@ function productSpecifications(specs) {
     .filter(([name, value]) => name && name.toLocaleLowerCase('az') !== 'sku' && value);
 }
 
-function televisionSearchName(item, specs) {
+function televisionModelName(item) {
   const model = item.name.match(/^televizor\s+(.+)$/i)?.[1];
   const brand = item.brand?.trim();
   if (!model || !brand || !model.toLocaleLowerCase('az').startsWith(`${brand.toLocaleLowerCase('az')} `)) return '';
+  return model.slice(brand.length).trim();
+}
+
+function televisionSearchName(item, specs) {
+  const model = televisionModelName(item);
+  if (!model) return '';
   const sizes = new Set(specs.filter(([name]) => /^ekran(ın diaqonalı| ölçüsü)?$/i.test(name))
     .map(([, value]) => value.match(/^(\d{1,3}(?:[.,]\d+)?)\s*(?:["″”]|''|düym|inch(?:es)?\b)/i)?.[1]?.replace(',', '.'))
     .filter(Boolean));
   if (sizes.size !== 1) return '';
   if (/\d\s*(?:["″”]|''|düym|inch(?:es)?\b)/i.test(model)) return item.name;
   const [size] = sizes;
-  return `${brand} ${size} düym televizor ${model.slice(brand.length).trim()}`;
+  return `${item.brand.trim()} ${size} düym televizor ${model}`;
 }
 
 function specificationHighlights(specs) {
@@ -63,4 +69,4 @@ function specificationHighlights(specs) {
   return { headline, summary: Array.from(highlights, ([name, value]) => `${name}: ${value}`) };
 }
 
-module.exports = { productSpecifications, specificationHighlights, televisionSearchName };
+module.exports = { productSpecifications, specificationHighlights, televisionModelName, televisionSearchName };

@@ -271,6 +271,8 @@
     const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
     const API = '';
     const params = new URLSearchParams(window.location.search);
+    const productLinkNames = new Map([...document.querySelectorAll('#productGrid a[data-product-id]')]
+      .map(link => [link.dataset.productId, link.querySelector('h2').textContent]));
     const selectedLeader=Object.hasOwn(EssenSalesCategories.definitions,params.get('leader'))?params.get('leader'):'';
     const selectedCategory = params.get('category') || '';
     const requestedSubcategory = params.get('subcategory') || '';
@@ -734,7 +736,7 @@
           <div class="p-3 flex flex-col flex-1">
             ${stockBadge(product)}
             <a href="${product.url || '/product.html?id=' + product.id}" class="font-medium leading-5 min-h-10 line-clamp-2 hover:text-red-600">
-              ${escapeHtml(product.name)}
+              ${escapeHtml(productLinkNames.get(String(product.id)) || product.name)}
             </a>
             <div class="mt-auto pt-2">
               ${oldPrice}
