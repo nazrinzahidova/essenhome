@@ -39,9 +39,11 @@ function renderProduct(template, product) {
   const url = productUrl(item);
   const specs = productSpecifications(item.specs);
   const { displayName, customTitle, headline, summary, model } = productSearchHeading(item, specs);
+  const series = specs.find(([name, value]) => /^seriya(sı)?$/i.test(name) && value.length <= 60 && !/^(var|yox|xeyr|bəli)$/i.test(value))?.[1];
   const title = customTitle || (headline || displayName !== item.name ? `${displayName} | Essen Home` : item.seoTitle?.trim() || `${item.name} — qiyməti və kreditlə satış | Essen Home`);
   const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
-  const specificationDescription = `${displayName}. ${summary.join(', ')}. Essen Home.`;
+  const searchName = series && item.name.toLocaleLowerCase('az').includes(series.toLocaleLowerCase('az')) ? series : displayName;
+  const specificationDescription = `${searchName}. ${summary.join(', ')}. Essen Home.`;
   const savedDescription = item.seoDescription?.trim();
   const customDescription = summary.length && savedDescription === `${item.name} — nağd və kreditlə əldə edin` ? '' : savedDescription;
   const description = customDescription || (summary.length ? specificationDescription : defaultDescription);
@@ -75,6 +77,15 @@ function renderProduct(template, product) {
   crumbs.push({ name: item.name, item: url });
   const breadcrumb = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((crumb, i) => ({ '@type': 'ListItem', position: i + 1, ...crumb })) };
   const breadcrumbHtml = crumbs.map((crumb, i) => i === crumbs.length - 1 ? '<span aria-current="page">' + escape(crumb.name) + '</span>' : '<a href="' + escape(crumb.item) + '">' + escape(crumb.name) + '</a>').join('<span aria-hidden="true">›</span>');
+  const highlights = [
+    ...(series ? [`Seriya: ${series}`] : []),
+    ...(model ? [`Model kodu: ${model}`] : []),
+    ...summary.slice(0, 5)
+  ];
+  const highlightsHtml = highlights.length
+    ? '<aside id="productHighlights" class="card spec-card" aria-labelledby="productHighlightsTitle"><h2 id="productHighlightsTitle">Əsas xüsusiyyətlər</h2><ul>' +
+      highlights.map(value => '<li>' + escape(value) + '</li>').join('') + '</ul></aside>'
+    : '';
   const metadata = `<meta name="description" content="${escape(metaDescription)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="product-id" content="${item.id}">
@@ -97,7 +108,7 @@ ${item.description ? `<h2>Əlavə qeydlər</h2><p style="white-space:pre-line">$
   return template.replace('<head>', '<head><base href="/">').replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escape(title)}</title>`)
     .replace(/(<nav[^>]*id="crumbs"[^>]*>)[\s\S]*?<\/nav>/, () => '<nav class="crumbs" id="crumbs" aria-label="Səhifə yolu">' + breadcrumbHtml + '</nav>')
     .replace('</head>', () => `${metadata}</head>`)
-    .replace(/(<section id="view">)[\s\S]*?(<\/section>)/, () => `<section id="view">${content}</section>`);
+    .replace(/(<section id="view">)[\s\S]*?(<\/section>)/, () => `<section id="view">${content}${highlightsHtml}</section>`);
 }
 
 function createSeoRouter(prisma) {

@@ -13,7 +13,10 @@ const summaryFields = [
   [/^çamaşırların qurutma zamanı maksimum yüklənməsi$|^qurutma tutumu$/, 'Qurutma tutumu'],
   [/^operativ yaddaş$|^ram$/, 'Operativ yaddaş'],
   [/^ekran icazəsi$|^görüntü imkanı$|^ekranın ayırdetmə qabiliyyəti$/, 'Ekran icazəsi'],
-  [/^prosessor(un növü)?$|^maksimal sıxma sürəti$|^tezlik$|^rəng$|^batareya tutumu$|^enerji istifadə sinfi$/, null]
+  [/^prosessor(un növü)?$|^maksimal sıxma sürəti$|^tezlik$|^rəng$|^batareya tutumu$|^enerji istifadə sinfi$/, null],
+  [/^ekran filtr texnologiyası$|^displey növü$|^panel növü$/, 'Ekran texnologiyası'],
+  [/^əməliyyat sistemi$/, 'Əməliyyat sistemi'],
+  [/^əsas kamera$/, 'Əsas kamera']
 ];
 
 function specValue(value) {

@@ -59,9 +59,11 @@ test('product pages expose each saved specification and use meaningful search hi
  assert.match(samsung,/name="description" content="Samsung 32 düym televizor/);
  assert.equal(structured(samsung).additionalProperty[0].value,'32" (81 sm)');
  assert.equal(structured(samsung).model,'UE32F6000FUXRU');
- const phoneWithModel=render('Samsung Galaxy A08 (SM-A085) 6/128 GB',{'Ekran':'6.7"','Daxili yaddaş':'128 GB'},{brand:'Samsung',subcategory:'Smartfonlar'});
+ const phoneWithModel=render('Samsung Galaxy A08 (SM-A085) 6/128 GB',{'Seriya':'Samsung Galaxy A08','Ekran':'6.7"','Daxili yaddaş':'128 GB','Operativ yaddaş':'6 GB','Akkumulyatorun tutumu':'6000 mAh'},{brand:'Samsung',subcategory:'Smartfonlar'});
  assert.match(phoneWithModel,/<h1>Samsung Galaxy A08 \(SM-A085\) 6\/128 GB<\/h1>/);
  assert.equal(structured(phoneWithModel).model,'SM-A085');
+ assert.match(phoneWithModel,/name="description" content="Samsung Galaxy A08\. Ekran: 6\.7&quot;, Yaddaş: 128 GB, Akkumulyatorun tutumu: 6000 mAh, Operativ yaddaş: 6 GB/);
+ assert.match(phoneWithModel,/<aside id="productHighlights"[^>]*>.*<li>Seriya: Samsung Galaxy A08<\/li><li>Model kodu: SM-A085<\/li>/);
  const conditioner=render('Kondisioner Shahs SH-12H',{'Səmərəlilik':'12000 BTU'},{brand:'Shahs',seoTitle:'Kondisioner Shahs SH-12H | ESSEN HOME'});
  assert.match(conditioner,/<title>Kondisioner Shahs SH-12H — 12000 BTU \| Essen Home<\/title>/);
  assert.equal(structured(conditioner).model,'SH-12H');
@@ -82,4 +84,5 @@ test('product pages expose each saved specification and use meaningful search hi
  const empty=render('Unspecified product',null);
  assert.match(empty,/<title>Unspecified product — qiyməti və kreditlə satış \| Essen Home<\/title>/);
  assert.equal(structured(empty).additionalProperty,undefined);
+ assert.doesNotMatch(empty,/id="productHighlights"/);
 });
