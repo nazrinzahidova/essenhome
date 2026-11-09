@@ -87,7 +87,7 @@ ${image ? `<meta name="twitter:image" content="${escape(image)}">` : ''}
 <meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(metaDescription)}">
 <meta property="og:url" content="${escape(url)}">${image ? `<meta property="og:image" content="${escape(image)}">` : ''}
 <script type="application/ld+json">${JSON.stringify([data, breadcrumb]).replace(/</g, '\\u003c')}</script>`;
-  const content = `<article class="card" style="padding:24px"><h1>${escape(displayName)}</h1>
+  const content = `<article class="card" style="padding:24px"><h1>${escape(item.name)}</h1>
 ${image ? `<img src="${escape(image)}" alt="${escape(item.name)}" style="max-width:100%;max-height:320px;object-fit:contain">` : ''}
 <p>${escape(item.price)} AZN</p><p>${Number(item.stock) > 0 ? 'Stokda var' : 'Stokda yoxdur'}</p>
 ${item.brand ? `<p>Brend: ${escape(item.brand)}</p>` : ''}
@@ -154,10 +154,9 @@ function createSeoRouter(prisma) {
 <meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${ORIGIN}/img/logo.png">
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}">
 <meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${ORIGIN}/img/logo.png">`;
-    const links = items.map(item => {
-      const { displayName } = productSearchHeading(item, productSpecifications(item.specs));
-      return `<article class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><a href="${escape(productUrl(item))}" data-product-id="${item.id}">${item.image ? `<img src="${escape(new URL(item.image, ORIGIN).href)}" alt="${escape(item.name)}" loading="lazy" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain">` : ''}<h2>${escape(displayName)}</h2></a><p>${escape(item.price)} ₼</p></article>`;
-    }).join('');
+    const links = items.map(item =>
+      `<article class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><a href="${escape(productUrl(item))}">${item.image ? `<img src="${escape(new URL(item.image, ORIGIN).href)}" alt="${escape(item.name)}" loading="lazy" width="240" height="240" style="max-width:100%;height:180px;object-fit:contain">` : ''}<h2>${escape(item.name)}</h2></a><p>${escape(item.price)} ₼</p></article>`
+    ).join('');
     const schema = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: label, url, description, mainEntity: { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items.map((item,index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: productUrl(item) })) } };
     let html = fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags);
     html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(essenCatalog ? label : subcategory || category || 'Bütün məhsullar') + '</h1>');
