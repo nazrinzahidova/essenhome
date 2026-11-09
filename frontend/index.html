@@ -68,7 +68,11 @@
       object-fit: cover;
     }
     .swiper-slide { width: 50%; }
-    #hero-swiper-wrap .swiper-slide { width: 100%; background: #fff; }
+    #hero-swiper-wrap .swiper-slide {
+      width: auto;
+      aspect-ratio: 946 / 1662;
+      background: #fff;
+    }
     #hero-swiper-wrap .swiper-slide img { object-fit: contain; }
 
     .carousel-track { display: flex; gap: 12px; will-change: transform; }
@@ -1111,11 +1115,23 @@
     document.getElementById('mobile-overlay').classList.remove('open');
   }
 
-  new Swiper(".campaignSwiper", {
-    rewind: true,
-    autoplay: window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      ? false
-      : { delay: 5000, pauseOnMouseEnter: true },
+  const campaignCarousel = document.querySelector('.campaignSwiper');
+  const campaignTrack = campaignCarousel.querySelector('.swiper-wrapper');
+  const campaignSlides = Array.from(campaignTrack.children);
+  // Keep enough slides in the loop for both side previews on wider screens.
+  for (let repeat = 0; repeat < 2; repeat++) {
+    campaignSlides.forEach(slide => campaignTrack.appendChild(slide.cloneNode(true)));
+  }
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  new Swiper(campaignCarousel, {
+    initialSlide: 1,
+    slidesPerView: 'auto',
+    centeredSlides: true,
+    loop: true,
+    effect: 'coverflow',
+    coverflowEffect: { rotate: 30, stretch: 24, depth: 70, slideShadows: false },
+    speed: reduceMotion ? 0 : 600,
+    autoplay: reduceMotion ? false : { delay: 5000, pauseOnMouseEnter: true },
     navigation: { prevEl: ".campaign-prev", nextEl: ".campaign-next" },
     a11y: { prevSlideMessage: "Əvvəlki poster", nextSlideMessage: "Növbəti poster" },
   });
