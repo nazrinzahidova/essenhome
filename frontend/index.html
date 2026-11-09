@@ -61,9 +61,6 @@
       border-radius: 16px;
       overflow: hidden;
     }
-    .mySwiper .swiper-slide { opacity: 0.2; transition-property: transform, opacity; }
-    .mySwiper .swiper-slide-active { opacity: 1; }
-    .mySwiper .swiper-slide img { object-fit: cover; }
     .swiper-slide img {
       display: block;
       width: 100%;
@@ -71,33 +68,6 @@
       object-fit: cover;
     }
     .swiper-slide { width: 50%; }
-
-    /* Clip only the blank outer canvas; keep the supplied posters unchanged. */
-    .mySwiper .swiper-slide.promotion-poster {
-      position: relative;
-      width: auto;
-      height: 100%;
-      aspect-ratio: 25 / 39;
-      flex-shrink: 0;
-    }
-    .mySwiper .promotion-poster img {
-      position: absolute;
-      width: 200%;
-      max-width: none;
-      height: auto;
-      left: -50%;
-      top: -14.102564%;
-    }
-    .mySwiper .swiper-slide.campaign-slide {
-      width: 50%;
-      height: 100%;
-      background: #fff;
-    }
-    .mySwiper .campaign-slide img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
 
     .carousel-track { display: flex; gap: 12px; will-change: transform; }
     .brand-card { width: 80px; height: 80px; flex-shrink: 0; }
@@ -734,20 +704,7 @@
   </div>
 
   <div class="w-full lg:w-[700px] h-[280px] sm:h-[380px] lg:h-[550px] border border-gray-300 rounded-2xl shrink-0 overflow-hidden" id="hero-swiper-wrap">
-    <div class="swiper mySwiper w-full h-full">
-      <div class="swiper-wrapper">
-        <div class="swiper-slide campaign-slide"><img src="img/promotions/qrkampaniya.png?v=66d32a9772cf" alt="Essen QR kampaniyası — qeydiyyatdan keç, seçilmiş məhsulları səbətdə yarı qiymətə əldə et" width="1044" height="1566"/></div>
-        <div class="swiper-slide campaign-slide"><img src="img/promotions/essen-blender-20260926-170017.png" alt="ESSEN HE-2052 blender seti — 109.99 ₼" width="967" height="1627"/></div>
-        <div class="swiper-slide campaign-slide"><img src="img/promotions/essen-dograyici-20260926-165903.png" alt="ESSEN ESC-01 doğrayıcı — 49.99 ₼" width="1024" height="1536"/></div>
-        <div class="swiper-slide campaign-slide"><img src="img/promotions/sem-airfryer-20260926-165343.png" alt="SEM Airfryer 305 — 99.99 ₼" width="1024" height="1536"/></div>
-      </div>
-      <div class="prev-btn !w-9 !h-9 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-100 text-black z-10 transition-all hover:bg-gray-50 absolute left-2 top-1/2 -translate-y-1/2 cursor-pointer">
-        <i class="fa-solid fa-arrow-left-long text-[14px]"></i>
-      </div>
-      <div class="next-btn !w-9 !h-9 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-100 text-black z-10 transition-all hover:bg-gray-50 absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer">
-        <i class="fa-solid fa-arrow-right-long text-[14px]"></i>
-      </div>
-    </div>
+    <img class="block w-full h-full object-contain" src="img/promotions/lg-l9c1107pbgc-sale.png" alt="LG L9C1107PBGC.APBPMER paltaryuyan və qurudan maşın — 1499,99 ₼" width="934" height="1684">
   </div>
 
   <div class="w-[245px] h-[550px] border border-gray-300 rounded-xl shrink-0 overflow-hidden relative" id="hero-banner-wrap">
@@ -1144,26 +1101,6 @@
     document.getElementById('mobile-overlay').classList.remove('open');
   }
 
-  // ── SWIPER ──
-  // Repeat the four campaigns once to keep the centered loop filled.
-  const heroTrack = document.querySelector('.mySwiper .swiper-wrapper');
-  const heroSlides = Array.from(heroTrack.children);
-  if (heroSlides.length === 4) {
-    heroSlides.forEach(slide => heroTrack.appendChild(slide.cloneNode(true)));
-  }
-  var swiper = new Swiper(".mySwiper", {
-    slidesPerView: "auto",
-    centeredSlides: true,
-    spaceBetween: 10,
-    loop: true,
-    speed: 800,
-    effect: "coverflow",
-    coverflowEffect: { rotate: 30, stretch: 0, depth: 100, modifier: 1, slideShadows: false },
-    autoplay: { delay: 4000, disableOnInteraction: false },
-    allowTouchMove: true,
-    watchOverflow: true,
-    navigation: { nextEl: ".mySwiper .next-btn", prevEl: ".mySwiper .prev-btn" },
-  });
   var bannerSwiper = new Swiper(".bannerSwiper", {
     loop: true,
     autoplay: { delay: 3500, disableOnInteraction: false },
