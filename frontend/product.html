@@ -347,7 +347,9 @@
       const model = modelValue(item);
       const discount = discountText(item);
       const inStock = Number(item.stock) > 0;
-      document.title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
+      const serverRendered = document.querySelector('meta[name="product-id"]')?.content === String(item.id);
+      const heading = serverRendered ? view.querySelector('h1')?.textContent || item.name : item.name;
+      if (!serverRendered) document.title = item.seoTitle?.trim() || `${item.name} | Essen Home`;
       const crumbs = document.getElementById('crumbs');
       crumbs.replaceChildren();
       const addCrumb = (name, href) => {
@@ -389,7 +391,7 @@
         </div>
         ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${applianceSpecification(item) ? 'appliance-spec-grid' : isWashingMachineProduct(item) ? 'washer-spec-grid' : isFridgeProduct(item) ? 'fridge-spec-grid' : isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid" style="--appliance-rows:${applianceSpecification(item)?.rows || 1}"></div></section>` : ''}`;
       setText('crumbName', item.name);
-      setText('productName', item.name);
+      setText('productName', heading);
       document.getElementById('whatsappOrder').href = 'https://wa.me/994102414782?text=' + encodeURIComponent('Salam! ' + String(item.name ?? '') + ' məhsulunu sifariş etmək istəyirəm.');
       setText('price', money(item.price));
       initCreditCalculator(item.price);

@@ -4,7 +4,7 @@ const path = require('path');
 const { IMAGE_SELECT, serializeProduct, productPath } = require('../lib/productImages');
 const { organization, offerPolicies } = require('../lib/merchantPolicies');
 const { renderMetaCatalog } = require('../lib/metaCatalog');
-const { productSpecifications, specificationHighlights } = require('../lib/productSpecifications');
+const { productSpecifications, specificationHighlights, televisionSearchName } = require('../lib/productSpecifications');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -17,12 +17,17 @@ function renderProduct(template, product) {
   const url = productUrl(item);
   const specs = productSpecifications(item.specs);
   const { headline, summary } = specificationHighlights(specs);
+  const tvName = televisionSearchName(item, specs);
   const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
   const headlineName = headline && !compact(item.name).includes(compact(headline)) ? `${item.name} ${headline}` : item.name;
-  const title = item.seoTitle?.trim() || (headline ? `${headlineName} | Essen Home` : `${item.name} — qiyməti və kreditlə satış | Essen Home`);
+  const savedTitle = item.seoTitle?.trim();
+  const priceOnlyTitle = savedTitle?.startsWith(item.name) && /^\s*-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
+  const customTitle = tvName && priceOnlyTitle ? '' : savedTitle;
+  const displayName = !customTitle && tvName ? tvName : item.name;
+  const title = customTitle || (tvName || headline ? `${tvName || headlineName} | Essen Home` : `${item.name} — qiyməti və kreditlə satış | Essen Home`);
   const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1];
   const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
-  const specificationDescription = `${item.name}. ${summary.join(', ')}. Essen Home.`;
+  const specificationDescription = `${displayName}. ${summary.join(', ')}. Essen Home.`;
   const savedDescription = item.seoDescription?.trim();
   const customDescription = summary.length && savedDescription === `${item.name} — nağd və kreditlə əldə edin` ? '' : savedDescription;
   const description = customDescription || (summary.length ? specificationDescription : defaultDescription);
@@ -68,7 +73,7 @@ ${image ? `<meta name="twitter:image" content="${escape(image)}">` : ''}
 <meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(metaDescription)}">
 <meta property="og:url" content="${escape(url)}">${image ? `<meta property="og:image" content="${escape(image)}">` : ''}
 <script type="application/ld+json">${JSON.stringify([data, breadcrumb]).replace(/</g, '\\u003c')}</script>`;
-  const content = `<article class="card" style="padding:24px"><h1>${escape(item.name)}</h1>
+  const content = `<article class="card" style="padding:24px"><h1>${escape(displayName)}</h1>
 ${image ? `<img src="${escape(image)}" alt="${escape(item.name)}" style="max-width:100%;max-height:320px;object-fit:contain">` : ''}
 <p>${escape(item.price)} AZN</p><p>${Number(item.stock) > 0 ? 'Stokda var' : 'Stokda yoxdur'}</p>
 ${item.brand ? `<p>Brend: ${escape(item.brand)}</p>` : ''}

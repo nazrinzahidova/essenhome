@@ -43,6 +43,16 @@ test('product pages expose each saved specification and use meaningful search hi
  const tv=render('Premier televizor',{'Ekranın diaqonalı':'55 düym','Ekran icazəsi':'4K UHD'});
  assert.match(tv,/<title>Premier televizor 55 düym \| Essen Home<\/title>/);
  assert.match(tv,/name="description" content="[^"]*4K UHD/);
+ const samsungSpecs={'Ekranın diaqonalı':'32" (81 sm)'};
+ const samsung=render('Televizor Samsung UE32F6000FUXRU',samsungSpecs,{brand:'Samsung',seoTitle:'Televizor Samsung UE32F6000FUXRU - 577.99 | ESSEN HOME'});
+ assert.match(samsung,/<title>Samsung 32 düym televizor UE32F6000FUXRU \| Essen Home<\/title>/);
+ assert.match(samsung,/<h1>Samsung 32 düym televizor UE32F6000FUXRU<\/h1>/);
+ assert.match(samsung,/name="description" content="Samsung 32 düym televizor/);
+ assert.equal(structured(samsung).additionalProperty[0].value,'32" (81 sm)');
+ const customTv=render('Televizor Samsung UE32F6000FUXRU',samsungSpecs,{brand:'Samsung',seoTitle:'Manual Samsung TV title'});
+ assert.match(customTv,/<title>Manual Samsung TV title<\/title>/);
+ const unknownTv=render('Televizor Samsung UE32F6000FUXRU',{'Ekranın diaqonalı':'81 sm'},{brand:'Samsung'});
+ assert.doesNotMatch(unknownTv,/<h1>Samsung 32 düym/);
  const custom=render('LG',washerSpecs,{seoTitle:'Manual title',seoDescription:'Manual description'});
  assert.match(custom,/<title>Manual title<\/title>/);
  assert.match(custom,/name="description" content="Manual description"/);
