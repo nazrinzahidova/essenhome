@@ -27,6 +27,7 @@ function shippingService() {
 }
 function organization() {
   return { '@type': 'Organization', '@id': `${ORIGIN}/#store`, name: 'Essen Home', url: ORIGIN,
+    address: { '@type': 'PostalAddress', streetAddress: 'Heydər Əliyev prospekti', addressLocality: 'Xırdalan', postalCode: '0100', addressCountry: 'AZ' },
     hasMerchantReturnPolicy: returnPolicy(), hasShippingService: shippingService() };
 }
 function offerPolicies(price) {
