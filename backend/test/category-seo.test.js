@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),express=require('express');
-const {createSeoRouter}=require('../routes/seo');
+const {createSeoRouter,renderProduct}=require('../routes/seo');
 const {productPath}=require('../lib/productImages');
 test('SEO delivers crawlable category content, visibility rules, category sitemap and escaped product specifications',async t=>{
  const products=[
@@ -22,4 +22,32 @@ test('SEO delivers crawlable category content, visibility rules, category sitema
  products[0].seoTitle='Custom title';products[0].seoDescription='Test washer — nağd və kreditlə əldə edin';html=await(await get(productPath(products[0]))).text();assert.match(html,/<title>Custom title<\/title>/);assert.match(html,/content="Test washer — nağd və kreditlə əldə edin"/);
  products[0].name='Model </script><script>alert(1)</script>';html=await(await get('/catalog.html?category=Appliances')).text();assert(!html.includes('<script>alert(1)</script>'));assert.equal(schema(html).mainEntity.itemListElement[0].name,products[0].name);
  failed=true;assert.equal((await get('/catalog.html')).status,503);assert.equal((await get('/sitemap-pages.xml')).status,503);
+});
+
+test('product pages expose each saved specification and use meaningful search highlights', () => {
+ const template='<head><title>Product</title></head><section id="view"></section>';
+ const render=(name,specs,custom={})=>renderProduct(template,{id:42,name,price:150,stock:1,specs,...custom});
+ const structured=html=>JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1])[0];
+ const washerSpecs={'Çamaşırların maksimum yüklənməsi':'11 kq','Çamaşırların qurutma zamanı maksimum yüklənməsi':'7 kq','Maksimal sıxma sürəti':'1400 dövr/dəq','Ölçülər':'85 × 60 × 55 sm','SKU':'internal',Empty:' — ',Blank:[],Zero:0,Steam:false};
+ const washer=render('LG paltaryuyan və qurudan maşın',washerSpecs);
+ assert.match(washer,/<title>LG paltaryuyan və qurudan maşın 11 kq \| Essen Home<\/title>/);
+ assert.match(washer,/name="description" content="[^"]*Yuma tutumu: 11 kq, Qurutma tutumu: 7 kq, Maksimal sıxma sürəti: 1400 dövr\/dəq/);
+ assert.match(washer,/<dt>Ölçülər<\/dt><dd>85 × 60 × 55 sm<\/dd>/);
+ const props=Object.fromEntries(structured(washer).additionalProperty.map(({name,value})=>[name,value]));
+ assert.equal(props['Çamaşırların qurutma zamanı maksimum yüklənməsi'],'7 kq');
+ assert.equal(props.Zero,'0');assert.equal(props.Steam,'Yox');
+ for(const name of ['SKU','Empty','Blank'])assert.equal(props[name],undefined);
+ const phone=render('Samsung 256GB',{'Daxili yaddaş':'256 GB','Operativ yaddaş':'8 GB','Qoşulma':['Wi-Fi','Bluetooth']});
+ assert.match(phone,/<title>Samsung 256GB \| Essen Home<\/title>/);
+ assert.match(phone,/<dt>Qoşulma<\/dt><dd>Wi-Fi, Bluetooth<\/dd>/);
+ const tv=render('Premier televizor',{'Ekranın diaqonalı':'55 düym','Ekran icazəsi':'4K UHD'});
+ assert.match(tv,/<title>Premier televizor 55 düym \| Essen Home<\/title>/);
+ assert.match(tv,/name="description" content="[^"]*4K UHD/);
+ const custom=render('LG',washerSpecs,{seoTitle:'Manual title',seoDescription:'Manual description'});
+ assert.match(custom,/<title>Manual title<\/title>/);
+ assert.match(custom,/name="description" content="Manual description"/);
+ assert.equal(structured(custom).additionalProperty.length,6);
+ const empty=render('Unspecified product',null);
+ assert.match(empty,/<title>Unspecified product — qiyməti və kreditlə satış \| Essen Home<\/title>/);
+ assert.equal(structured(empty).additionalProperty,undefined);
 });

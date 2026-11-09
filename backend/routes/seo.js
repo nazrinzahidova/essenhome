@@ -4,6 +4,7 @@ const path = require('path');
 const { IMAGE_SELECT, serializeProduct, productPath } = require('../lib/productImages');
 const { organization, offerPolicies } = require('../lib/merchantPolicies');
 const { renderMetaCatalog } = require('../lib/metaCatalog');
+const { productSpecifications, specificationHighlights } = require('../lib/productSpecifications');
 
 const ORIGIN = 'https://essenhome.az';
 const PAGE_SIZE = 45000;
@@ -14,11 +15,17 @@ const xml = (root, body) => `<?xml version="1.0" encoding="UTF-8"?><${root} xmln
 function renderProduct(template, product) {
   const item = serializeProduct(product);
   const url = productUrl(item);
-  const title = item.seoTitle?.trim() || `${item.name} — qiyməti və kreditlə satış | Essen Home`;
-  const specs = item.specs && typeof item.specs === 'object' ? item.specs : {};
-  const modelKey = Object.keys(specs).find(key => ['model', 'modeli', 'model adı', 'model adi'].includes(key.trim().toLocaleLowerCase('az')));
-  const model = item.model || (modelKey ? specs[modelKey] : '');
-  const description = item.seoDescription?.trim() || `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
+  const specs = productSpecifications(item.specs);
+  const { headline, summary } = specificationHighlights(specs);
+  const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
+  const headlineName = headline && !compact(item.name).includes(compact(headline)) ? `${item.name} ${headline}` : item.name;
+  const title = item.seoTitle?.trim() || (headline ? `${headlineName} | Essen Home` : `${item.name} — qiyməti və kreditlə satış | Essen Home`);
+  const model = item.model || specs.find(([name]) => ['model', 'modeli', 'model adı', 'model adi'].includes(name.toLocaleLowerCase('az')))?.[1];
+  const defaultDescription = `${item.name} — Essen Home. Qiymət: ${item.price} AZN. ${item.description || 'Məhsulun xüsusiyyətləri və mövcudluğu.'}`.replace(/\s+/g, ' ').trim();
+  const specificationDescription = `${item.name}. ${summary.join(', ')}. Essen Home.`;
+  const customDescription = item.seoDescription?.trim();
+  const description = customDescription || (summary.length ? specificationDescription : defaultDescription);
+  const metaDescription = customDescription || (description.length <= 170 ? description : description.slice(0, 170).replace(/\s+\S*$/, '') + '…');
   let image;
   try {
     const parsed = new URL(item.image, ORIGIN);
@@ -30,6 +37,7 @@ function renderProduct(template, product) {
     ...(model ? { model: String(model) } : {}),
     ...(image ? { image: [image] } : {}),
     ...(item.brand ? { brand: { '@type': 'Brand', name: item.brand } } : {}),
+    ...(specs.length ? { additionalProperty: specs.map(([name, value]) => ({ '@type': 'PropertyValue', name, value })) } : {}),
     offers: { '@type': 'Offer', url, priceCurrency: 'AZN', price: item.price,
       availability: `https://schema.org/${Number(item.stock) > 0 ? 'InStock' : 'OutOfStock'}`,
       seller: organization(), ...offerPolicies(item.price) }
@@ -47,23 +55,23 @@ function renderProduct(template, product) {
   crumbs.push({ name: item.name, item: url });
   const breadcrumb = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((crumb, i) => ({ '@type': 'ListItem', position: i + 1, ...crumb })) };
   const breadcrumbHtml = crumbs.map((crumb, i) => i === crumbs.length - 1 ? '<span aria-current="page">' + escape(crumb.name) + '</span>' : '<a href="' + escape(crumb.item) + '">' + escape(crumb.name) + '</a>').join('<span aria-hidden="true">›</span>');
-  const metadata = `<meta name="description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
+  const metadata = `<meta name="description" content="${escape(metaDescription)}">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <meta name="product-id" content="${item.id}">
 <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">
 <meta name="twitter:title" content="${escape(title)}">
-<meta name="twitter:description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
+<meta name="twitter:description" content="${escape(metaDescription)}">
 ${image ? `<meta name="twitter:image" content="${escape(image)}">` : ''}
 <link rel="canonical" href="${escape(url)}">
 <meta property="og:type" content="product"><meta property="og:site_name" content="Essen Home">
-<meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(item.seoDescription?.trim() ? description : description.slice(0, 170))}">
+<meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(metaDescription)}">
 <meta property="og:url" content="${escape(url)}">${image ? `<meta property="og:image" content="${escape(image)}">` : ''}
 <script type="application/ld+json">${JSON.stringify([data, breadcrumb]).replace(/</g, '\\u003c')}</script>`;
   const content = `<article class="card" style="padding:24px"><h1>${escape(item.name)}</h1>
 ${image ? `<img src="${escape(image)}" alt="${escape(item.name)}" style="max-width:100%;max-height:320px;object-fit:contain">` : ''}
 <p>${escape(item.price)} AZN</p><p>${Number(item.stock) > 0 ? 'Stokda var' : 'Stokda yoxdur'}</p>
 ${item.brand ? `<p>Brend: ${escape(item.brand)}</p>` : ''}
-${Object.entries(specs).filter(([key, value]) => key.trim().toLowerCase() !== 'sku' && value !== null && value !== undefined && value !== '').length ? '<h2>Xüsusiyyətlər</h2><dl>' + Object.entries(specs).filter(([key, value]) => key.trim().toLowerCase() !== 'sku' && value !== null && value !== undefined && value !== '').map(([key,value]) => '<dt>' + escape(key) + '</dt><dd>' + escape(Array.isArray(value) ? value.join(', ') : typeof value === 'object' ? Object.values(value).join(', ') : value) + '</dd>').join('') + '</dl>' : ''}
+${specs.length ? '<h2>Xüsusiyyətlər</h2><dl>' + specs.map(([name, value]) => `<dt>${escape(name)}</dt><dd>${escape(value)}</dd>`).join('\n') + '</dl>' : ''}
 ${item.description ? `<h2>Əlavə qeydlər</h2><p style="white-space:pre-line">${escape(item.description)}</p>` : ''}
 <a href="/catalog.html">Digər məhsullar</a></article>`;
   return template.replace('<head>', '<head><base href="/">').replace(/<title>[\s\S]*?<\/title>/, () => `<title>${escape(title)}</title>`)
