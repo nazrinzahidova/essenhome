@@ -403,11 +403,13 @@
     }
 
     function updateHeading() {
-      const title = (selectedLeader ? EssenSalesCategories.definitions[selectedLeader].label : '') || (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
+      const essenCatalog = selectedBrand === 'Essen' && !selectedCategory && !selectedSubcategory && !selectedLeader && !searchQuery;
+      const heading = document.getElementById('catalogTitle');
+      const title = essenCatalog ? heading.textContent : (selectedLeader ? EssenSalesCategories.definitions[selectedLeader].label : '') || (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
         (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
-      document.getElementById('catalogTitle').textContent = title;
+      heading.textContent = title;
       document.getElementById('breadcrumbCurrent').textContent = title;
-      document.title = `${title} — Essen Home`;
+      if (!essenCatalog) document.title = `${title} — Essen Home`;
       document.getElementById('catalogSearch').value = searchQuery;
       document.getElementById('clearFilter').classList.toggle('hidden', !selectedLeader && !selectedCategory && !selectedSubcategory && !searchQuery && !selectedBrand);
     }

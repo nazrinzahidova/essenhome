@@ -3,7 +3,7 @@ const {createSeoRouter,renderProduct}=require('../routes/seo');
 const {productPath}=require('../lib/productImages');
 test('SEO delivers crawlable category content, visibility rules, category sitemap and escaped product specifications',async t=>{
  const products=[
-  {id:1,name:'Test washer',category:'Appliances',subcategory:'Washers',price:150,stock:1,description:'Installation note',specs:{SKU:'hidden',Capacity:'6 kg'},placements:[],images:[{id:11,position:0,isPrimary:true}]},
+  {id:1,name:'Test washer',brand:'Essen',category:'Appliances',subcategory:'Washers',price:150,stock:1,description:'Installation note',specs:{SKU:'hidden',Capacity:'6 kg'},placements:[],images:[{id:11,position:0,isPrimary:true}]},
   {id:2,name:'Featured phone',category:'Phones',subcategory:'Smartfonlar',price:200,stock:1,placements:[],images:[]},
   {id:3,name:'Hidden phone',category:'Phones',subcategory:'Smartfonlar',price:250,stock:1,placements:[],images:[]},
   {id:4,name:'Hidden laptop',category:'Laptops',subcategory:'Notbuklar',price:300,stock:1,placements:[],images:[]},
@@ -15,11 +15,18 @@ test('SEO delivers crawlable category content, visibility rules, category sitema
  const get=url=>fetch('http://127.0.0.1:'+server.address().port+url);
  const schema=html=>JSON.parse(html.match(/<script type="application\/ld\+json">(.*?)<\/script>/s)[1]);
  let html=await(await get('/catalog.html?category=Appliances&subcategory=Washers')).text();
- assert.match(html,/<h2>Test washer<\/h2>/);assert.match(html,/href="https:\/\/essenhome.az\/washers\/test-washer-1"/);assert.doesNotMatch(html,/id="productGrid" class="hidden/);assert.equal(schema(html).mainEntity.numberOfItems,1);
+ assert.match(html,/<h2>Essen Test washer<\/h2>/);assert.match(html,/href="https:\/\/essenhome.az\/washers\/test-washer-1"/);assert.doesNotMatch(html,/id="productGrid" class="hidden/);assert.equal(schema(html).mainEntity.numberOfItems,1);
  html=await(await get('/catalog.html?category=Phones')).text();assert.match(html,/<h2>Smartfon Featured phone<\/h2>/);assert.doesNotMatch(html,/Hidden phone/);
  html=await(await get('/catalog.html?category=TV')).text();assert.match(html,/<a href="[^"]+ue32f6000fuxru-5" data-product-id="5"><h2>Samsung 32 düym televizor UE32F6000FUXRU<\/h2><\/a>/);
  for(const url of ['/catalog.html?search=washer','/catalog.html?category=Empty'])assert.match(await(await get(url)).text(),/noindex,follow/);
  html=await(await get('/sitemap-pages.xml')).text();assert.match(html,/&amp;subcategory=Washers/);assert.match(html,/category=Phones/);assert.doesNotMatch(html,/category=Laptops/);
+ assert.match(html,/<loc>https:\/\/essenhome.az\/catalog\.html\?brand=Essen<\/loc>/);
+ html=await(await get('/catalog.html?brand=Essen')).text();
+ assert.match(html,/<title>Essen məişət texnikası/);
+ assert.match(html,/rel="canonical" href="https:\/\/essenhome.az\/catalog\.html\?brand=Essen"/);
+ assert.match(html,/content="index,follow,max-image-preview:large"/);
+ assert.deepEqual(schema(html).mainEntity.itemListElement.map(item=>item.name),['Test washer']);
+ assert.match(await(await get('/catalog.html?brand=Essen&search=washer')).text(),/noindex,follow/);
  html=await(await get(productPath(products[0]))).text();let initial=html.split('<section id="view">')[1].split('</section>')[0];assert.match(initial,/<dt>Capacity<\/dt><dd>6 kg<\/dd>/);assert.doesNotMatch(initial,/<dt>SKU<\/dt>/);assert(initial.indexOf('Xüsusiyyətlər')<initial.indexOf('Əlavə qeydlər'));assert.equal(schema(html)[0].offers.price,150);
  products[0].seoTitle='Custom title';products[0].seoDescription='Test washer with installation instructions';html=await(await get(productPath(products[0]))).text();assert.match(html,/<title>Custom title<\/title>/);assert.match(html,/content="Test washer with installation instructions"/);
  products[0].name='Model </script><script>alert(1)</script>';html=await(await get('/catalog.html?category=Appliances')).text();assert(!html.includes('<script>alert(1)</script>'));assert.equal(schema(html).mainEntity.itemListElement[0].name,products[0].name);

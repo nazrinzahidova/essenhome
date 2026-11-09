@@ -7,6 +7,9 @@ const { renderMetaCatalog } = require('../lib/metaCatalog');
 const { productSpecifications, specificationHighlights, productModel, televisionSearchName } = require('../lib/productSpecifications');
 
 const ORIGIN = 'https://essenhome.az';
+const ESSEN_CATALOG = '/catalog.html?brand=Essen';
+const ESSEN_HEADING = 'Essen məişət texnikası';
+const isEssenProduct = item => item.brand?.trim().toLowerCase() === 'essen';
 const PAGE_SIZE = 45000;
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const productUrl = item => ORIGIN + productPath(item);
@@ -128,15 +131,20 @@ function createSeoRouter(prisma) {
     try {
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
     const subcategory = typeof req.query.subcategory === 'string' ? req.query.subcategory.trim() : '';
+    const essenCatalog = !category && !subcategory && req.query.brand === 'Essen';
     const params = new URLSearchParams();
     if (category) params.set('category', category);
     if (subcategory) params.set('subcategory', subcategory);
-    const url = `${ORIGIN}/catalog.html${params.size ? '?' + params.toString() : ''}`;
-    const label = subcategory || category || 'Məişət texnikası və elektronika';
-    const title = `${subcategory || category || 'Məhsul kataloqu'} — qiymətlər və kreditlə satış | Essen Home`;
-    const description = `${label}: modelləri, qiymətləri və xüsusiyyətləri müqayisə edin. Essen Home-da nağd və kreditlə əldə edin.`;
-    const items = (await catalogProducts()).filter(item => belongsTo(item, category, subcategory)).map(serializeProduct);
-    const filtered = Object.keys(req.query).some(key => !['category', 'subcategory', 'gclid', 'fbclid'].includes(key) && !key.startsWith('utm_'));
+    const url = ORIGIN + (essenCatalog ? ESSEN_CATALOG : '/catalog.html' + (params.size ? '?' + params.toString() : ''));
+    const label = essenCatalog ? ESSEN_HEADING : subcategory || category || 'Məişət texnikası və elektronika';
+    const title = `${essenCatalog ? label : subcategory || category || 'Məhsul kataloqu'} — qiymətlər və kreditlə satış | Essen Home`;
+    const description = essenCatalog
+      ? 'Essen brendinin məişət texnikası modellərinə, qiymətlərinə və xüsusiyyətlərinə baxın. Essen Home mağazası Xırdalanda yerləşir.'
+      : `${label}: modelləri, qiymətləri və xüsusiyyətləri müqayisə edin. Essen Home-da nağd və kreditlə əldə edin.`;
+    const items = (await catalogProducts()).filter(item => essenCatalog ? isEssenProduct(item) : belongsTo(item, category, subcategory)).map(serializeProduct);
+    const allowed = ['category', 'subcategory', 'gclid', 'fbclid'];
+    if (essenCatalog) allowed.push('brand');
+    const filtered = Object.keys(req.query).some(key => !allowed.includes(key) && !key.startsWith('utm_'));
     const tags = `<title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}">
 <meta name="robots" content="${filtered || !items.length ? 'noindex,follow' : 'index,follow,max-image-preview:large'}">
@@ -152,7 +160,7 @@ function createSeoRouter(prisma) {
     }).join('');
     const schema = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: label, url, description, mainEntity: { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items.map((item,index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: productUrl(item) })) } };
     let html = fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags);
-    html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(subcategory || category || 'Bütün məhsullar') + '</h1>');
+    html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(essenCatalog ? label : subcategory || category || 'Bütün məhsullar') + '</h1>');
     html = html.replace(/(<div id="productGrid" class=")hidden ([^"]*">)[\s\S]*?<\/div>/, (_,open,rest) => open + rest + links + '</div>');
     html = html.replace('</head>', () => '<script type="application/ld+json">' + JSON.stringify(schema).replace(/</g, '\\u003c') + '</script></head>');
     res.set('Cache-Control', 'no-store').type('html').send(html);
@@ -171,6 +179,7 @@ function createSeoRouter(prisma) {
     try {
       const urls = new Set(['/', '/catalog.html', '/delivery-returns.html', '/haqqimizda.html', '/korporativ-satislar.html', '/topdan-satislar.html']);
       for (const item of await catalogProducts()) {
+        if (isEssenProduct(item)) urls.add(ESSEN_CATALOG);
         for (const place of [{ category: item.category, subcategory: item.subcategory }, ...(item.placements || [])]) {
           if (!place.category) continue;
           const params = new URLSearchParams({ category: place.category });
