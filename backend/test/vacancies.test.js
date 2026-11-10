@@ -58,7 +58,7 @@ test('vacancies protect admin changes and publish only open, unexpired jobs in c
   assert.equal((await request('','POST',{title:''})).status,400);
   const draft=await request('','POST',{title:'PRIVATE DRAFT'});assert.equal(draft.status,201);
   const job=await draft.json();assert.equal(job.status,'draft');
-  let response=await page(),html=await response.text();assert.equal(response.status,200);assert.match(html,/Hazırda açıq vakansiya yoxdur/);assert.doesNotMatch(html,/PRIVATE DRAFT/);
+  let response=await page(),html=await response.text();assert.equal(response.status,200);assert.match(html,/Hazırda aktiv vakansiya yoxdur/);assert.doesNotMatch(html,/PRIVATE DRAFT/);
   assert.equal((await request('/'+job.id,'PATCH',{status:'published'})).status,400);
   const title='Satış <script>alert("x")</script> & məsləhətçi';
   const published=await request('/'+job.id,'PATCH',{title,location:'Xırdalan',description:'İş haqqında\nİkinci sətir',requirements:'<img src=x onerror=alert(1)>',contactEmail:'jobs@example.com',contactPhone:'+994 10 123 45 67',status:'published'});
@@ -73,7 +73,8 @@ test('vacancies protect admin changes and publish only open, unexpired jobs in c
   await request('/'+job.id,'PATCH',{salary:'Razılaşma ilə'});
   assert.equal((await (await request()).json()).find(row=>row.id===job.id).additionalNote,note);
   html=await (await page()).text();assert.match(html,/Əlavə məlumat &lt;script&gt;alert\(1\)&lt;\/script&gt;\nİkinci sətir/);assert.doesNotMatch(html,/<script>alert\(1\)<\/script>/);
-  assert.ok(html.indexOf('class="vacancy-note"')>html.indexOf('class="application-actions"'));
+  assert.ok(html.indexOf('class="vacancy-note"')<html.indexOf('class="application-actions"'));
+  assert.doesNotMatch(html,/>Əlavə qeyd<|Açıq vakansiyalar/);assert.match(html,/id="vacancies-title">Aktiv vakansiyalar/);
   assert.equal((await request('/'+job.id,'PATCH',{additionalNote:''})).status,200);
   assert.doesNotMatch(await (await page()).text(),/class="vacancy-note"/);
   assert.equal((await request('/'+job.id,'PATCH',{status:'closed'})).status,200);
@@ -92,6 +93,6 @@ test('vacancies protect admin changes and publish only open, unexpired jobs in c
   for(const id of ['0','-1','bad','999999999999999999'])assert.equal((await request('/'+id,'PATCH',{title:'x'})).status,400);
   assert.equal((await request('/999','PATCH',{title:'x'})).status,404);assert.equal((await request('/999','DELETE')).status,404);
   response=await fetch(base+'/vakansiyalar',{redirect:'manual'});assert.equal(response.status,301);assert.equal(response.headers.get('location'),'/vakansiyalar.html');
-  offline=true;response=await page();assert.equal(response.status,503);assert.equal(response.headers.get('x-robots-tag'),'noindex');html=await response.text();assert.match(html,/Vakansiyalar yüklənmədi/);assert.doesNotMatch(html,/Hazırda açıq vakansiya yoxdur/);
+  offline=true;response=await page();assert.equal(response.status,503);assert.equal(response.headers.get('x-robots-tag'),'noindex');html=await response.text();assert.match(html,/Vakansiyalar yüklənmədi/);assert.doesNotMatch(html,/Hazırda aktiv vakansiya yoxdur/);
   assert.equal((await request()).status,503);
 });

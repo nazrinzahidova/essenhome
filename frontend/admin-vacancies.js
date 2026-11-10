@@ -27,7 +27,7 @@
           <label>Son müraciət tarixi<input name="deadline" type="date"><span>Boş qaldıqda vaxt məhdudiyyəti olmur.</span></label>
           <label>Göstərilmə sırası<input name="position" type="number" min="0" max="100000" step="1" required value="1000"><span>Kiçik rəqəm daha yuxarıda görünür.</span></label>
           <label class="full">Status<select name="status"><option value="draft">Qaralama — saytda görünmür</option><option value="published">Yayımlansın — saytda görünsün</option><option value="closed">Bağlı — müraciət qəbulu bitib</option><option value="archived">Arxiv — saytda görünmür</option></select></label>
-          <label class="full">Əlavə qeyd<textarea name="additionalNote" rows="4" maxlength="4000" placeholder="Vakansiya ilə bağlı əlavə qeydlərinizi yazın."></textarea><span>İstəyə bağlıdır. Doldurulduqda elanın ən aşağısında görünür.</span></label>
+          <label class="full">Əlavə qeyd<textarea name="additionalNote" rows="4" maxlength="4000" placeholder="Vakansiya ilə bağlı əlavə qeydlərinizi yazın."></textarea><span>İstəyə bağlıdır. Doldurulduqda müraciət düymələrindən əvvəl görünür.</span></label>
         </div></fieldset>
         <p id="vacancyFormMessage" role="alert"></p><div class="vacancy-dialog-actions"><button type="button" class="btn-ghost" id="cancelVacancy">Ləğv et</button><button type="submit" class="btn-accent" id="saveVacancy">Yadda saxla</button></div>
       </form>

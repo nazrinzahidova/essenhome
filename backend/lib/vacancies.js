@@ -65,17 +65,17 @@ function renderVacancy(item) {
     .map(([label, value]) => `<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('');
   const subject = encodeURIComponent(item.title + ' — vakansiyaya müraciət');
   const links = [];
-  const note = item.additionalNote ? `<section class="vacancy-note"><h3>Əlavə qeyd</h3><p class="vacancy-copy">${e(item.additionalNote)}</p></section>` : '';
+  const note = item.additionalNote ? `<div class="vacancy-note"><p class="vacancy-copy">${e(item.additionalNote)}</p></div>` : '';
   if (item.contactEmail) links.push(`<a class="apply-button" href="mailto:${e(encodeURIComponent(item.contactEmail))}?subject=${subject}"><i class="fa-regular fa-envelope" aria-hidden="true"></i>CV-ni e-poçtla göndər</a>`);
   if (item.contactPhone) links.push(`<a class="apply-button ${item.contactEmail ? 'secondary' : ''}" href="https://wa.me/${e(item.contactPhone)}?text=${encodeURIComponent('Salam! ' + item.title + ' vakansiyasına müraciət etmək istəyirəm.')}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp ilə müraciət</a>`);
-  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong>${e(item.title)}</strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary><div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}<div class="application-actions">${links.join('')}</div>${note}</div></details>`;
+  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong>${e(item.title)}</strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary><div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}${note}<div class="application-actions">${links.join('')}</div></div></details>`;
 }
 
 function renderVacancies(template, rows, error = false) {
   const content = error
     ? '<div class="empty-jobs" role="alert"><i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i><h2>Vakansiyalar yüklənmədi</h2><p>Bir az sonra yenidən cəhd edin.</p><a href="/vakansiyalar.html">Yenilə</a></div>'
     : rows.length ? `<div class="vacancy-list">${rows.map(renderVacancy).join('')}</div>`
-      : '<div class="empty-jobs"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><h2>Hazırda açıq vakansiya yoxdur</h2><p>Yeni iş imkanları bu səhifədə yayımlanacaq.</p></div>';
+      : '<div class="empty-jobs"><i class="fa-solid fa-briefcase" aria-hidden="true"></i><h2>Hazırda aktiv vakansiya yoxdur</h2><p>Yeni iş imkanları bu səhifədə yayımlanacaq.</p></div>';
   return template.replace('<!-- VACANCY_CONTENT -->', () => content);
 }
 

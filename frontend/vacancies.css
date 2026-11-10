@@ -41,7 +41,7 @@ h1,h2,h3,p { margin:0; }
 .job-more i { font-size:11px; transition:transform .15s; }
 .vacancy[open] .job-more i { transform:rotate(180deg); }
 .job-detail { padding:0 30px 30px 90px; }
-.job-detail section { margin-top:22px; }
+.job-detail section,.job-detail .vacancy-note { margin-top:22px; }
 .job-detail section:first-child { margin-top:0; }
 .job-detail h3 { font-size:16px; font-weight:500; margin-bottom:10px; }
 .vacancy-copy { color:#5b616c; white-space:pre-line; overflow-wrap:anywhere; }
