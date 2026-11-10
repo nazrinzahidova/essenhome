@@ -348,7 +348,9 @@
       const model = modelValue(item);
       const discount = discountText(item);
       const inStock = Number(item.stock) > 0;
-      document.title = item.name;
+      if (!document.querySelector('meta[name="product-id"]')) {
+        document.title = item.seoTitle?.trim() || item.name + ' | Essen Home';
+      }
       const crumbs = document.getElementById('crumbs');
       crumbs.replaceChildren();
       const addCrumb = (name, href) => {
