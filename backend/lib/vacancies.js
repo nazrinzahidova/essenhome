@@ -1,7 +1,7 @@
 const textFields = {
   title: [160, 'Vəzifə adı'], department: [120, 'Bölmə'], location: [160, 'İş yeri'],
   employmentType: [80, 'İş qrafiki'], salary: [120, 'Əməkhaqqı'], description: [6000, 'Vəzifə haqqında'],
-  requirements: [4000, 'Tələblər'], benefits: [4000, 'İş şəraiti'],
+  requirements: [4000, 'Tələblər'], benefits: [4000, 'İş şəraiti'], additionalNote: [4000, 'Əlavə qeyd'],
   contactEmail: [254, 'Müraciət e-poçtu'], contactPhone: [40, 'WhatsApp nömrəsi']
 };
 const statuses = ['draft', 'published', 'closed', 'archived'];
@@ -65,9 +65,10 @@ function renderVacancy(item) {
     .map(([label, value]) => `<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('');
   const subject = encodeURIComponent(item.title + ' — vakansiyaya müraciət');
   const links = [];
+  const note = item.additionalNote ? `<section class="vacancy-note"><h3>Əlavə qeyd</h3><p class="vacancy-copy">${e(item.additionalNote)}</p></section>` : '';
   if (item.contactEmail) links.push(`<a class="apply-button" href="mailto:${e(encodeURIComponent(item.contactEmail))}?subject=${subject}"><i class="fa-regular fa-envelope" aria-hidden="true"></i>CV-ni e-poçtla göndər</a>`);
   if (item.contactPhone) links.push(`<a class="apply-button ${item.contactEmail ? 'secondary' : ''}" href="https://wa.me/${e(item.contactPhone)}?text=${encodeURIComponent('Salam! ' + item.title + ' vakansiyasına müraciət etmək istəyirəm.')}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp ilə müraciət</a>`);
-  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong>${e(item.title)}</strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary><div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}<div class="application-actions">${links.join('')}</div></div></details>`;
+  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong>${e(item.title)}</strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary><div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}<div class="application-actions">${links.join('')}</div>${note}</div></details>`;
 }
 
 function renderVacancies(template, rows, error = false) {

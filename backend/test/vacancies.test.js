@@ -9,6 +9,7 @@ test('vacancy validation handles publishing, plain text, phone numbers and Azerb
   const now = new Date('2026-11-10T10:00:00Z');
   assert.deepEqual(validateVacancy({ title:'  Kassir  ' }, null, now).title, 'Kassir');
   assert.equal(validateVacancy({ title:'Kassir' }, null, now).status, 'draft');
+  assert.equal(validateVacancy({ title:'Kassir' }, null, now).additionalNote, '');
   const complete = { title:'Satış məsləhətçisi', location:'Xırdalan', description:'Müştərilərlə iş.', contactPhone:'(010) 123-45-67', status:'published', deadline:'2026-11-10' };
   const parsed = validateVacancy(complete, null, now);
   assert.equal(parsed.contactPhone,'994101234567');
@@ -18,7 +19,8 @@ test('vacancy validation handles publishing, plain text, phone numbers and Azerb
     {title:''}, {title:'x'.repeat(161)}, {status:'live'}, {position:-1}, {position:'1'},
     {contactEmail:'invalid'}, {contactEmail:'test@example.com\r\nBcc:x@example.com'},
     {contactPhone:'javascript:alert(1)'}, {deadline:'2026-02-31'}, {deadline:'2026-11-09'},
-    {description:''}, {location:''}, {contactPhone:''}, {title:'bad\u0000value'}
+    {description:''}, {location:''}, {contactPhone:''}, {title:'bad\u0000value'},
+    {additionalNote:'x'.repeat(4001)}, {additionalNote:42}, {additionalNote:'bad\u0000value'}
   ]) assert.throws(()=>validateVacancy({...complete,...changes},null,now));
   assert.throws(()=>validateVacancy(null,null,now));
   assert.throws(()=>validateVacancy([],null,now));
@@ -65,6 +67,15 @@ test('vacancies protect admin changes and publish only open, unexpired jobs in c
   assert.match(html,/Satış &lt;script&gt;/);assert.doesNotMatch(html,/<script>alert/);assert.match(html,/&lt;img src=x onerror=alert\(1\)&gt;/);
   assert.match(html,/mailto:jobs%40example.com\?subject=/);assert.match(html,/https:\/\/wa.me\/994101234567\?text=/);
   assert.match(html,new RegExp('id="vakansiya-'+job.id+'"'));assert.doesNotMatch(html,/VACANCY_CONTENT|PRIVATE DRAFT/);
+  assert.doesNotMatch(html,/class="vacancy-note"/);
+  const note='Əlavə məlumat <script>alert(1)</script>\nİkinci sətir';
+  const noted=await request('/'+job.id,'PATCH',{additionalNote:note});assert.equal(noted.status,200);assert.equal((await noted.json()).additionalNote,note);
+  await request('/'+job.id,'PATCH',{salary:'Razılaşma ilə'});
+  assert.equal((await (await request()).json()).find(row=>row.id===job.id).additionalNote,note);
+  html=await (await page()).text();assert.match(html,/Əlavə məlumat &lt;script&gt;alert\(1\)&lt;\/script&gt;\nİkinci sətir/);assert.doesNotMatch(html,/<script>alert\(1\)<\/script>/);
+  assert.ok(html.indexOf('class="vacancy-note"')>html.indexOf('class="application-actions"'));
+  assert.equal((await request('/'+job.id,'PATCH',{additionalNote:''})).status,200);
+  assert.doesNotMatch(await (await page()).text(),/class="vacancy-note"/);
   assert.equal((await request('/'+job.id,'PATCH',{status:'closed'})).status,200);
   assert.doesNotMatch(await (await page()).text(),/Satış &lt;script&gt;/);
   await request('/'+job.id,'PATCH',{status:'published'});
