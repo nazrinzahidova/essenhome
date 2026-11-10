@@ -258,6 +258,27 @@ model Brand {
   position Int @default(1000)
 }
 
+model Vacancy {
+  id Int @id @default(autoincrement())
+  title String @db.VarChar(160)
+  department String @default("") @db.VarChar(120)
+  location String @default("") @db.VarChar(160)
+  employmentType String @default("") @db.VarChar(80)
+  salary String @default("") @db.VarChar(120)
+  description String @default("")
+  requirements String @default("")
+  benefits String @default("")
+  contactEmail String @default("") @db.VarChar(254)
+  contactPhone String @default("") @db.VarChar(20)
+  status String @default("draft") @db.VarChar(12)
+  position Int @default(1000)
+  deadline DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([status, position, id])
+}
+
 model Campaign {
   id Int @id @default(autoincrement())
   name String
