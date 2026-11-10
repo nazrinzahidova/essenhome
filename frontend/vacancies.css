@@ -41,6 +41,8 @@ h1,h2,h3,p { margin:0; }
 .job-more i { font-size:11px; transition:transform .15s; }
 .vacancy[open] .job-more i { transform:rotate(180deg); }
 .job-detail { padding:0 30px 30px 90px; }
+.vacancy-detail .job-detail { padding:28px; }
+.all-vacancies { margin-top:24px; color:var(--red); }
 .job-detail section,.job-detail .vacancy-note { margin-top:22px; }
 .job-detail section:first-child { margin-top:0; }
 .job-detail h3 { font-size:16px; font-weight:500; margin-bottom:10px; }
@@ -82,6 +84,7 @@ h1,h2,h3,p { margin:0; }
   .job-symbol { width:42px; height:42px; }
   .job-more { margin-left:55px; }
   .job-detail { padding:0 18px 24px; }
+  .vacancy-detail .job-detail { padding:20px 18px; }
   .job-detail h3 { font-size:15px; }
   .job-facts { gap:18px 26px; }
   .empty-jobs { padding:38px 20px; }
