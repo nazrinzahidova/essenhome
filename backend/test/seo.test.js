@@ -47,6 +47,7 @@ test('SEO: crawler HTML, escaping, live product changes, sitemaps and error stat
   assert.ok(!html.includes('<script>alert(1)</script>'));
   assert.match(await (await get('/robots.txt')).text(), /Sitemap: https:\/\/essenhome.az\/sitemap.xml/);
   assert.match(await (await get('/sitemap.xml')).text(), /sitemap-products-1.xml/);
+  assert.match(await (await get('/sitemap.xml')).text(), /sitemap-vacancies.xml/);
   assert.match(await (await get('/sitemap-products-1.xml')).text(), /-707/ );
   rows.push({ id: 708, updatedAt: new Date('2026-09-09') });
   assert.match(await (await get('/sitemap-products-1.xml')).text(), /-708/ );

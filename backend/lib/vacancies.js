@@ -1,3 +1,4 @@
+const { vacancyPath } = require('./vacancyPaths');
 const textFields = {
   title: [160, 'Vəzifə adı'], department: [120, 'Bölmə'], location: [160, 'İş yeri'],
   employmentType: [80, 'İş qrafiki'], salary: [120, 'Əməkhaqqı'], description: [6000, 'Vəzifə haqqında'],
@@ -52,23 +53,28 @@ function validateVacancy(body, existing, now = new Date()) {
 }
 
 const publicWhere = (now = new Date()) => ({ status: 'published', OR: [{ deadline: null }, { deadline: { gte: now } }] });
-const publicSelect = Object.fromEntries(['id', ...Object.keys(textFields), 'deadline'].map(key => [key, true]));
+const publicSelect = Object.fromEntries(['id', ...Object.keys(textFields), 'deadline', 'publishedAt', 'createdAt', 'updatedAt'].map(key => [key, true]));
 const publicOrder = [{ position: 'asc' }, { id: 'desc' }];
 
-function renderVacancy(item) {
+function renderVacancyBody(item, detail = false) {
   const e = escapeHtml;
-  const meta = [item.department, item.location, item.employmentType].filter(Boolean).map(e).join(' · ');
   const paragraphs = [['Vəzifə haqqında', item.description], ['Tələblər', item.requirements], ['İş şəraiti', item.benefits]]
     .filter(([, text]) => text).map(([label, text]) => `<section><h3>${label}</h3><p class="vacancy-copy">${e(text)}</p></section>`).join('');
   const date = item.deadline ? new Intl.DateTimeFormat('az-AZ', { timeZone: 'Asia/Baku', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date(item.deadline)) : '';
-  const facts = [['Əməkhaqqı', item.salary], ['Son müraciət tarixi', date]].filter(([, value]) => value)
+  const posted = item.publishedAt || item.createdAt;
+  const facts = [...(detail ? [['İş yeri', item.location], ['İş qrafiki', item.employmentType], ['Elan tarixi', posted ? new Intl.DateTimeFormat('az-AZ', { timeZone:'Asia/Baku', day:'2-digit', month:'long', year:'numeric' }).format(new Date(posted)) : '']] : []), ['Əməkhaqqı', item.salary], ['Son müraciət tarixi', date]].filter(([, value]) => value)
     .map(([label, value]) => `<div><dt>${label}</dt><dd>${e(value)}</dd></div>`).join('');
   const subject = encodeURIComponent(item.title + ' — vakansiyaya müraciət');
   const links = [];
   const note = item.additionalNote ? `<div class="vacancy-note"><p class="vacancy-copy">${e(item.additionalNote)}</p></div>` : '';
   if (item.contactEmail) links.push(`<a class="apply-button" href="mailto:${e(encodeURIComponent(item.contactEmail))}?subject=${subject}"><i class="fa-regular fa-envelope" aria-hidden="true"></i>CV-ni e-poçtla göndər</a>`);
   if (item.contactPhone) links.push(`<a class="apply-button ${item.contactEmail ? 'secondary' : ''}" href="https://wa.me/${e(item.contactPhone)}?text=${encodeURIComponent('Salam! ' + item.title + ' vakansiyasına müraciət etmək istəyirəm.')}" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp ilə müraciət</a>`);
-  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong>${e(item.title)}</strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary><div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}${note}<div class="application-actions">${links.join('')}</div></div></details>`;
+  return `<div class="job-detail">${paragraphs}${facts ? `<dl class="job-facts">${facts}</dl>` : ''}${note}<div class="application-actions">${links.join('')}</div></div>`;
+}
+
+function renderVacancy(item) {
+  const meta = [item.department, item.location, item.employmentType].filter(Boolean).map(escapeHtml).join(' · ');
+  return `<details class="vacancy" id="vakansiya-${Number(item.id)}"><summary><span class="job-main"><span class="job-symbol"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span><span><strong><a href="${vacancyPath(item)}">${escapeHtml(item.title)}</a></strong><small>${meta}</small></span></span><span class="job-more">Ətraflı bax<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></span></summary>${renderVacancyBody(item)}</details>`;
 }
 
 function renderVacancies(template, rows, error = false) {
@@ -79,4 +85,4 @@ function renderVacancies(template, rows, error = false) {
   return template.replace('<!-- VACANCY_CONTENT -->', () => content);
 }
 
-module.exports = { validateVacancy, deadlineValue, publicWhere, publicSelect, publicOrder, renderVacancies };
+module.exports = { validateVacancy, deadlineValue, publicWhere, publicSelect, publicOrder, renderVacancies, renderVacancyBody, escapeHtml };

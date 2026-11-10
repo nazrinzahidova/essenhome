@@ -182,7 +182,7 @@ function createSeoRouter(prisma) {
       const count = await prisma.product.count();
       const pages = Math.max(1, Math.ceil(count / PAGE_SIZE));
       const entries = Array.from({ length: pages }, (_, i) => `<sitemap><loc>${ORIGIN}/sitemap-products-${i + 1}.xml</loc></sitemap>`).join('');
-      res.type('application/xml').send(xml('sitemapindex', `<sitemap><loc>${ORIGIN}/sitemap-pages.xml</loc></sitemap>${entries}`));
+      res.type('application/xml').send(xml('sitemapindex', `<sitemap><loc>${ORIGIN}/sitemap-pages.xml</loc></sitemap><sitemap><loc>${ORIGIN}/sitemap-vacancies.xml</loc></sitemap>${entries}`));
     } catch (error) { console.error('Sitemap failed:', error.message); unavailable(res); }
   });
   router.get('/sitemap-pages.xml', async (_req, res) => {

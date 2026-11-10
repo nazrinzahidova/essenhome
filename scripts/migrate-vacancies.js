@@ -14,6 +14,7 @@ async function migrateVacancies(config = require('../backend/lib/dbConfig')()) {
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:vacancies', 0))");
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20261110190000_vacancies/migration.sql'), 'utf8'));
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20261110220000_vacancy_notes/migration.sql'), 'utf8'));
+      await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20261110230000_vacancy_publication_date/migration.sql'), 'utf8'));
       await db.query('COMMIT');
       console.log('Vacancies schema ready (additive migration).');
     } catch (error) {
