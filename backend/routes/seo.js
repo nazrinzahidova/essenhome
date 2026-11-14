@@ -140,6 +140,12 @@ function createSeoRouter(prisma) {
   });
   router.get('/catalog.html', async (req, res) => {
     try {
+    // The timed catalogue gets its products only from its own membership API.
+    // Do not inject the general catalogue's server-rendered cards here.
+    if (req.query.timed === '1') {
+      const template=fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8');
+      return res.set('Cache-Control','no-store').type('html').send(template.replace(/<title>[\s\S]*?<\/title>/, '<title>Qırmızı Cümə — Essen Home</title>').replace('</head>', '<meta name="robots" content="noindex,follow"><link rel="canonical" href="https://essenhome.az/catalog.html?timed=1"></head>'));
+    }
     const category = typeof req.query.category === 'string' ? req.query.category.trim() : '';
     const subcategory = typeof req.query.subcategory === 'string' ? req.query.subcategory.trim() : '';
     const essenCatalog = !category && !subcategory && req.query.brand === 'Essen';
@@ -235,4 +241,5 @@ function createSeoRouter(prisma) {
 }
 
 module.exports = { createSeoRouter, renderProduct };
+
 
