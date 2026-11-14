@@ -13,6 +13,16 @@ async function migrateHomeSections(config = require('../backend/lib/dbConfig')()
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:home-sections-migration', 0))");
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20260909160000_home_sections/migration.sql'), 'utf8'));
       await db.query('ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "sortPosition" INTEGER NOT NULL DEFAULT 2147483647; ALTER TABLE "HomeSectionProduct" ADD COLUMN IF NOT EXISTS "sortPosition" INTEGER NOT NULL DEFAULT 2147483647');
+      await db.query(`CREATE TABLE IF NOT EXISTS "HomeTimedOffer" (
+        "id" INTEGER PRIMARY KEY CHECK ("id" = 1),
+        "sectionId" INTEGER NOT NULL UNIQUE REFERENCES "HomeSection"("id") ON DELETE RESTRICT,
+        "endsAt" TIMESTAMPTZ NOT NULL DEFAULT '2026-11-30T23:59:00+04:00'
+      );
+      WITH created AS (
+        INSERT INTO "HomeSection" ("name", "active", "position")
+        SELECT 'Sərfəli Cümə', true, -1 WHERE NOT EXISTS (SELECT 1 FROM "HomeTimedOffer")
+        RETURNING "id"
+      ) INSERT INTO "HomeTimedOffer" ("id", "sectionId") SELECT 1, "id" FROM created ON CONFLICT DO NOTHING`);
       await db.query('COMMIT');
       console.log('Home sections schema ready (additive migration).');
     } catch (error) {
@@ -22,3 +32,4 @@ async function migrateHomeSections(config = require('../backend/lib/dbConfig')()
 }
 module.exports = { migrateHomeSections };
 if (require.main === module) migrateHomeSections().catch(error => { console.error('Migration failed', { code: error.code, message: error.message }); process.exitCode = 1; });
+
