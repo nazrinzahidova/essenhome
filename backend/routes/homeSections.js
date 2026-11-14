@@ -14,6 +14,17 @@ function createHomeSectionsRouter(db) {
       res.status(500).json({ message: 'Dəyişiklik saxlanmadı. Yenidən cəhd edin.' });
     }
   };
+  const timedConfig = async () => (await db.$queryRaw`SELECT "sectionId", "endsAt" FROM "HomeTimedOffer" WHERE "id"=1`)[0];
+  async function timedData() {
+    const config = await timedConfig();
+    const section = config && await db.homeSection.findUnique({where:{id:config.sectionId},include:{products:{orderBy:[{sortPosition:'asc'},{productId:'asc'}],include:{product:{include:{images:{select:IMAGE_SELECT,orderBy:[{position:'asc'},{id:'asc'}]}}}}}}});
+    return section ? {sectionId:section.id,name:section.name,active:section.active,endsAt:config.endsAt,serverNow:new Date(),products:section.products.map(link=>serializeProduct(link.product))} : null;
+  }
+  router.get('/timed', run(async (_req,res)=>{
+    const data=await timedData();
+    if(!data || !data.active || new Date(data.endsAt)<=new Date()) return res.set('Cache-Control','no-store').json({...data,products:[],active:false});
+    res.set('Cache-Control','no-store').json(data);
+  }));
   router.get('/', run(async (_req, res) => {
     const sections = await db.homeSection.findMany({
       where: { active: true, products: { some: {} } }, orderBy: [{ position: 'asc' }, { id: 'asc' }],
@@ -21,11 +32,23 @@ function createHomeSectionsRouter(db) {
         images: { select: IMAGE_SELECT, orderBy: [{ position: 'asc' }, { id: 'asc' }] }
       } } } } }
     });
+    const timed=await timedConfig();
     res.set('Cache-Control', 'no-store').json(sections.map(section => ({
+      timedOffer: section.id === timed?.sectionId,
       id: section.id, name: section.name, products: section.products.map(link => serializeProduct(link.product))
     })));
   }));
   router.use(auth, admin);
+  router.get('/timed/admin',run(async(_req,res)=>res.set('Cache-Control','no-store').json(await timedData())));
+  router.patch('/timed',run(async(req,res)=>{
+    const endsAt=req.body.endsAt;
+    if(typeof endsAt!=='string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:00\+04:00$/.test(endsAt) || !Number.isFinite(Date.parse(endsAt)) || typeof req.body.active!=='boolean') return res.status(400).json({message:'Tarixi və statusu düzgün daxil edin.'});
+    const name=typeof req.body.name==='string'?req.body.name.trim():'';
+    if(!name || name.length>120) return res.status(400).json({message:'Kampaniya adı 1–120 simvol olmalıdır.'});
+    const config=await timedConfig();
+    await db.$transaction([db.$executeRaw`UPDATE "HomeTimedOffer" SET "endsAt"=${endsAt}::timestamptz WHERE "id"=1`,db.homeSection.update({where:{id:config.sectionId},data:{name,active:req.body.active}})]);
+    res.json(await timedData());
+  }));
   router.get('/admin', run(async (_req, res) => {
     res.set('Cache-Control', 'no-store').json(await db.homeSection.findMany({
       orderBy: [{ position: 'asc' }, { id: 'asc' }], include: { _count: { select: { products: true } } }
@@ -79,9 +102,11 @@ function createHomeSectionsRouter(db) {
   router.delete('/:id', run(async (req, res) => {
     const sectionId = id(req.params.id);
     if (!sectionId) return res.sendStatus(400);
+    if(sectionId===(await timedConfig())?.sectionId) return res.status(409).json({message:'Taymer kataloqunu silmək əvəzinə kampaniyanı deaktiv edin.'});
     await db.homeSection.delete({ where: { id: sectionId } });
     res.json({ success: true });
   }));
   return router;
 }
 module.exports = { createHomeSectionsRouter };
+
