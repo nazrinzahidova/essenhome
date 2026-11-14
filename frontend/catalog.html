@@ -407,7 +407,7 @@
       const heading = document.getElementById('catalogTitle');
       const title = essenCatalog ? heading.textContent : (selectedLeader ? EssenSalesCategories.definitions[selectedLeader].label : '') || (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
         (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
-      heading.textContent = timedCatalog ? 'Sərfəli Cümə — ' + title : title;
+      heading.textContent = timedCatalog ? 'Qırmızı Cümə' : title;
       document.getElementById('breadcrumbCurrent').textContent = title;
       if (!essenCatalog) document.title = `${heading.textContent} — Essen Home`;
       document.getElementById('catalogSearch').value = searchQuery;
@@ -780,6 +780,7 @@
         const response = await fetch(timedCatalog ? '/api/home-sections/timed' : `${API}/api/products?${query.toString()}`, {cache:'no-store'});
         if (!response.ok) throw new Error('Məhsullar yüklənmədi');
         const payload = await response.json();
+        if(timedCatalog){const name=payload.name || 'Qırmızı Cümə';document.getElementById('catalogTitle').textContent=name;document.getElementById('breadcrumbCurrent').textContent=name;document.title=name+' — Essen Home';document.getElementById('productGrid').replaceChildren();}
         const products = filteredProducts(timedCatalog ? (payload.products || []) : await visibleCatalogProducts(payload));
         catalogProducts = products;
         document.getElementById('loadingState').classList.add('hidden');
