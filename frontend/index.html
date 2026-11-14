@@ -69,11 +69,14 @@
     }
     .swiper-slide { width: 50%; }
     #hero-swiper-wrap .swiper-slide {
-      width: auto;
-      aspect-ratio: 946 / 1662;
+      width: 100%;
+      aspect-ratio: 3 / 2;
       background: #fff;
     }
     #hero-swiper-wrap .swiper-slide img { object-fit: contain; }
+    @media (max-width: 1024px) {
+      #hero-swiper-wrap { height: auto !important; aspect-ratio: 3 / 2; }
+    }
 
     .carousel-track { display: flex; gap: 12px; will-change: transform; }
     .brand-card { width: 80px; height: 80px; flex-shrink: 0; }
@@ -710,15 +713,10 @@
   </div>
 
   <div class="w-full lg:w-[700px] h-[280px] sm:h-[380px] lg:h-[550px] border border-gray-300 rounded-2xl shrink-0 overflow-hidden" id="hero-swiper-wrap">
-    <div class="swiper campaignSwiper" aria-label="Kampaniya posterləri">
+    <div class="swiper campaignSwiper" aria-label="Samsung Sərfəli Cümə kampaniyası">
       <div class="swiper-wrapper">
-        <div class="swiper-slide"><img src="img/promotions/tcl-55p7l-sale.png" alt="TCL 55P7L televizoru — 994,99 ₼" width="946" height="1662" draggable="false"></div>
-        <div class="swiper-slide"><img src="img/promotions/lg-l9c1107pbgc-sale.png" alt="LG L9C1107PBGC.APBPMER paltaryuyan və qurudan maşın — 1499,99 ₼" width="934" height="1684" draggable="false"></div>
-        <div class="swiper-slide"><img src="img/promotions/lenovo-ideapad-3-sale.png" alt="Lenovo IdeaPad 3 15ITL6 (82H801QYRK) notbuku — 999,99 ₼" width="946" height="1662" draggable="false"></div>
-        <div class="swiper-slide"><img src="img/promotions/poco-monthly-offer.png?v=4b756d82f49e" alt="POCO C81 Pro 4GB/128GB smartfonu — ayda 35.50 ₼" width="934" height="1685" draggable="false"></div>
+        <div class="swiper-slide"><img src="img/promotions/%D0%9D%D0%B5%D0%BE%D0%BD%D0%BE%D0%B2%D0%B0%D1%8F%20%D0%B0%D0%BA%D1%86%D0%B8%D1%8F%20Samsung_%20%D0%B2%D0%B0%D1%80%D0%BE%D1%87%D0%BD%D0%B0%D1%8F%20%D0%BF%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C.png" alt="Sərfəli Cümə: Samsung bişirmə paneli — 349,99 ₼, əvvəlki qiymət 549,99 ₼" width="1536" height="1024" draggable="false"></div>
       </div>
-      <button type="button" class="campaign-prev absolute left-2 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full border border-gray-200 bg-white shadow" aria-label="Əvvəlki poster">←</button>
-      <button type="button" class="campaign-next absolute right-2 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full border border-gray-200 bg-white shadow" aria-label="Növbəti poster">→</button>
     </div>
   </div>
 
@@ -1122,28 +1120,6 @@
     document.getElementById('mobile-drawer').classList.remove('open');
     document.getElementById('mobile-overlay').classList.remove('open');
   }
-
-  const campaignCarousel = document.querySelector('.campaignSwiper');
-  const campaignTrack = campaignCarousel.querySelector('.swiper-wrapper');
-  const campaignSlides = Array.from(campaignTrack.children);
-  // Keep enough slides in the loop for both side previews on wider screens.
-  for (let repeat = 0; repeat < 2; repeat++) {
-    campaignSlides.forEach(slide => campaignTrack.appendChild(slide.cloneNode(true)));
-  }
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  new Swiper(campaignCarousel, {
-    initialSlide: 1,
-    slidesPerView: 'auto',
-    centeredSlides: true,
-    loop: true,
-    grabCursor: true,
-    effect: 'coverflow',
-    coverflowEffect: { rotate: 30, stretch: 24, depth: 70, slideShadows: false },
-    speed: reduceMotion ? 0 : 600,
-    autoplay: reduceMotion ? false : { delay: 5000, pauseOnMouseEnter: true },
-    navigation: { prevEl: ".campaign-prev", nextEl: ".campaign-next" },
-    a11y: { prevSlideMessage: "Əvvəlki poster", nextSlideMessage: "Növbəti poster" },
-  });
 
   var bannerSwiper = new Swiper(".bannerSwiper", {
     loop: true,
