@@ -149,6 +149,16 @@
       .hood-spec-grid { grid-auto-flow:row; grid-template-rows:none; }
       .spec-row { grid-template-columns:minmax(110px,.85fr) 1.15fr; gap:10px; }
     }
+
+    .product-offer[hidden]{display:none}
+    .product-offer{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:20px;background:#f21d43;color:#fff;border-radius:14px;padding:12px 16px;margin-bottom:24px}
+    .product-offer-tag{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:#fff;color:#f21d43;border-radius:12px;padding:12px 15px;font-size:16px;font-weight:600;white-space:nowrap}
+    .product-offer-label{text-align:right;font-size:16px}
+    .product-offer-units{display:flex;gap:12px}
+    .product-offer-unit{width:62px;height:62px;border-radius:50%;background:#fff;color:#333;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.4;font-size:14px;flex:none}
+    .product-offer-unit span{color:#909090}.product-offer-unit strong{font-variant-numeric:tabular-nums;font-size:16px}
+    @media(max-width:767px){.product-offer{grid-template-columns:1fr;gap:12px;padding:14px;margin-bottom:18px}.product-offer-tag{justify-self:start;padding:9px 12px;font-size:14px}.product-offer-label{text-align:left;font-size:14px}.product-offer-units{justify-content:space-between;gap:8px}.product-offer-unit{width:58px;height:58px}}
+
   </style>
     <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
     <link rel="icon" type="image/svg+xml" href="/img/essen-favicon.svg">
@@ -342,6 +352,25 @@
       if (Number(item.oldPrice) > Number(item.price) && Number(item.oldPrice) > 0) return '-' + Math.round((1 - Number(item.price) / Number(item.oldPrice)) * 100) + '%';
       return '';
     }
+
+    let productOfferInterval;
+    async function loadProductTimedOffer(productId) {
+      clearInterval(productOfferInterval);
+      const card=document.getElementById('productTimedOffer');if(!card)return;
+      try {
+        const response=await fetch('/api/home-sections/timed',{cache:'no-store'});if(!response.ok)return;
+        const campaign=await response.json();
+        if(!card.isConnected || !campaign?.active || !campaign.products.some(p=>Number(p.id)===Number(productId)))return;
+        const end=Date.parse(campaign.endsAt),offset=Date.parse(campaign.serverNow)-Date.now();
+        if(!Number.isFinite(end)||!Number.isFinite(offset))return;
+        card.innerHTML='<span class="product-offer-tag"><i class="fa-solid fa-tag" aria-hidden="true"></i> Xüsusi təklif</span><strong class="product-offer-label">Bitməsinə qalan vaxt:</strong><div class="product-offer-units"></div>';
+        const area=card.querySelector('.product-offer-units'),values=[];
+        for(const label of ['Gün','Saat','Dəq.','San.']){const unit=document.createElement('div');unit.className='product-offer-unit';const name=document.createElement('span'),number=document.createElement('strong');name.textContent=label;number.textContent='00';unit.append(name,number);area.append(unit);values.push(number);}
+        function tick(){const total=Math.max(0,Math.floor((end-Date.now()-offset)/1000));[Math.floor(total/86400),Math.floor(total/3600)%24,Math.floor(total/60)%60,total%60].forEach((value,i)=>values[i].textContent=String(value).padStart(2,'0'));card.hidden=total===0;if(!total)clearInterval(productOfferInterval);}
+        tick();productOfferInterval=setInterval(tick,1000);
+      }catch{card.hidden=true;}
+    }
+
     function render(item) {
       const images = imageList(item);
       const specs = specEntries(item).filter(([key]) => key.trim().toLowerCase() !== 'sku');
@@ -367,6 +396,7 @@
       addCrumb(item.name);
       const productHighlights = view.querySelector('#productHighlights');
       view.innerHTML = `
+        <section id="productTimedOffer" class="product-offer" aria-label="Xüsusi təklifin bitməsinə qalan vaxt" hidden></section>
         <div class="product-layout">
           <section class="card gallery" aria-label="Məhsul qalereyası">
             <div class="thumbs" id="thumbs"></div>
@@ -392,6 +422,7 @@
           </section>
         </div>
         ${specs.length ? `<section class="card spec-card"><h2>Xüsusiyyətlər</h2><div class="spec-grid ${applianceSpecification(item) ? 'appliance-spec-grid' : isWashingMachineProduct(item) ? 'washer-spec-grid' : isFridgeProduct(item) ? 'fridge-spec-grid' : isVacuumProduct(item) ? 'vacuum-spec-grid' : isHoodProduct(item) ? 'hood-spec-grid' : isFreezerProduct(item) ? 'freezer-spec-grid' : ''}" id="specGrid" style="--appliance-rows:${applianceSpecification(item)?.rows || 1}"></div></section>` : ''}`;
+      loadProductTimedOffer(item.id);
       if (productHighlights) view.querySelector('.product-layout').after(productHighlights);
       setText('crumbName', item.name);
       setText('productName', item.name);
@@ -482,3 +513,4 @@
 <script src="/categories.js"></script><script src="/phone-auth.js?v=20260928-no-email-1"></script><script src="/store-header.js?v=20260909-2"></script>
 </body>
 </html>
+
