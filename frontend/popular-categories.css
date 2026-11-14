@@ -1,5 +1,5 @@
 #popularCategories[hidden]{display:none}
-#popularCategories{background:#e8222e;margin:32px 0;padding:38px 0 42px}
+#popularCategories{background:#e8222e;margin:32px 0 56px;padding:38px 0 42px}
 #popularCategories .popular-category-inner{max-width:1280px;margin:auto;padding:0 24px}
 #popularCategories h2{color:#fff;font-size:26px;line-height:1.4;font-weight:700;border-left:4px solid #fff;padding:4px 0 4px 16px;margin:0 0 28px}
 .popular-category-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px}
@@ -9,6 +9,6 @@
 .popular-category-card:hover{transform:translateY(-3px);box-shadow:0 8px 22px #9e0e2430}
 .popular-category-card:focus-visible{outline:3px solid #181818;outline-offset:4px}
 @media(max-width:1023px){.popular-category-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:700px){#popularCategories{padding:26px 0;margin:24px 0}#popularCategories h2{font-size:22px;margin-bottom:22px}.popular-category-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.popular-category-card{min-height:168px;padding:14px 10px}.popular-category-card img{height:100px}.popular-category-card span{font-size:13px}}
+@media(max-width:700px){#popularCategories{padding:26px 0;margin:24px 0 40px}#popularCategories h2{font-size:22px;margin-bottom:22px}.popular-category-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.popular-category-card{min-height:168px;padding:14px 10px}.popular-category-card img{height:100px}.popular-category-card span{font-size:13px}}
 @media(max-width:480px){#popularCategories .popular-category-inner{padding:0 16px}.popular-category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(prefers-reduced-motion:reduce){.popular-category-card{transition:none}.popular-category-card:hover{transform:none}}
