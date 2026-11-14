@@ -41,4 +41,14 @@ test('popular category permissions, image validation, ordering and reversible re
   assert.equal((await request('/999','PATCH',card)).status,404);
   assert.equal((await request('/'+id,'PATCH',{...card,resetImage:'true'})).data.image,'/img/hob.png');
   assert.equal((await fetch(base+'/'+id+'/image')).status,404);
+  assert.equal((await request('/'+id+'/image','PATCH',{resetImage:'true'},null)).status,401);
+  assert.equal((await request('/'+id+'/image','PATCH',{resetImage:'true'},'user')).status,403);
+  assert.equal((await request('/'+id+'/image','PATCH',{})).status,400);
+  const photoOnly=new FormData();photoOnly.set('imageFile',new Blob([png],{type:'image/png'}),'replacement.png');
+  photoOnly.set('name','Must not overwrite card details');photoOnly.set('position','999');
+  const photoSaved=await request('/'+id+'/image','PATCH',photoOnly);
+  assert.equal(photoSaved.status,200);assert.equal(photoSaved.data.name,card.name);assert.equal(photoSaved.data.position,1);assert.equal(photoSaved.data.active,true);
+  assert.equal(photoSaved.data.image,`/api/popular-categories/${id}/image`);
+  const autoPhoto=await request('/'+id+'/image','PATCH',{resetImage:'true'});
+  assert.equal(autoPhoto.status,200);assert.equal(autoPhoto.data.image,'/img/hob.png');assert.equal(autoPhoto.data.name,card.name);
 });

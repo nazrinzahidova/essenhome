@@ -7,15 +7,15 @@
   view.innerHTML=`<div class="popular-admin-header"><div><h2>Populyar kateqoriyalar</h2><p>Ana səhifədə görünən kartları idarə edin. Kartı çıxarmaq məhsulları və kataloq kateqoriyasını silmir.</p></div><div><a class="btn-ghost" href="/#popularCategories" target="_blank" rel="noopener">Saytda bax</a><button class="btn-primary" id="addPopularCategory" type="button">+ Kateqoriya əlavə et</button></div></div>
     <p id="popularCategoryStatus" role="status" aria-live="polite"></p><div class="popular-admin-table"><table><thead><tr><th>Şəkil</th><th>Kateqoriya</th><th>Sıra</th><th>Status</th><th>Əməliyyatlar</th></tr></thead><tbody></tbody></table></div>
     <dialog id="popularCategoryDialog" aria-labelledby="popularCategoryDialogTitle"><form id="popularCategoryForm"><h2 id="popularCategoryDialogTitle">Kateqoriya əlavə et</h2><fieldset><div class="popular-admin-fields">
-      <label>Əsas kateqoriya<select name="category" required></select></label><label>Alt kateqoriya<select name="subcategory"></select></label>
-      <label>Kartda görünən ad<input name="name" maxlength="160" required></label><label>Göstərilmə sırası<input name="position" type="number" min="0" max="100000" step="1" required><small>Kiçik rəqəm daha əvvəl görünür.</small></label>
-      <label class="popular-admin-wide">Şəkil (istəyə bağlı)<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPG və ya WebP · maksimum 2 MB. Şəkil seçməsəniz kateqoriyadakı məhsulun şəkli istifadə olunur.</small></label>
+      <label class="popular-admin-detail">Əsas kateqoriya<select name="category" required></select></label><label class="popular-admin-detail">Alt kateqoriya<select name="subcategory"></select></label>
+      <label class="popular-admin-detail">Kartda görünən ad<input name="name" maxlength="160" required></label><label class="popular-admin-detail">Göstərilmə sırası<input name="position" type="number" min="0" max="100000" step="1" required><small>Kiçik rəqəm daha əvvəl görünür.</small></label>
+      <div class="popular-admin-wide popular-image-upload"><label>Yeni şəkil<input name="imageFile" type="file" accept="image/png,image/jpeg,image/webp" hidden></label><button type="button" class="btn-primary" id="choosePopularCategoryImage">Kompüterdən şəkil seç</button><span id="popularCategoryImageName">Şəkil seçilməyib</span><small>PNG, JPG və ya WebP · maksimum 2 MB. Yeni şəkil seçib “Yadda saxla” düyməsini basın.</small></div>
       <div class="popular-admin-preview"><img id="popularCategoryPreview" alt="Kartın şəkli"><label><input name="resetImage" type="checkbox"> Məhsul şəklini avtomatik seç</label></div>
-      <label class="popular-admin-check"><input name="active" type="checkbox" checked> Ana səhifədə göstər</label>
+      <label class="popular-admin-check popular-admin-detail"><input name="active" type="checkbox" checked> Ana səhifədə göstər</label>
     </div></fieldset><p id="popularCategoryFormStatus" role="alert"></p><div class="popular-admin-actions"><button class="btn-ghost" type="button" id="cancelPopularCategory">Ləğv et</button><button class="btn-primary" type="submit">Yadda saxla</button></div></form></dialog>`;
   const form=view.querySelector('form'),dialog=view.querySelector('dialog'),body=view.querySelector('tbody');
   const status=view.querySelector('#popularCategoryStatus'),formStatus=view.querySelector('#popularCategoryFormStatus'),preview=view.querySelector('#popularCategoryPreview');
-  let rows=[],editing=null,busy=false,generation=0,previewUrl=null;
+  let rows=[],editing=null,busy=false,generation=0,previewUrl=null,imageOnly=false;
   const choices=new Map();
   function addChoice(category,subcategory='') {if(!category)return;if(!choices.has(category))choices.set(category,new Set());if(subcategory)choices.get(category).add(subcategory);}
   if(typeof ADMIN_CATEGORY_TREE!=='undefined')for(const [category,groups] of Object.entries(ADMIN_CATEGORY_TREE)) {
@@ -43,7 +43,8 @@
   function render() {
     body.replaceChildren();
     for(const row of rows) {
-      const tr=el('tr'),imageCell=el('td'),image=el('img');image.src=row.image||'/img/popular-categories/category.svg';image.alt='';imageCell.append(image);
+      const tr=el('tr'),imageCell=el('td'),image=el('img');image.src=row.image||'/img/popular-categories/category.svg';image.alt='';
+      const changeImage=el('button','Şəkli dəyiş');changeImage.type='button';changeImage.className='popular-change-image';changeImage.onclick=()=>openForm(row,true);imageCell.append(image,changeImage);
       const nameCell=el('td'),name=el('strong',row.name),path=el('small',row.category+(row.subcategory?' / '+row.subcategory:''));nameCell.append(name,path);
       const actions=el('td'),edit=el('button','Redaktə et'),toggle=el('button',row.active?'Bölmədən çıxar':'Yenidən göstər');edit.type=toggle.type='button';edit.className=toggle.className='btn-ghost';
       edit.onclick=()=>openForm(row);
@@ -62,22 +63,25 @@
     catch(error){status.textContent=error.message;}
   }
   function releasePreview(){if(previewUrl){URL.revokeObjectURL(previewUrl);previewUrl=null;}}
-  function openForm(row) {
-    if(busy)return;editing=row?.id||null;form.reset();formStatus.textContent='';releasePreview();updateChoices();
+  function openForm(row,onlyImage=false) {
+    if(busy)return;editing=row?.id||null;imageOnly=onlyImage&&!!row;dialog.classList.toggle('popular-image-only',imageOnly);form.reset();formStatus.textContent='';releasePreview();updateChoices();
     form.elements.category.value=row?.category||'';subcategories(row?.subcategory||'');
     form.elements.name.value=row?.name||'';form.elements.position.value=row?.position??(rows.length?Math.min(100000,Math.max(...rows.map(r=>r.position))+1):0);
     form.elements.active.checked=row?.active??true;preview.src=row?.image||'/img/popular-categories/category.svg';
-    view.querySelector('#popularCategoryDialogTitle').textContent=row?'Kateqoriyanı redaktə et':'Kateqoriya əlavə et';dialog.showModal();
+    view.querySelector('#popularCategoryImageName').textContent='Şəkil seçilməyib';
+    view.querySelector('#popularCategoryDialogTitle').textContent=imageOnly?row.name+' — şəkli dəyiş':row?'Kateqoriyanı redaktə et':'Kateqoriya əlavə et';dialog.showModal();
   }
   form.elements.category.onchange=()=>{subcategories();form.elements.name.value=form.elements.category.value;};
   form.elements.subcategory.onchange=()=>{form.elements.name.value=form.elements.subcategory.value||form.elements.category.value;};
-  form.elements.imageFile.onchange=()=>{releasePreview();const file=form.elements.imageFile.files[0];if(file){previewUrl=URL.createObjectURL(file);preview.src=previewUrl;form.elements.resetImage.checked=false;}};
+  view.querySelector('#choosePopularCategoryImage').onclick=()=>form.elements.imageFile.click();
+  form.elements.imageFile.onchange=()=>{releasePreview();const file=form.elements.imageFile.files[0];view.querySelector('#popularCategoryImageName').textContent=file?.name||'Şəkil seçilməyib';if(file){previewUrl=URL.createObjectURL(file);preview.src=previewUrl;form.elements.resetImage.checked=false;}};
   form.onsubmit=async event=>{
     event.preventDefault();if(busy||!form.reportValidity())return;
     const file=form.elements.imageFile.files[0];if(file&&file.size>2*1024*1024){formStatus.textContent='Şəkil maksimum 2 MB olmalıdır.';return;}
-    const data=new FormData(form);data.set('active',String(form.elements.active.checked));data.set('resetImage',String(form.elements.resetImage.checked));if(!file)data.delete('imageFile');
+    if(imageOnly&&!file&&!form.elements.resetImage.checked){formStatus.textContent='Yeni şəkil seçin və ya avtomatik məhsul şəklini işarələyin.';return;}
+    const data=imageOnly?new FormData():new FormData(form);if(imageOnly&&file)data.set('imageFile',file);if(!imageOnly)data.set('active',String(form.elements.active.checked));data.set('resetImage',String(form.elements.resetImage.checked));if(!file)data.delete('imageFile');
     const current=generation;setBusy(true);formStatus.textContent='Saxlanılır…';
-    try {await request(editing?'/'+editing:'',{method:editing?'PATCH':'POST',body:data});if(current!==generation)return;dialog.close();releasePreview();await load();showToast('Populyar kateqoriya saxlanıldı.');}
+    try {await request(editing?'/'+editing+(imageOnly?'/image':''):'',{method:editing?'PATCH':'POST',body:data});if(current!==generation)return;dialog.close();releasePreview();await load();showToast(imageOnly?'Kateqoriyanın şəkli yeniləndi.':'Populyar kateqoriya saxlanıldı.');}
     catch(error){formStatus.textContent=error.message;}finally{setBusy(false);}
   };
   view.querySelector('#addPopularCategory').onclick=()=>openForm();

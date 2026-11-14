@@ -33,6 +33,15 @@ function createPopularCategoriesRouter(db) {
     next();
   });
   const form=(req,res,next)=>upload(req,res,error=>error?res.status(400).json({message:'PNG, JPG və ya WebP şəkli seçin (maksimum 2 MB).'}):next());
+  function imageData(file) {
+    if(!file)return {};
+    const b=file.buffer;let imageMime;
+    if(b.length>8&&b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))imageMime='image/png';
+    else if(b.length>3&&b[0]===255&&b[1]===216&&b[2]===255)imageMime='image/jpeg';
+    else if(b.length>12&&b.toString('ascii',0,4)==='RIFF'&&b.toString('ascii',8,12)==='WEBP')imageMime='image/webp';
+    else throw Error('PNG, JPG və ya WebP şəkli seçin.');
+    return {imageData:b,imageMime};
+  }
   function validate(req,res,next) {
     try {
       const data={};
@@ -45,14 +54,7 @@ function createPopularCategoriesRouter(db) {
       data.active=req.body.active==='true';
       data.position=Number(req.body.position);
       if(!/^\d+$/.test(req.body.position)||!Number.isInteger(data.position)||data.position<0||data.position>100000)throw Error('Sıra 0–100000 arası olmalıdır.');
-      if(req.file) {
-        const b=req.file.buffer;
-        if(b.length>8&&b.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))data.imageMime='image/png';
-        else if(b.length>3&&b[0]===255&&b[1]===216&&b[2]===255)data.imageMime='image/jpeg';
-        else if(b.length>12&&b.toString('ascii',0,4)==='RIFF'&&b.toString('ascii',8,12)==='WEBP')data.imageMime='image/webp';
-        else throw Error('PNG, JPG və ya WebP şəkli seçin.');
-        data.imageData=b;
-      }
+      Object.assign(data,imageData(req.file));
       req.cardData=data; next();
     } catch(error) { res.status(400).json({message:error.message}); }
   }
@@ -60,6 +62,21 @@ function createPopularCategoriesRouter(db) {
     const product=await db.product.findFirst({where:{category:data.category,...(data.subcategory?{subcategory:data.subcategory}:{})},orderBy:[{stock:'desc'},{id:'desc'}],include:{images:{select:IMAGE_SELECT,orderBy:[{position:'asc'},{id:'asc'}]}}});
     return serializeProduct(product)?.image || '/img/popular-categories/category.svg';
   }
+  router.patch('/:id/image',form,(req,res,next)=>{
+    try {
+      if(!req.file&&req.body?.resetImage!=='true')throw Error('Yeni şəkil seçin və ya avtomatik məhsul şəklini işarələyin.');
+      req.newImageData=imageData(req.file);next();
+    } catch(error){res.status(400).json({message:error.message});}
+  },run(async(req,res)=>{
+    const id=Number(req.params.id);
+    let data;
+    if(req.file)data={...req.newImageData,image:`/api/popular-categories/${id}/image`};
+    else {
+      const card=await db.popularCategory.findUniqueOrThrow({where:{id},select:{category:true,subcategory:true}});
+      data={image:await automaticImage(card),imageData:null,imageMime:null};
+    }
+    res.json(serialize(await db.popularCategory.update({where:{id},data,select:fields})));
+  }));
   router.post('/',form,validate,run(async (req,res) => {
     const saved=await db.$transaction(async tx=>{
       const row=await tx.popularCategory.create({data:{...req.cardData,image:await automaticImage(req.cardData)},select:fields});
