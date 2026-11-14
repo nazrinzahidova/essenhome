@@ -96,3 +96,28 @@ async function openHomeMembership(productId) {
     });
   } catch (error) { options.textContent = error.message; }
 }
+
+
+// Timed offer catalogue uses the existing product membership and order system.
+(()=>{
+ const tabs=document.querySelector('.admin-tabs'),tab=document.createElement('button');tab.className='admin-tab';tab.id='timedOffersTab';tab.textContent='Taymer kataloqu';tabs.append(tab);
+ const view=document.createElement('section');view.id='timedOffersView';view.style.display='none';
+ view.innerHTML=`<div class="panel-header"><h2>Taymer kataloqu</h2><button type="button" id="timedReload" class="btn-ghost">Yenilə</button></div><p>Slayderlə brendlər arasında görünür. Məhsulları “Məhsullar” siyahısında yanındakı taymer düyməsi ilə əlavə edib çıxara bilərsiniz.</p><form id="timedForm" style="display:flex;gap:16px;align-items:end;flex-wrap:wrap;margin:24px 0"><label>Kampaniyanın adı<input id="timedName" required maxlength="120" style="display:block;padding:10px;border:1px solid #ddd;border-radius:8px"></label><label>Bitmə vaxtı (Bakı vaxtı)<input id="timedEnd" type="datetime-local" required step="60" style="display:block;padding:10px;border:1px solid #ddd;border-radius:8px"></label><label><input type="checkbox" id="timedActive"> Aktiv</label><button class="btn-accent">Yadda saxla</button></form><p id="timedMessage" role="status"></p><div style="display:flex;gap:12px;margin:20px 0;flex-wrap:wrap"><button type="button" id="timedAddProducts" class="btn-accent">+ Məhsul seç</button><button type="button" id="timedOrder" class="btn-ghost">Məhsulların sırası</button><a href="/catalog.html?timed=1" target="_blank" rel="noopener" class="btn-ghost">Kampaniya kataloqunu aç ↗</a></div><div id="timedProducts"></div>`;
+ tabs.after(view);let config=null,selected=new Set(),loading=null;
+ const $=id=>document.getElementById(id);
+ function message(value){$('timedMessage').textContent=value;}
+ function stamp(date){const parts=Object.fromEntries(new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Baku',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date(date)).map(p=>[p.type,p.value]));return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;}
+ async function load(){if(loading)return loading;loading=(async()=>{config=await homeRequest('/timed/admin');selected=new Set(config.products.map(p=>p.id));paint();return config;})();try{return await loading;}finally{loading=null;}}
+ function paint(){if(!config)return;$('timedName').value=config.name;$('timedEnd').value=stamp(config.endsAt);$('timedActive').checked=config.active;const list=$('timedProducts');list.replaceChildren();
+  if(!config.products.length)list.textContent='Hələ məhsul əlavə edilməyib. “Məhsul seç” düyməsi ilə başlayın.';
+  config.products.forEach(p=>{const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid #eee';const name=document.createElement('span');name.textContent=p.name+' · '+Number(p.price).toFixed(2)+' ₼';name.style.flex='1';const remove=document.createElement('button');remove.type='button';remove.className='btn-ghost';remove.textContent='Kataloqdan çıxar';remove.onclick=()=>toggle(p.id,remove);row.append(name,remove);list.append(row);});buttons();}
+ function buttons(){document.querySelectorAll('#prodTbody tr[data-id]').forEach(row=>{let b=row.querySelector('[data-timed-product]');if(!b){b=document.createElement('button');b.type='button';b.className='btn-ghost';b.dataset.timedProduct=row.dataset.id;b.style.cssText='font-size:11px;white-space:nowrap;padding:7px';b.onclick=()=>toggle(Number(row.dataset.id),b);row.querySelector('.row-actions')?.prepend(b);}const included=selected.has(Number(row.dataset.id));b.textContent=included?'◷ Taymerdən çıxar':'◷ Taymer kataloquna əlavə et';b.setAttribute('aria-pressed',String(included));b.disabled=!config;});}
+ async function toggle(id,b){b.disabled=true;try{await load();b.disabled=true;await homeRequest(`/products/${id}/${config.sectionId}`,'PUT',{selected:!selected.has(id)});await load();showToast('Taymer kataloqu saxlanıldı');}catch(e){showToast(e.message);message(e.message);}finally{b.disabled=false;}}
+ tab.addEventListener('click',async()=>{productsTab.click();$('productView').style.display='none';productsTab.classList.remove('active');tab.classList.add('active');view.style.display='block';message('Yüklənir…');try{await load();message('İlk 3 məhsul ana səhifədə, hamısı kampaniya kataloqunda görünür.');}catch(e){message(e.message);}});
+ tabs.addEventListener('click',event=>{if(event.target.closest('.admin-tab')!==tab){view.style.display='none';tab.classList.remove('active');}});
+ $('timedAddProducts').onclick=()=>productsTab.click();$('timedReload').onclick=()=>load().catch(e=>message(e.message));$('timedOrder').onclick=()=>config&&openProductOrder(config.sectionId,config.name);
+ $('timedForm').onsubmit=async e=>{e.preventDefault();const button=e.target.querySelector('button');button.disabled=true;try{config=await homeRequest('/timed','PATCH',{name:$('timedName').value,endsAt:$('timedEnd').value+':00+04:00',active:$('timedActive').checked});paint();message('Saxlanıldı. Bitmə vaxtı Bakı saatı ilə göstərilir.');}catch(error){message(error.message);}finally{button.disabled=false;}};
+ new MutationObserver(()=>buttons()).observe($('prodTbody'),{childList:true});
+ window.addEventListener('essen:admin-session',()=>{config=null;selected.clear();load().catch(()=>{});});
+ if(getToken())load().catch(()=>{});
+})();

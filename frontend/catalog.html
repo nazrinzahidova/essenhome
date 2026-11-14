@@ -271,6 +271,7 @@
     const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
     const API = '';
     const params = new URLSearchParams(window.location.search);
+    const timedCatalog = params.get('timed') === '1';
     const selectedLeader=Object.hasOwn(EssenSalesCategories.definitions,params.get('leader'))?params.get('leader'):'';
     const selectedCategory = params.get('category') || '';
     const requestedSubcategory = params.get('subcategory') || '';
@@ -285,6 +286,7 @@
 
     function catalogUrl(category = '', subcategory = '', search = '') {
       const query = new URLSearchParams();
+      if (timedCatalog) query.set('timed', '1');
       if (category) query.set('category', category);
       if (subcategory) query.set('subcategory', subcategory);
       if (search) query.set('search', search);
@@ -304,9 +306,9 @@
     function renderCategories() {
       const categoryList = document.getElementById('categoryList');
       const allLink = document.createElement('a');
-      allLink.href = 'catalog.html';
+      allLink.href = timedCatalog ? 'catalog.html?timed=1' : 'catalog.html';
       allLink.className = `category-link block px-4 py-3 border-b border-gray-100 hover:bg-red-50 hover:text-red-600 ${!selectedCategory ? 'active' : ''}`;
-      allLink.textContent = 'Bütün məhsullar';
+      allLink.textContent = timedCatalog ? 'Bütün kampaniya məhsulları' : 'Bütün məhsullar';
       categoryList.appendChild(allLink);
 
       Object.keys(ADMIN_CATEGORY_TREE).forEach(category => {
@@ -405,9 +407,9 @@
       const heading = document.getElementById('catalogTitle');
       const title = essenCatalog ? heading.textContent : (selectedLeader ? EssenSalesCategories.definitions[selectedLeader].label : '') || (selectedBrand ? selectedBrand + ' — ' : '') + (categoryDisplayName(selectedSubcategory || selectedCategory) ||
         (searchQuery ? `"${searchQuery}" üçün nəticələr` : 'Bütün məhsullar'));
-      heading.textContent = title;
+      heading.textContent = timedCatalog ? 'Sərfəli Cümə — ' + title : title;
       document.getElementById('breadcrumbCurrent').textContent = title;
-      if (!essenCatalog) document.title = `${title} — Essen Home`;
+      if (!essenCatalog) document.title = `${heading.textContent} — Essen Home`;
       document.getElementById('catalogSearch').value = searchQuery;
       document.getElementById('clearFilter').classList.toggle('hidden', !selectedLeader && !selectedCategory && !selectedSubcategory && !searchQuery && !selectedBrand);
     }
@@ -775,9 +777,10 @@
       if (searchQuery) query.set('search', searchQuery);
 
       try {
-        const response = await fetch(`${API}/api/products?${query.toString()}`);
+        const response = await fetch(timedCatalog ? '/api/home-sections/timed' : `${API}/api/products?${query.toString()}`, {cache:'no-store'});
         if (!response.ok) throw new Error('Məhsullar yüklənmədi');
-        const products = filteredProducts(await visibleCatalogProducts(await response.json()));
+        const payload = await response.json();
+        const products = filteredProducts(timedCatalog ? (payload.products || []) : await visibleCatalogProducts(payload));
         catalogProducts = products;
         document.getElementById('loadingState').classList.add('hidden');
         renderSmartphoneFilters(products);
@@ -1240,3 +1243,4 @@
 
 </body>
 </html>
+

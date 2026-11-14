@@ -749,6 +749,8 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 my-6 flex flex-col gap-6 w-full">
 
+  <section id="timedOffers" hidden aria-label="Sərfəli Cümə kampaniyası"></section>
+
   <div class="bg-white rounded-2xl border border-gray-200 p-4">
     <div id="trackWrapper" class="overflow-hidden select-none" style="cursor:grab;">
       <div id="track" class="carousel-track"></div>
@@ -1395,7 +1397,7 @@ function productTopBadge(product) {
     if (!response.ok) throw new Error('Bölmələr yüklənmədi');
     const sections = await response.json();
     for (const section of sections) {
-      if (!section.products.length) continue;
+      if (section.timedOffer || !section.products.length) continue;
       const block = document.createElement('section');
       block.style.marginBottom = '28px';
       const title = document.createElement('h2');
@@ -2189,6 +2191,37 @@ openLoginModal.addEventListener("click", function() {
   }, true);
 })();
 </script>
+<style>
+#timedOffers[hidden]{display:none}#timedOffers{width:100%;min-width:0;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:20px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;color:#303030}#timedOffers h2{font-size:20px;font-weight:700;margin:0 0 14px}.timed-products{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.timed-product{position:relative;display:flex;align-items:center;gap:12px;padding:8px 16px;text-decoration:none;color:inherit;min-width:0;border-right:1px solid #eee}.timed-product:first-child{padding-left:0}.timed-product img{width:90px;height:115px;object-fit:contain;flex:none}.timed-product-copy{min-width:0}.timed-product h3{font-size:14px;font-weight:600;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin:0 0 12px}.timed-product del{display:block;font-size:13px;color:#999;font-weight:600}.timed-product strong{display:block;color:#e8222e;font-size:20px;white-space:nowrap}.timed-discount{position:absolute;left:6px;top:0;background:#e8222e;color:#fff;padding:3px 6px;border-radius:6px;font-size:11px;font-weight:600}.timed-clock-title,.timed-all{display:block;background:#faf9f9;border-radius:12px;padding:9px 12px;font-size:12px;font-weight:500}.timed-clock-title i{color:#e8222e;margin-right:8px}.timed-units{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:12px 0}.timed-unit{position:relative;text-align:center;background:#faf9f9;border-radius:12px;padding:8px 2px}.timed-unit:not(:last-child):after{content:':';position:absolute;right:-9px;top:10px;color:#e8222e;font-size:26px;font-weight:600}.timed-unit strong{display:block;font-size:28px;line-height:1.3;font-variant-numeric:tabular-nums}.timed-unit span{font-size:12px;color:#999}.timed-all{text-align:center;color:#111;text-decoration:none;font-size:14px}.timed-all:hover{background:#fff0f1;color:#e8222e}.timed-empty{padding:24px 0;color:#777;font-size:14px}
+@media(max-width:1100px){#timedOffers{grid-template-columns:minmax(0,1fr) 270px}.timed-products{grid-template-columns:repeat(2,minmax(0,1fr))}.timed-product:nth-child(3){display:none}.timed-product{padding:8px}.timed-product img{width:75px}}@media(max-width:767px){#timedOffers{grid-template-columns:1fr;padding:16px;gap:16px}.timed-products{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px}.timed-product,.timed-product:nth-child(3){display:flex;flex:0 0 85%;scroll-snap-align:start;padding:8px 14px 8px 0}.timed-product img{width:90px}.timed-clock{border-top:1px solid #eee;padding-top:14px}.timed-units{gap:16px}.timed-unit:not(:last-child):after{right:-11px}.timed-clock-title{text-align:center}}
+</style>
+<script>
+(()=>{
+ const host=document.getElementById('timedOffers');if(!host)return;
+ const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
+ let interval;
+ async function load(){try{
+  const response=await fetch('/api/home-sections/timed',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();
+  if(!data?.active){host.hidden=true;return;}
+  const deadline=Date.parse(data.endsAt),offset=Date.parse(data.serverNow)-Date.now();if(!Number.isFinite(deadline)||!Number.isFinite(offset))return;
+  host.replaceChildren();const offers=el('div'),title=el('h2',data.name);offers.append(title);const row=el('div',undefined,'timed-products');
+  for(const p of data.products.slice(0,3)){
+   const a=el('a',undefined,'timed-product');a.href='/product.html?id='+encodeURIComponent(p.id);const img=el('img');img.src=p.image||p.images?.[0]?.url||'';img.alt=p.name;img.loading='lazy';
+   const copy=el('div',undefined,'timed-product-copy');copy.append(el('h3',p.name));const price=Number(p.price),old=Number(p.oldPrice);
+   if(old>price){copy.append(el('del',old.toFixed(2)+' ₼'));a.append(el('span','-'+Math.round((old-price)/old*100)+'%','timed-discount'));}copy.append(el('strong',price.toFixed(2)+' ₼'));a.append(img,copy);row.append(a);
+  }
+  if(!data.products.length)row.append(el('p','Yeni kampaniya təklifləri tezliklə burada.','timed-empty'));offers.append(row);
+  const clock=el('div',undefined,'timed-clock'),label=el('div',undefined,'timed-clock-title'),icon=el('i',undefined,'fa-regular fa-calendar');icon.setAttribute('aria-hidden','true');label.append(icon,document.createTextNode('Təklif bitməsinə qalan vaxt:'));clock.append(label);
+  const units=el('div',undefined,'timed-units'),values=[];for(const word of ['Gün','Saat','Dəq.','San.']){const unit=el('div',undefined,'timed-unit'),value=el('strong','00');unit.append(value,el('span',word));values.push(value);units.append(unit);}clock.append(units);
+  const all=el('a','Bütün təklifləri gör','timed-all');all.href='/catalog.html?timed=1';clock.append(all);host.append(offers,clock);host.hidden=false;
+  function tick(){const total=Math.max(0,Math.floor((deadline-Date.now()-offset)/1000));[Math.floor(total/86400),Math.floor(total/3600)%24,Math.floor(total/60)%60,total%60].forEach((n,i)=>values[i].textContent=String(n).padStart(2,'0'));if(!total){host.hidden=true;clearInterval(interval);}}
+  clearInterval(interval);tick();interval=setInterval(tick,1000);
+ }catch{host.hidden=true;}}
+ load();document.addEventListener('visibilitychange',()=>{if(!document.hidden)load();});
+})();
+</script>
+
 </body>
 </html>
+
 
