@@ -1,0 +1,44 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const express=require('express'),jwt=require('jsonwebtoken');
+const {createPopularCategoriesRouter}=require('../routes/popularCategories');
+const {createPopularCategoriesTestDb}=require('./helpers/popularCategoriesDb');
+
+test('popular category permissions, image validation, ordering and reversible removal',async t=>{
+  process.env.JWT_SECRET='popular-categories-isolated-http-test';
+  const db=createPopularCategoriesTestDb([],[{id:1,category:'Mətbəx texnikası',subcategory:'Bişirmə panelləri',image:'/img/hob.png',images:[]}]);
+  const app=express();app.use(express.json());app.use('/api/popular-categories',createPopularCategoriesRouter(db));
+  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.on('listening',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const base=`http://127.0.0.1:${server.address().port}/api/popular-categories`;
+  const token=role=>jwt.sign({id:1,role},process.env.JWT_SECRET);
+  const request=async(path='',method='GET',body,role='admin')=>{
+    const multipart=body instanceof FormData;
+    const res=await fetch(base+path,{method,headers:{...(role?{Authorization:'Bearer '+token(role)}:{}),...(!multipart&&body?{'Content-Type':'application/json'}:{})},...(body?{body:multipart?body:JSON.stringify(body)}:{})});
+    return {status:res.status,headers:res.headers,data:await res.json().catch(()=>null)};
+  };
+  const card={name:'Bişirmə panelləri',category:'Mətbəx texnikası',subcategory:'Bişirmə panelləri',active:'true',position:'1'};
+  assert.equal((await request('/admin','GET',null,null)).status,401);
+  assert.equal((await request('','POST',card,'user')).status,403);
+  assert.equal((await request('','POST',card,null)).status,401);
+  for(const invalid of [{...card,name:''},{...card,position:'-1'},{...card,active:'yes'},{...card,category:'x'.repeat(161)}])assert.equal((await request('','POST',invalid)).status,400);
+  const created=await request('','POST',card);assert.equal(created.status,201);assert.equal(created.data.image,'/img/hob.png');
+  const id=created.data.id;assert.equal((await request('','POST',card)).status,409);
+  assert.equal((await request('','GET',null,null)).data[0].url,'/catalog.html?'+new URLSearchParams({category:card.category,subcategory:card.subcategory}));
+  const malformed=new FormData();for(const [key,value]of Object.entries(card))malformed.set(key,value);malformed.set('imageFile',new Blob(['<svg onload=alert(1)>'],{type:'image/png'}),'bad.png');
+  assert.equal((await request('/'+id,'PATCH',malformed)).status,400);
+  const upload=new FormData();for(const [key,value]of Object.entries(card))upload.set(key,value);
+  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+yJqkAAAAASUVORK5CYII=','base64');
+  upload.set('imageFile',new Blob([png],{type:'image/png'}),'card.png');
+  assert.equal((await request('/'+id,'PATCH',upload)).status,200);
+  const image=await fetch(base+'/'+id+'/image');assert.equal(image.status,200);assert.equal(image.headers.get('content-type'),'image/png');assert.deepEqual(Buffer.from(await image.arrayBuffer()),png);
+  const publicCard=(await request('','GET',null,null)).data[0];assert.equal(publicCard.image,`/api/popular-categories/${id}/image`);assert.equal('imageData' in publicCard,false);
+  assert.equal((await request('/'+id+'/visibility','PATCH',{active:false})).status,200);assert.deepEqual((await request('','GET',null,null)).data,[]);
+  assert.equal((await request('/admin')).data.length,1,'Removed cards remain recoverable');
+  assert.equal((await request('/'+id+'/visibility','PATCH',{active:true})).status,200);
+  await request('','POST',{...card,name:'Soyuducular',subcategory:'Soyuducular',position:'0'});
+  assert.deepEqual((await request()).data.map(row=>row.name),['Soyuducular','Bişirmə panelləri']);
+  assert.equal((await request('/999','PATCH',card)).status,404);
+  assert.equal((await request('/'+id,'PATCH',{...card,resetImage:'true'})).data.image,'/img/hob.png');
+  assert.equal((await fetch(base+'/'+id+'/image')).status,404);
+});

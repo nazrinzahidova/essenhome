@@ -1,0 +1,27 @@
+#popularCategoriesView[hidden]{display:none}
+#popularCategoriesView{padding:8px 0 28px}
+.popular-admin-header{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.popular-admin-header h2,#popularCategoryDialog h2{font-size:22px;margin:0 0 8px}
+.popular-admin-header p{color:#69717d;max-width:650px;line-height:1.5;margin:0 0 12px}
+.popular-admin-header>div:last-child{display:flex;gap:12px;flex-wrap:wrap}
+#popularCategoryStatus{padding:12px 0;color:#535d6a}
+.popular-admin-table{overflow-x:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px}
+.popular-admin-table table{width:100%;border-collapse:collapse;text-align:left}
+.popular-admin-table td,.popular-admin-table th{padding:14px 16px;border-bottom:1px solid #eee;white-space:nowrap}
+.popular-admin-table th{font-size:13px;background:#fafafa}
+.popular-admin-table img{width:70px;height:60px;object-fit:contain}
+.popular-admin-table small{display:block;color:#777;margin-top:6px}
+.popular-admin-table button{margin:4px}
+#popularCategoryDialog{width:min(720px,calc(100% - 32px));max-height:90vh;padding:26px;border:0;border-radius:16px;overflow:auto}
+#popularCategoryDialog::backdrop{background:#0007}
+#popularCategoryDialog fieldset{border:0;padding:0;margin:20px 0}
+.popular-admin-fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.popular-admin-fields label{display:grid;gap:7px;font-size:14px}
+.popular-admin-fields input:not([type=checkbox]),.popular-admin-fields select{width:100%;padding:11px;border:1px solid #d7dbe1;border-radius:8px;background:#fff;font:inherit;min-width:0}
+.popular-admin-fields small{color:#69717d;line-height:1.5}
+.popular-admin-wide,.popular-admin-preview{grid-column:1/-1}
+.popular-admin-preview{display:flex;align-items:center;gap:20px}.popular-admin-preview img{width:90px;height:75px;object-fit:contain}
+.popular-admin-fields .popular-admin-check,.popular-admin-preview label{display:flex;align-items:center;gap:10px}
+.popular-admin-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+#popularCategoryFormStatus{color:#b91c1c}
+@media(max-width:600px){.popular-admin-fields{grid-template-columns:1fr}.popular-admin-table td,.popular-admin-table th{padding:10px}#popularCategoryDialog{padding:20px}}

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "Bişirmə panelləri",
+    "category": "Mətbəx texnikası",
+    "subcategory": "Bişirmə panelləri",
+    "image": "/api/product-images/651"
+  },
+  {
+    "name": "Tozsoranlar",
+    "category": "Ev texnikası",
+    "subcategory": "Tozsoranlar",
+    "image": "/api/product-images/617"
+  },
+  {
+    "name": "Televizorlar",
+    "category": "TV, audio və foto",
+    "subcategory": "TV brend üzrə",
+    "image": "/api/product-images/593"
+  },
+  {
+    "name": "Smartfonlar",
+    "category": "Smartfonlar və aksesuarlar",
+    "subcategory": "Smartfonlar",
+    "image": "/api/product-images/652"
+  },
+  {
+    "name": "Soyuducular",
+    "category": "Mətbəx texnikası",
+    "subcategory": "Soyuducular",
+    "image": "/api/product-images/643"
+  },
+  {
+    "name": "Paltaryuyan maşınlar",
+    "category": "Ev texnikası",
+    "subcategory": "Paltaryuyan maşınlar",
+    "image": "/api/product-images/597"
+  },
+  {
+    "name": "Qabyuyan maşınlar",
+    "category": "Mətbəx texnikası",
+    "subcategory": "Qabyuyan maşınlar",
+    "image": "/img/popular-categories/dishwasher.svg"
+  },
+  {
+    "name": "Kondisionerlər",
+    "category": "Yay sərinliyi",
+    "subcategory": "Kondisionerlər",
+    "image": "/api/product-images/603"
+  },
+  {
+    "name": "Notbuklar",
+    "category": "Notbuklar, PK, planşetlər",
+    "subcategory": "Notbuklar",
+    "image": "/api/product-images/299"
+  },
+  {
+    "name": "Qəhvə aparatları",
+    "category": "Coffee",
+    "subcategory": "Qəhvəbişirənlər",
+    "image": "/api/product-images/611"
+  },
+  {
+    "name": "Dərin dondurucular",
+    "category": "Mətbəx texnikası",
+    "subcategory": "Dondurucular",
+    "image": "/img/popular-categories/freezer.svg"
+  },
+  {
+    "name": "Quraşdırılan sobalar",
+    "category": "Mətbəx texnikası",
+    "subcategory": "Quraşdırılan sobalar",
+    "image": "/img/popular-categories/oven.svg"
+  }
+]

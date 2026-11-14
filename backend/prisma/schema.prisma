@@ -364,3 +364,17 @@ model QrCampaignMigration {
   checksum String
   appliedAt DateTime @default(now()) @db.Timestamp(3)
 }
+
+model PopularCategory {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(160)
+  category String @db.VarChar(160)
+  subcategory String @default("") @db.VarChar(160)
+  image String?
+  imageData Bytes?
+  imageMime String?
+  position Int @default(1000)
+  active Boolean @default(true)
+  @@unique([category, subcategory])
+  @@index([active, position, id])
+}
