@@ -23,6 +23,9 @@
 .popular-admin-preview{display:flex;align-items:center;gap:20px}.popular-admin-preview img{width:90px;height:75px;object-fit:contain}
 .popular-admin-fields .popular-admin-check,.popular-admin-preview label{display:flex;align-items:center;gap:10px}
 .popular-admin-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+.popular-admin-actions button{width:auto;min-width:110px;white-space:nowrap}
+.popular-admin-fields input[type=checkbox]{width:18px;height:18px;margin:0;flex:0 0 18px}
+.popular-admin-preview label{font-size:14px;line-height:1.5;text-transform:none;letter-spacing:normal;font-weight:400}
 #popularCategoryFormStatus{color:#b91c1c}
 .popular-admin-table .popular-change-image{display:block;margin:7px 0 0;border:1px solid #e8222e;border-radius:7px;background:#fff;color:#cf1521;font-family:inherit;font-size:12px;font-weight:600;padding:7px 10px;cursor:pointer}
 .popular-admin-table .popular-change-image:hover{background:#fff0f1}
