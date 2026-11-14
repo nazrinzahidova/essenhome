@@ -74,6 +74,9 @@
       background: #fff;
     }
     #hero-swiper-wrap .swiper-slide img { object-fit: contain; }
+    #hero-swiper-wrap .campaign-wide { width: 100%; aspect-ratio: auto; }
+    #hero-swiper-wrap .campaign-wide.swiper-slide-active { transform: none !important; }
+    #hero-swiper-wrap .campaign-single-active .swiper-slide:not(.swiper-slide-active) { visibility: hidden; }
 
     .carousel-track { display: flex; gap: 12px; will-change: transform; }
     .brand-card { width: 80px; height: 80px; flex-shrink: 0; }
@@ -712,6 +715,7 @@
   <div class="w-full lg:w-[700px] h-[280px] sm:h-[380px] lg:h-[550px] border border-gray-300 rounded-2xl shrink-0 overflow-hidden" id="hero-swiper-wrap">
     <div class="swiper campaignSwiper" aria-label="Kampaniya posterləri">
       <div class="swiper-wrapper">
+        <div class="swiper-slide campaign-wide"><img src="img/promotions/%D0%9D%D0%B5%D0%BE%D0%BD%D0%BE%D0%B2%D0%B0%D1%8F%20%D0%B0%D0%BA%D1%86%D0%B8%D1%8F%20Samsung_%20%D0%B2%D0%B0%D1%80%D0%BE%D1%87%D0%BD%D0%B0%D1%8F%20%D0%BF%D0%B0%D0%BD%D0%B5%D0%BB%D1%8C.png" alt="Sərfəli Cümə: Samsung bişirmə paneli — 349,99 ₼" width="1536" height="1024" draggable="false"></div>
         <div class="swiper-slide"><img src="img/promotions/tcl-55p7l-sale.png" alt="TCL 55P7L televizoru — 994,99 ₼" width="946" height="1662" draggable="false"></div>
         <div class="swiper-slide"><img src="img/promotions/lg-l9c1107pbgc-sale.png" alt="LG L9C1107PBGC.APBPMER paltaryuyan və qurudan maşın — 1499,99 ₼" width="934" height="1684" draggable="false"></div>
         <div class="swiper-slide"><img src="img/promotions/lenovo-ideapad-3-sale.png" alt="Lenovo IdeaPad 3 15ITL6 (82H801QYRK) notbuku — 999,99 ₼" width="946" height="1662" draggable="false"></div>
@@ -1131,8 +1135,12 @@
     campaignSlides.forEach(slide => campaignTrack.appendChild(slide.cloneNode(true)));
   }
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function updateCampaignView(swiper) {
+    campaignCarousel.classList.toggle('campaign-single-active', swiper.slides[swiper.activeIndex]?.classList.contains('campaign-wide'));
+  }
   new Swiper(campaignCarousel, {
-    initialSlide: 1,
+    on: { init: updateCampaignView, slideChange: updateCampaignView },
+    initialSlide: 0,
     slidesPerView: 'auto',
     centeredSlides: true,
     loop: true,
