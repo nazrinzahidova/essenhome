@@ -74,7 +74,9 @@
       background: #fff;
     }
     #hero-swiper-wrap .swiper-slide img { object-fit: contain; }
+    #hero-swiper-wrap:has(.campaign-single-active) { height: auto !important; aspect-ratio: 3 / 2; }
     #hero-swiper-wrap .campaign-wide { width: 100%; aspect-ratio: auto; }
+    #hero-swiper-wrap .campaign-wide img { object-fit: cover; }
     #hero-swiper-wrap .campaign-wide.swiper-slide-active { transform: none !important; }
     #hero-swiper-wrap .campaign-single-active .swiper-slide:not(.swiper-slide-active) { visibility: hidden; }
 
