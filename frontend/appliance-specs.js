@@ -1,6 +1,104 @@
 // Category fields share the existing Product.specs and Product.brand storage.
 const APPLIANCE_SPEC_SCHEMAS = [
 {
+  "category": "Elektrik sobalar",
+  "aliases": [
+    "Mini sobalar"
+  ],
+  "rows": 9,
+  "keys": [
+    "Brend",
+    "İstehsalçı ölkə",
+    "İç daxili örtük",
+    "Taymer",
+    "Rəng",
+    "Qapıdakı şüşələrin sayı",
+    "Tava",
+    "Həcm",
+    "Güc",
+    "Rejim sayı",
+    "Maksimal dərəcə",
+    "İdarəetmə növü",
+    "Ölçülər (H × E × D)",
+    "Xüsusiyyətlər",
+    "Displey",
+    "Zəmanət",
+    "Funksiyalar"
+  ],
+  "title": "Elektrik sobalar — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Ətraflı məlumat",
+      "fields": [
+        {
+          "key": "İstehsalçı ölkə",
+          "placeholder": "məs: Çin"
+        },
+        {
+          "key": "İç daxili örtük",
+          "placeholder": "məs: Paslanmayan polad"
+        },
+        {
+          "key": "Taymer",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Rəng",
+          "placeholder": "məs: Qara"
+        },
+        {
+          "key": "Qapıdakı şüşələrin sayı",
+          "placeholder": "məs: 1"
+        },
+        {
+          "key": "Tava",
+          "placeholder": "məs: 2 əd"
+        },
+        {
+          "key": "Həcm",
+          "placeholder": "məs: 48 lt"
+        },
+        {
+          "key": "Güc",
+          "placeholder": "məs: 1600 Vt"
+        },
+        {
+          "key": "Rejim sayı",
+          "placeholder": "məs: 6"
+        },
+        {
+          "key": "Maksimal dərəcə",
+          "placeholder": "məs: 250 °C"
+        },
+        {
+          "key": "İdarəetmə növü",
+          "placeholder": "məs: Mexaniki"
+        },
+        {
+          "key": "Ölçülər (H × E × D)",
+          "placeholder": "məs: 33 × 59 × 46.46 sm"
+        },
+        {
+          "key": "Xüsusiyyətlər",
+          "placeholder": "məs: Avtomatik sönmə"
+        },
+        {
+          "key": "Displey",
+          "placeholder": "məs: Var / Yox"
+        },
+        {
+          "key": "Zəmanət",
+          "placeholder": "məs: 24 ay"
+        },
+        {
+          "key": "Funksiyalar",
+          "placeholder": "məs: Konveksiya"
+        }
+      ]
+    }
+  ]
+},
+{
   "category": "Buxarlı ütülər",
   "rows": 10,
   "keys": [
@@ -2968,10 +3066,11 @@ const APPLIANCE_SPEC_SCHEMAS = [
 ];
 function applianceSpecification(item) {
  const category=String(item.subcategory || item.category || '').trim().toLocaleLowerCase('az');
- return APPLIANCE_SPEC_SCHEMAS.find(schema=>schema.category.toLocaleLowerCase('az')===category) || null;
+ return APPLIANCE_SPEC_SCHEMAS.find(schema=>[schema.category, ...(schema.aliases || [])].some(name=>name.toLocaleLowerCase('az')===category)) || null;
 }
 function applianceSpecEntries(item) {
  const schema=applianceSpecification(item); if(!schema) return [];
  const specs=item.specs && typeof item.specs==='object' && !Array.isArray(item.specs) ? item.specs : {};
  return schema.keys.map(key=>{const value=key==='Brend' ? (item.brand || specs[key]) : specs[key]; return [key,value!==null && value!==undefined && String(value).trim() ? value : '-'];});
 }
+
