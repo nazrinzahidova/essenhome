@@ -7,6 +7,48 @@
   cyrillicFont.textContent = [[300,'Cs16Ew-'],[400,'Ctr6Ew-'],[500,'CtZ6Ew-'],[600,'Cu170w-'],[700,'CuM70w-']].map(([weight,file]) => `@font-face{font-family:'Poppins';font-style:normal;font-weight:${weight};font-display:swap;src:url('https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgp${file}.ttf') format('truetype');unicode-range:U+0400-052F,U+2DE0-2DFF,U+A640-A69F;}`).join('\n');
   document.head.appendChild(cyrillicFont);
 const dictionary = {
+  "Populyar kateqoriyalar": "Популярные категории",
+  "Bişirmə panelləri": "Варочные панели",
+  "Bişirmə paneli": "Варочная панель",
+  "Kofe aparatları": "Кофемашины",
+  "Qəhvə aparatları": "Кофемашины",
+  "Dərin dondurucular": "Морозильные камеры",
+  "Təklif bitməsinə qalan vaxt:": "До окончания предложения:",
+  "Bitməsinə qalan vaxt:": "До окончания предложения:",
+  "Bütün təklifləri gör": "Все предложения",
+  "Qırmızı Cümə": "Красная пятница",
+  "Sərfəli Cümə": "Выгодная пятница",
+  "Qırmızı Cümə təklifləri": "Предложения Красной пятницы",
+  "Sərfəli Cümə kampaniyası": "Акция «Выгодная пятница»",
+  "Xüsusi təklif": "Специальное предложение",
+  "Dəq.": "мин.",
+  "San.": "сек.",
+  "Yeni kampaniya təklifləri tezliklə burada.": "Новые предложения скоро появятся здесь.",
+  "Əvvəlki təklif": "Предыдущее предложение",
+  "Növbəti təklif": "Следующее предложение",
+  "Korporativ əməkdaşlıq": "Корпоративное сотрудничество",
+  "ƏDV geri al": "Возврат НДС",
+  "Korporativ müştərilər üçün xüsusi şərtlər.": "Особые условия для корпоративных клиентов.",
+  "Topdan satışlar": "Оптовые продажи",
+  "Vakansiyalar": "Вакансии",
+  "Lider Brendlər": "Ведущие бренды",
+  "Elektronik Fürsətlər": "Предложения электроники",
+  "Soyuducu": "Холодильник",
+  "Buxarlı generator": "Парогенератор",
+  "Stasionar mikser": "Стационарный миксер",
+  "Saç üçün düzləşdirici daraq": "Расчёска-выпрямитель для волос",
+  "Şirəçəkən": "Соковыжималка",
+  "Air Fryer": "Аэрогриль",
+  "Qəhvəbişirən": "Кофеварка",
+  "Blender": "Блендер",
+  "Toster": "Тостер",
+  "Tozsoran": "Пылесос",
+  "Buxarlı ütü": "Паровой утюг",
+  "Paltaryuyan və qurudan maşın": "Стирально-сушильная машина",
+  "Notebook": "Ноутбук",
+  "kq": "кг",
+  "Məhsul kodu": "Код товара",
+  "Təkliflər": "Предложения",
         "Şəxsi məlumatlarım": "Мои данные",
   "Sifarişlərim": "Мои заказы",
   "Seçilmişlər": "Избранное",
@@ -1092,7 +1134,7 @@ if (el.closest(skip)) return;
   window.fetch = async (...args) => {
     const response = await fetchOriginal(...args);
     const url = new URL(args[0] instanceof Request ? args[0].url : args[0], location.href);
-    if (url.origin === location.origin && /^\/api\/(products|cart|favourites|compare)(?:\/|$)/.test(url.pathname) && response.ok && response.headers.get('content-type')?.includes('json')) {
+    if (url.origin === location.origin && /^\/api\/(products|cart|favourites|compare|home-sections|popular-categories)(?:\/|$)/.test(url.pathname) && response.ok && response.headers.get('content-type')?.includes('json')) {
       try { remember(await response.clone().json()); sessionStorage.setItem('essenRuProductText', JSON.stringify([...productText])); } catch { /* Preserve the original response on malformed JSON or unavailable storage. */ }
     }
     return response;
@@ -1114,3 +1156,4 @@ if (el.closest(skip)) return;
     } catch { /* Guest cart remains usable when the API is unavailable. */ }
   });
 })();
+
