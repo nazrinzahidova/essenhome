@@ -24,6 +24,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+    .home-product-row[data-home-carousel] { scroll-behavior:auto !important; overflow-anchor:none; scrollbar-width:none; }
+    .home-product-row[data-home-carousel]::-webkit-scrollbar { display:none; }
+    .home-product-row[data-home-carousel] > * { overflow-anchor:none; }
     .mobile-offer { display: none; }
     #hero-banner-wrap { display: flex; flex-direction: column; background: #fff; }
     #hero-banner-wrap .bannerSwiper { flex: 1; min-height: 0; height: auto; }
@@ -1394,7 +1397,45 @@ function productTopBadge(product) {
       });
   }
 
+  let homeCarouselStops = [];
+  function startHomeProductCarousel(row) {
+    row.dataset.homeCarousel = 'true';
+    row.setAttribute('aria-label', row.parentElement.querySelector('h2').textContent + ' məhsulları');
+    let frame, last=performance.now(), position=row.scrollLeft, written=row.scrollLeft, step=0, canMove=false, visible=false, hovered=false, touching=false, resumeAt=0;
+    const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+    function measure() {
+      const first=row.firstElementChild;
+      step=first ? first.getBoundingClientRect().width + (parseFloat(getComputedStyle(row).columnGap) || 0) : 0;
+      canMove=step>0 && row.scrollWidth-row.clientWidth>=step;
+      position=row.scrollLeft;written=position;
+    }
+    const resize=new ResizeObserver(measure);resize.observe(row);measure();
+    const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;},{threshold:0});intersection.observe(row);
+    row.addEventListener('pointerenter',event=>{if(event.pointerType==='mouse')hovered=true;});
+    row.addEventListener('pointerleave',()=>{hovered=false;});
+    row.addEventListener('pointerdown',()=>{touching=true;});
+    const release=()=>{touching=false;resumeAt=performance.now()+1800;};
+    window.addEventListener('pointerup',release);window.addEventListener('pointercancel',release);
+    row.addEventListener('wheel',()=>{resumeAt=performance.now()+1800;},{passive:true});
+    function stop(){cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();window.removeEventListener('pointerup',release);window.removeEventListener('pointercancel',release);}
+    function move(now) {
+      if(!row.isConnected){stop();return;}
+      const elapsed=Math.min(64,now-last);last=now;
+      const paused=!visible || document.hidden || reduced.matches || hovered || touching || now<resumeAt || row.contains(document.activeElement) || row.classList.contains('is-dragging');
+      if(paused || !canMove){position=row.scrollLeft;written=position;}
+      else {
+        if(Math.abs(row.scrollLeft-written)>2)position=row.scrollLeft;
+        position+=elapsed*0.028;
+        while(position>=step){row.append(row.firstElementChild);position-=step;}
+        row.scrollLeft=position;written=row.scrollLeft;
+      }
+      frame=requestAnimationFrame(move);
+    }
+    frame=requestAnimationFrame(move);return stop;
+  }
+
   async function loadHomeSections() {
+    homeCarouselStops.forEach(stop=>stop());homeCarouselStops=[];
     const host = document.getElementById('homeSections');
     host.replaceChildren();
     document.getElementById('productsTitle').hidden = true;
@@ -1414,6 +1455,7 @@ function productTopBadge(product) {
       row.className = 'home-product-row flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth pb-4';
       renderHomeProductCards(section.products, row);
       block.append(title, row); host.append(block);
+      homeCarouselStops.push(startHomeProductCarousel(row));
     }
     initFavButtons(); initCompareButtons();
   }
