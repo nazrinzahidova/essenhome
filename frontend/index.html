@@ -1399,15 +1399,16 @@ function productTopBadge(product) {
 
   let homeCarouselStops = [];
   function startHomeProductCarousel(row) {
-    row.dataset.homeCarousel = 'true';
-    row.setAttribute('aria-label', row.parentElement.querySelector('h2').textContent + ' məhsulları');
-    let frame, last=performance.now(), position=row.scrollLeft, written=row.scrollLeft, step=0, canMove=false, visible=false, hovered=false, touching=false, resumeAt=0;
+    row.dataset.homeCarousel='true';
+    row.setAttribute('aria-label',row.parentElement.querySelector('h2').textContent+' məhsulları');
+    let frame,position=row.scrollLeft,written=position,step=0,canMove=false,visible=false,hovered=false,touching=false,resumeAt=0;
+    let animating=false,started=0,from=0,nextAt=performance.now()+3000;
     const reduced=matchMedia('(prefers-reduced-motion: reduce)');
-    function measure() {
+    function measure(){
       const first=row.firstElementChild;
-      step=first ? first.getBoundingClientRect().width + (parseFloat(getComputedStyle(row).columnGap) || 0) : 0;
-      canMove=step>0 && row.scrollWidth-row.clientWidth>=step;
-      position=row.scrollLeft;written=position;
+      step=first?first.getBoundingClientRect().width+(parseFloat(getComputedStyle(row).columnGap)||0):0;
+      canMove=step>0&&row.scrollWidth-row.clientWidth>=step;
+      position=row.scrollLeft;written=position;animating=false;nextAt=performance.now()+3000;
     }
     const resize=new ResizeObserver(measure);resize.observe(row);measure();
     const intersection=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;},{threshold:0});intersection.observe(row);
@@ -1418,16 +1419,22 @@ function productTopBadge(product) {
     window.addEventListener('pointerup',release);window.addEventListener('pointercancel',release);
     row.addEventListener('wheel',()=>{resumeAt=performance.now()+1800;},{passive:true});
     function stop(){cancelAnimationFrame(frame);resize.disconnect();intersection.disconnect();window.removeEventListener('pointerup',release);window.removeEventListener('pointercancel',release);}
-    function move(now) {
+    function move(now){
       if(!row.isConnected){stop();return;}
-      const elapsed=Math.min(64,now-last);last=now;
-      const paused=!visible || document.hidden || reduced.matches || hovered || touching || now<resumeAt || row.contains(document.activeElement) || row.classList.contains('is-dragging');
-      if(paused || !canMove){position=row.scrollLeft;written=position;}
-      else {
-        if(Math.abs(row.scrollLeft-written)>2)position=row.scrollLeft;
-        position+=elapsed*0.028;
-        while(position>=step){row.append(row.firstElementChild);position-=step;}
-        row.scrollLeft=position;written=row.scrollLeft;
+      const paused=!visible||document.hidden||reduced.matches||hovered||touching||now<resumeAt||row.contains(document.activeElement)||row.classList.contains('is-dragging');
+      if(paused||!canMove){position=row.scrollLeft;written=position;animating=false;nextAt=now+3000;}
+      else{
+        if(Math.abs(row.scrollLeft-written)>2){position=row.scrollLeft;animating=false;nextAt=now+3000;}
+        if(!animating&&now>=nextAt){
+          while(position>=step){row.append(row.firstElementChild);position-=step;}
+          row.scrollLeft=position;written=row.scrollLeft;from=position;started=now;animating=true;
+        }
+        if(animating){
+          const progress=Math.min(1,(now-started)/1000);
+          const ease=1-Math.pow(1-progress,3);
+          position=from+(step-from)*ease;row.scrollLeft=position;written=row.scrollLeft;
+          if(progress===1){row.append(row.firstElementChild);position=0;row.scrollLeft=0;written=0;animating=false;nextAt=now+3000;}
+        }
       }
       frame=requestAnimationFrame(move);
     }
