@@ -7,6 +7,8 @@
   cyrillicFont.textContent = [[300,'Cs16Ew-'],[400,'Ctr6Ew-'],[500,'CtZ6Ew-'],[600,'Cu170w-'],[700,'CuM70w-']].map(([weight,file]) => `@font-face{font-family:'Poppins';font-style:normal;font-weight:${weight};font-display:swap;src:url('https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgp${file}.ttf') format('truetype');unicode-range:U+0400-052F,U+2DE0-2DFF,U+A640-A69F;}`).join('\n');
   document.head.appendChild(cyrillicFont);
 const dictionary = {
+  "Model kodu": "Код модели",
+  "WhatsApp ilə sifariş et": "Заказать через WhatsApp",
   "Açıq mavi": "Светло-голубой",
   "Misir": "Египет",
   "Polikarbonat": "Поликарбонат",
