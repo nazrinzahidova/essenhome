@@ -24,3 +24,6 @@ function initCreditCalculator(price) {
   buttons.forEach(button => button.addEventListener('click', () => update(Number(button.dataset.creditMonths))));
   update(12);
 }
+
+if (typeof module === 'object' && module.exports) module.exports = { calculateCredit };
+
