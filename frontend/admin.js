@@ -625,7 +625,7 @@ function populateSubcategorySelect(mainCategory, selectedSub) {
       return;
     }
     html += `<optgroup label="${escapeHtml(g.group)}">`;
-    html += g.items.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+    html += [...new Set(g.items)].map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item === 'Mini sobalar' ? 'Elektrik sobalar' : item)}</option>`).join('');
     html += `</optgroup>`;
   });
   subSel.innerHTML = html;
@@ -658,7 +658,7 @@ function placementSubcategoryOptions(category, selected = '') {
   const items = groups.flatMap(group => group.items || []);
   return '<option value="">Alt-kateqoriya seçin...</option>' +
     items.map(name =>
-      `<option value="${escapeAttr(name)}" ${name === selected ? 'selected' : ''}>${escapeHtml(name)}</option>`
+      `<option value="${escapeAttr(name)}" ${name === selected ? 'selected' : ''}>${escapeHtml(name === 'Mini sobalar' ? 'Elektrik sobalar' : name)}</option>`
     ).join('');
 }
 
