@@ -93,7 +93,7 @@ const CATEGORY_TREE = {
   ],
 
   "Ev texnikası": [
-    { group: "Ev üçün böyük texnika", items: ["Paltaryuyan maşınlar","Quruducu maşınlar"] },
+    { group: "Ev üçün böyük texnika", items: ["Paltaryuyan maşınlar","Quruducu maşınlar","İran sobaları"] },
     { group: "İqlim texnikası", items: ["Kondisionerlər","Ventilyatorlar","Kombi sistemləri","Hava təmizləyicilər və nəmləndiricilər","Qaz kolonkaları","Elektrikli su qızdırıcıları","Qızdırıcı ventilyatorlar"] },
     { group: "Ev üçün kiçik texnika", items: ["Tozsoranlar","Robot tozsoranlar","Vertikal tozsoranlar","Yuyucu tozsoranlar","Tiftik təmizləyən","Ütülər","Buxarlı generatorlar","Buxarlı ütülər","Buxarlı təmizləyicilər","Tikiş maşınları","Robot pəncərə təmizləyənlər"] },
     { group: "Məişət məhsulları", items: ["Paltar üçün quruducu","Ütü masaları"] },
