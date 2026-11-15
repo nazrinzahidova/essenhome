@@ -281,3 +281,7 @@ const ADMIN_CATEGORY_TREE = {
 };
 
 const ADMIN_CATEGORY_LIST = Object.keys(ADMIN_CATEGORY_TREE);
+
+// The search discovery panel uses the same canonical category links as the catalogue.
+(() => { if (window.essenSearchDiscoveryLoading) return; window.essenSearchDiscoveryLoading=true; const script=document.createElement('script'); script.src='/search-discovery.js?v=20261115-1'; document.head.append(script); })();
+
