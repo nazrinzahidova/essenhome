@@ -7,6 +7,61 @@
   cyrillicFont.textContent = [[300,'Cs16Ew-'],[400,'Ctr6Ew-'],[500,'CtZ6Ew-'],[600,'Cu170w-'],[700,'CuM70w-']].map(([weight,file]) => `@font-face{font-family:'Poppins';font-style:normal;font-weight:${weight};font-display:swap;src:url('https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgp${file}.ttf') format('truetype');unicode-range:U+0400-052F,U+2DE0-2DFF,U+A640-A69F;}`).join('\n');
   document.head.appendChild(cyrillicFont);
 const dictionary = {
+  "Açıq mavi": "Светло-голубой",
+  "Misir": "Египет",
+  "Polikarbonat": "Поликарбонат",
+  "Birkameralı": "Однокамерный",
+  "İkikameralı": "Двухкамерный",
+  "Qaz": "Газ",
+  "Buz generatoru": "Льдогенератор",
+  "Kompressor tipi": "Тип компрессора",
+  "Gizli": "Скрытый",
+  "LED işıqlar": "Светодиодное освещение",
+  "Yuxarı": "Сверху",
+  "Yuxarıda": "Сверху",
+  "Davamlı buxar": "Постоянная подача пара",
+  "Maksimal təzyiq": "Максимальное давление",
+  "Vertikal buxarlanma": "Вертикальное отпаривание",
+  "Su qabının həcmi": "Объём резервуара для воды",
+  "Altlığın materialı": "Материал подошвы",
+  "Ölçülər (H × E × U)": "Размеры (В × Ш × Д)",
+  "İşə başlama indikatoru": "Индикатор готовности к работе",
+  "Damcılama əleyhinə sistem": "Противокапельная система",
+  "Buxarın püsgürmə sürəti": "Паровой удар",
+  "Özünü təmizləmə sistemi": "Система самоочистки",
+  "Buxarın ötürülmə sürəti": "Скорость подачи пара",
+  "Naqilin avtomatik yığılması": "Автоматическое сматывание шнура",
+  "Buxarın ötürülmə tənzimlənməsi": "Регулировка подачи пара",
+  "Ocaq sayı": "Количество конфорок",
+  "Elektroalışma": "Электроподжиг",
+  "WOK ocaq gözü": "WOK-конфорка",
+  "Qazın maksimal gücü": "Максимальная мощность газа",
+  "Ocağın qaz nəzarəti": "Газ-контроль конфорок",
+  "Ön sol ocağın gücü": "Мощность передней левой конфорки",
+  "Arxa sol ocağın gücü": "Мощность задней левой конфорки",
+  "Maksimal elektrik gücü": "Максимальная электрическая мощность",
+  "Ön sağ ocağın gücü": "Мощность передней правой конфорки",
+  "Arxa sağ ocağın gücü": "Мощность задней правой конфорки",
+  "Mərkəzi ocağın gücü": "Мощность центральной конфорки",
+  "Barmaqlıqların materialı": "Материал решёток",
+  "Çuğun": "Чугун",
+  "Bişirmə səthinin materialı": "Материал варочной поверхности",
+  "İdarəetmə panelinin yerləşməsi": "Расположение панели управления",
+  "Quraşdırılma ölçüləri (E × D)": "Размеры для встраивания (Ш × Г)",
+  "Frontal": "Спереди",
+  "kadr/s": "кадр/с",
+  "q/dəq": "г/мин",
+  "sm": "см",
+  "Vt": "Вт",
+  "lt": "л",
+  "Black": "Чёрный",
+  "Silver": "Серебристый",
+  "Light Blue": "Светло-голубой",
+  "Dark Blue": "Тёмно-синий",
+  "Rose gold": "Розовое золото",
+  "Gray": "Серый",
+  "Red": "Красный",
+  "Ceramic": "Керамика",
   "Populyar kateqoriyalar": "Популярные категории",
   "Bişirmə panelləri": "Варочные панели",
   "Bişirmə paneli": "Варочная панель",
@@ -1085,7 +1140,21 @@ if (el.closest(skip)) return;
     }
     if (el.tagName === 'A') {
       const href = el.getAttribute('href');
-      if (href && /^\/(?:index|catalog|product|cart|favourites|compare|haqqimizda)\.html(?:[?#]|$)/.test(href)) el.setAttribute('href', '/ru' + href);
+      if (href) {
+        try {
+          const url = new URL(href, location.href);
+          if (url.origin === location.origin) {
+            const product = url.pathname.match(/^\/[a-z0-9-]+\/[a-z0-9-]+-([1-9]\d*)\/?$/);
+            if (product) {
+              url.pathname = '/ru/product.html';
+              url.searchParams.set('id', product[1]);
+            } else if (/^\/(?:index|catalog|product|cart|favourites|compare|haqqimizda)\.html$/.test(url.pathname)) {
+              url.pathname = '/ru' + url.pathname;
+            }
+            if (url.href !== new URL(href, location.href).href) el.setAttribute('href', url.href);
+          }
+        } catch { /* Leave external and special links intact. */ }
+      }
     }
   }
   function text(node) {
