@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/adminCheck');
 const policy = require('../../frontend/order-policy');
+const { calculateCredit } = require('../../frontend/credit-calculator');
 
 function applicationCode(row) { return String(row.number).padStart(6, '0'); }
 
@@ -34,6 +35,11 @@ function validate(body) {
   const totals = new Map();
   for (const item of value.items) totals.set(item.productId, (totals.get(item.productId) || 0) + item.quantity);
   if ([...totals.values()].some(qty => qty > 20)) throw new Error('Bir məhsuldan maksimum 20 ədəd seçilə bilər.');
+  if (body.financing !== undefined) {
+    const plan = body.financing;
+    if (!plan || typeof plan !== 'object' || ![3,6,9,12,15,18,24].includes(plan.months) || typeof plan.downPayment !== 'number' || !Number.isFinite(plan.downPayment) || plan.downPayment < 0 || Math.abs(plan.downPayment * 100 - Math.round(plan.downPayment * 100)) > 0.00001) throw new Error('Kredit müddəti və ilkin ödənişi düzgün seçin.');
+    value.financing = {months:plan.months, downPayment:plan.downPayment};
+  }
   return value;
 }
 
@@ -66,12 +72,18 @@ function createCreditOrdersRouter(db) {
       const items = input.items.map(i=>({...i,name:byId.get(i.productId).name,price:Number(byId.get(i.productId).price)}));
       const total = items.reduce((sum,i)=>sum+Math.round(i.price*100)*i.quantity,0)/100;
       if (total < policy.creditMinimum) return res.status(400).json({message:'Kredit müraciəti üçün məhsulların cəmi minimum 199.99 AZN olmalıdır.'});
+      const terms = input.financing || {months:12, downPayment:0};
+      if (terms.downPayment >= total) return res.status(400).json({message:'İlkin ödəniş məhsulların cəmindən aşağı olmalıdır.'});
+      const principal = Math.round((total - terms.downPayment) * 100) / 100;
+      const calculated = calculateCredit(principal, terms.months);
+      if (!calculated) return res.status(400).json({message:'Kredit məbləği düzgün deyil.'});
+      const financing = {creditMonths:terms.months, downPayment:terms.downPayment, creditPrincipal:principal, monthlyPayment:calculated.monthly, annualRate:calculated.annualRate};
       const {requestKey,firstName,lastName,fatherName,phone,fin,hasSima} = input;
       const saved = await db.$transaction(async tx => {
         const shippingFee = policy.shippingCost(total);
         const order = await tx.order.create({data:{userId:req.user.id,paymentMethod:'credit',deliveryDate:input.deliveryDate,address:input.address,
           shippingFee,total:Math.round((total+shippingFee)*100)/100,items:{create:items}},include:{items:true}});
-        return tx.creditApplication.create({data:{requestKey,requestHash,firstName,lastName,fatherName,phone,fin,hasSima,items,total,orderId:order.id}});
+        return tx.creditApplication.create({data:{requestKey,requestHash,firstName,lastName,fatherName,phone,fin,hasSima,items,total,...financing,orderId:order.id}});
       });
       res.status(201).json({id:saved.id,code:applicationCode(saved)});
     } catch(error) {
@@ -124,3 +136,4 @@ function createCreditOrdersRouter(db) {
   return router;
 }
 module.exports = {createCreditOrdersRouter,validate};
+

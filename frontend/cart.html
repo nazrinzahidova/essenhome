@@ -358,18 +358,28 @@
   <form id="orderCheckoutForm">
     <label class="order-field">Çatdırılma tarixi<input id="orderDeliveryDate" type="date" required></label>
     <label class="order-field">Çatdırılma ünvanı<textarea id="orderAddress" minlength="5" maxlength="500" autocomplete="street-address" required></textarea></label>
-  <div class="checkout-options">
-    <button type="submit" data-checkout-method="cash">Nağd (qapıda)</button>
-    <button type="submit" data-checkout-method="card">Nağdsız (qapıda)</button>
-    <button type="button" id="creditCheckoutOption" aria-describedby="creditMinimumNote">Kredit</button>
-    <p id="creditMinimumNote" hidden>Kredit üçün minimum məbləğ: 199.99 AZN.</p>
-  </div>
+  <div class="payment-types" role="group" aria-label="Ödəniş üsulu">
+      <label class="payment-type"><input type="radio" name="checkoutType" value="door" checked><span class="payment-icon" aria-hidden="true">₼</span><strong>Qapıda ödə</strong></label>
+      <label class="payment-type"><input type="radio" name="checkoutType" value="credit"><span class="payment-icon" aria-hidden="true">₼</span><strong>Hissə-hissə al</strong></label>
+    </div>
+    <div id="doorPaymentOptions" class="checkout-options">
+      <button type="submit" data-checkout-method="cash">Nağd (qapıda)</button>
+      <button type="submit" data-checkout-method="card">Kartla (qapıda)</button>
+    </div>
+    <section id="checkoutInstallments" hidden aria-label="Hissəli alış kalkulyatoru">
+      <label class="order-field" for="checkoutDownPayment">İlkin ödəniş məbləği (₼)<input id="checkoutDownPayment" type="number" inputmode="decimal" min="0" step="0.01" value="0"></label>
+      <div class="installment-box"><h3>Müddət seçin</h3><div id="checkoutCreditPlans" class="installment-plans"></div></div>
+      <p id="checkoutFinanceSummary" aria-live="polite"></p>
+      <p id="checkoutFinanceError" role="alert" hidden></p>
+      <button type="button" id="creditCheckoutOption" aria-describedby="creditMinimumNote">Kredit müraciətinə davam et</button>
+      <p id="creditMinimumNote" hidden>Kredit üçün minimum məbləğ: 199.99 AZN.</p>
+    </section>
   </form><p id="orderCheckoutMessage" role="status"></p><div id="orderCheckoutSuccess" hidden></div>
   <p><a href="/delivery-returns.html">Çatdırılma və qaytarma şərtləri</a></p>
 </dialog>
 <style>
   .order-field{display:grid;gap:6px;margin:14px 0;font-size:14px}.order-field input,.order-field textarea{width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;font:inherit}.order-field textarea{min-height:72px} #checkoutDialog form[hidden]{display:none}
-  #checkoutDialog { margin:auto; width:min(440px,calc(100% - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:28px 22px 22px; border:0; border-radius:18px; color:#171717; box-shadow:0 20px 70px #0003; }
+  #checkoutDialog { margin:auto; width:min(760px,calc(100% - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:28px 22px 22px; border:0; border-radius:18px; color:#171717; box-shadow:0 20px 70px #0003; }
   #checkoutDialog::backdrop { background:#0007; }
   #checkoutDialog h2 { font-size:19px; margin:0 30px 8px 0; }
   #checkoutDialog p { color:#6b7280; font-size:13px; margin:0 0 20px; }
@@ -379,6 +389,8 @@
   .checkout-options a:hover { border-color:#e8222e; background:#fff5f5; }
   .checkout-options a:focus-visible { outline:2px solid #e8222e; outline-offset:2px; }
   #checkoutButton:disabled { opacity:.6; cursor:wait; }
+
+  .payment-types{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}.payment-type{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:130px;padding:20px 30px;border:1px solid #333;border-radius:12px;cursor:pointer;text-align:center}.payment-type:has(input:checked){background:#333;color:#fff}.payment-type input{position:absolute;right:12px;top:12px;accent-color:#333;width:20px;height:20px}.payment-type:focus-within{outline:2px solid #e8222e;outline-offset:3px}.payment-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#eee;color:#333;font-size:30px}.installment-box{background:#f4f4f4;border-radius:14px;padding:20px}.installment-box h3{margin:0 0 16px;font-size:17px}.installment-plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.installment-plan{display:grid;gap:8px;border:2px solid transparent;border-radius:12px;background:#fff;padding:15px 10px;color:#333;font:inherit;text-align:left;cursor:pointer}.installment-plan[aria-pressed=true]{border-color:#e8222e;background:#fff5f5}.installment-plan span{text-align:center;color:#777;font-size:13px}.installment-plan b{text-align:center;font-size:17px}.installment-plan:disabled{opacity:.45;cursor:default}#checkoutDialog [hidden]{display:none!important}#checkoutFinanceSummary{margin:16px 0}#checkoutFinanceError{color:#b91c1c}#creditCheckoutOption{width:100%;padding:14px;background:#e8222e;color:white;border:0;border-radius:10px;font:600 15px inherit;cursor:pointer}#creditCheckoutOption:disabled{opacity:.5;cursor:not-allowed}@media(max-width:540px){.payment-types{gap:10px}.payment-type{padding:18px 8px;font-size:14px}.installment-plans{grid-template-columns:repeat(2,minmax(0,1fr))}.installment-box{padding:14px}}
 </style>
 <script>
   const API = '/api';
@@ -724,5 +736,6 @@
 </div>
   </div>
 
-<script src="/order-checkout.js?v=20260914-2"></script><script src="credit-checkout.js?v=20260914-1"></script></body>
+<script src="/credit-calculator.js?v=20261115-checkout"></script><script src="/order-checkout.js?v=20261115-installments"></script><script src="credit-checkout.js?v=20261115-installments"></script></body>
 </html>
+
