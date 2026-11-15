@@ -4,7 +4,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
   const freeThreshold = 199.99;
-  const shippingFee = 4.99;
+  const shippingFee = 0;
   const returnDays = 14;
   const creditMinimum = 199.99;
   const cutoffTime = '10:00:00+04:00';
