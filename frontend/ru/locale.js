@@ -7,6 +7,18 @@
   cyrillicFont.textContent = [[300,'Cs16Ew-'],[400,'Ctr6Ew-'],[500,'CtZ6Ew-'],[600,'Cu170w-'],[700,'CuM70w-']].map(([weight,file]) => `@font-face{font-family:'Poppins';font-style:normal;font-weight:${weight};font-display:swap;src:url('https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgp${file}.ttf') format('truetype');unicode-range:U+0400-052F,U+2DE0-2DFF,U+A640-A69F;}`).join('\n');
   document.head.appendChild(cyrillicFont);
 const dictionary = {
+  "Everest Group MMC Azərbaycanda kiçik məişət avadanlıqlarının topdan və pərakəndə satışı sahəsində fəaliyyət göstərən şirkətdir. Fəaliyyətimizin əsas məqsədi müştərilərimizə keyfiyyətli məhsullar, sərfəli qiymətlər və etibarlı xidmət təqdim etməkdir.": "Everest Group MMC занимается оптовой и розничной продажей мелкой бытовой техники в Азербайджане. Наша главная цель — предлагать покупателям качественные товары, доступные цены и надёжный сервис.",
+  "Şirkətimiz gündəlik həyatı daha rahat və funksional edən məişət avadanlıqlarının satışını həyata keçirir. Məhsul çeşidimizə mətbəx texnikaları, elektrik məişət avadanlıqları və ev istifadəsi üçün müxtəlif həllər daxildir. Müştərilərimizin ehtiyaclarını nəzərə alaraq, məhsul seçimində keyfiyyət, etibarlılıq və müasir tələblərə uyğunluğu əsas meyarlarımız hesab edirik.": "Мы продаём бытовую технику, которая делает повседневную жизнь удобнее. В ассортимент входят кухонная техника, электрические бытовые приборы и различные решения для дома. При выборе товаров мы учитываем потребности покупателей, качество, надёжность и соответствие современным требованиям.",
+  "Everest Group MMC fəaliyyətində müştəri məmnuniyyətini, dürüst əməkdaşlığı və peşəkar xidməti prioritet hesab edir. Təcrübəli komandamız hər bir müştəriyə fərdi yanaşaraq, onların ehtiyaclarına uyğun məhsul və xidmətlərin təqdim edilməsini təmin edir.": "Для Everest Group MMC важны удовлетворённость клиентов, честное сотрудничество и профессиональное обслуживание. Наша опытная команда находит индивидуальный подход к каждому покупателю и помогает подобрать подходящие товары и услуги.",
+  "Şirkətimizin pərakəndə satış istiqamətində növbəti addımı olaraq Essen Home mağazası fəaliyyətə başlamışdır. Xırdalan şəhərində yerləşən mağazamız müştərilərə məişət texnikası və ev üçün zəruri məhsulları bir məkanda təqdim etməklə rahat və keyfiyyətli alış-veriş təcrübəsi yaratmağı hədəfləyir.": "Следующим шагом в развитии розничных продаж стало открытие магазина Essen Home. Наш магазин в Хырдалане объединяет бытовую технику и необходимые товары для дома, чтобы сделать покупки удобными и приятными.",
+  "Biz daim inkişaf etməyə, məhsul çeşidimizi genişləndirməyə və müştərilərimizə daha yüksək xidmət standartları təqdim etməyə çalışırıq. Etibarlı tərəfdaşlıq, keyfiyyətli məhsul və peşəkar xidmət prinsipləri fəaliyyətimizin əsasını təşkil edir.": "Мы стремимся развиваться, расширять ассортимент и повышать качество обслуживания. В основе нашей работы — надёжное партнёрство, качественные товары и профессиональный сервис.",
+  "Everest Group MMC – Keyfiyyət, etibar və müştəri məmnuniyyəti.": "Everest Group MMC — качество, доверие и довольные клиенты.",
+  "← Ana səhifəyə qayıt": "← Вернуться на главную",
+  "Instagram-a keçid et ↗": "Перейти в Instagram ↗",
+  "WhatsApp-a keçid et": "Перейти в WhatsApp",
+  "© Essen Home. Bütün hüquqlar qorunur.": "© Essen Home. Все права защищены.",
+  "Səhifə naviqasiyası": "Навигация по странице",
+  "Satış bölmələri": "Отделы продаж",
   "Model kodu": "Код модели",
   "WhatsApp ilə sifariş et": "Заказать через WhatsApp",
   "Açıq mavi": "Светло-голубой",
@@ -1150,6 +1162,8 @@ if (el.closest(skip)) return;
             if (product) {
               url.pathname = '/ru/product.html';
               url.searchParams.set('id', product[1]);
+            } else if (url.pathname === '/') {
+              url.pathname = '/ru/';
             } else if (/^\/(?:index|catalog|product|cart|favourites|compare|haqqimizda)\.html$/.test(url.pathname)) {
               url.pathname = '/ru' + url.pathname;
             }
