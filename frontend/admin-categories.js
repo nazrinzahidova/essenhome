@@ -190,7 +190,7 @@ const ADMIN_CATEGORY_TREE = {
   ],
   "Ev texnikası": [{
       group: "Ev üçün böyük texnika",
-      items: ["Paltaryuyan maşınlar","Quruducu maşınlar",]
+      items: ["Paltaryuyan maşınlar","Quruducu maşınlar","İran sobaları",]
     },
     
     {
