@@ -8,6 +8,7 @@ async function migrateAnalytics(config=require('../backend/lib/dbConfig')()){
  await db.query(`CREATE TABLE IF NOT EXISTS "AnalyticsVisit" (id BIGSERIAL PRIMARY KEY,"visitorHash" VARCHAR(64) NOT NULL,"sessionHash" VARCHAR(64) NOT NULL,"productId" INTEGER,"createdAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)`);
  await db.query(`CREATE INDEX IF NOT EXISTS "AnalyticsVisit_createdAt_idx" ON "AnalyticsVisit" ("createdAt")`);
  await db.query(`CREATE INDEX IF NOT EXISTS "AnalyticsVisit_product_date_idx" ON "AnalyticsVisit" ("productId","createdAt")`);
+ await db.query(require('fs').readFileSync(require('path').join(__dirname,'../backend/prisma/migrations/20261115_commerce_analytics/migration.sql'),'utf8'));
  await db.query('COMMIT');console.log('Analytics storage ready.');
  }catch(error){await db.query('ROLLBACK');throw error;}finally{db.release();}}finally{await pool.end();}}
 module.exports={migrateAnalytics};if(require.main===module)migrateAnalytics().catch(error=>{console.error('Analytics migration failed:',error.code||error.name);process.exitCode=1;});

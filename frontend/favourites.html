@@ -211,6 +211,7 @@
 <link rel="stylesheet" href="/store-footer.css?v=20260909-1">
 <link rel="stylesheet" href="/account.css?v=20260910-2">
 <script defer src="/account.js?v=20260914-orders-1"></script>
+<script src="/analytics-events.js?v=20261115-commerce-1" defer></script>
 </head>
 <body>
 
@@ -382,7 +383,7 @@
     const token = getToken();
     if (token) {
       try {
-        await fetch(`${API}/cart`, {
+        const response = await fetch(`${API}/cart`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -390,6 +391,7 @@
           },
           body: JSON.stringify({ productId, quantity: 1 })
         });
+        if (!response.ok) throw Error('Cart request failed');
       } catch { alert('Xəta baş verdi'); return; }
     } else {
       const cart = JSON.parse(localStorage.getItem('essenCart') || '[]');
@@ -403,6 +405,7 @@
     }
 
     cartIds.add(productId);
+    window.EssenAnalytics?.track('add_to_cart', {productId:Number(productId),quantity:1});
     localStorage.setItem('essenCartChanged', String(Date.now()));
     updateCartBadge();
 

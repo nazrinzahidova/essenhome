@@ -109,6 +109,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <script src="stock-status.js?v=20260911-stock-delivery-1"></script>
 <link rel="stylesheet" href="/store-footer.css?v=20260909-1">
+<script src="/analytics-events.js?v=20261115-commerce-1" defer></script>
 </head>
 <body>
   <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -884,6 +885,7 @@
         }
 
         setCartButtonState(button, true);
+        window.EssenAnalytics?.track('add_to_cart', {productId:Number(id),quantity:1});
         localStorage.setItem('essenCartChanged', String(Date.now()));
         await updateCatalogCartCount();
       } catch {

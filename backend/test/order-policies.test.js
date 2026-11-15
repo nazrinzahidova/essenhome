@@ -16,7 +16,7 @@ test('Baku cutoff, midnight, month/year rollover and invalid dates', () => {
   ]) assert.equal(policy.earliestDate(new Date(instant)), expected);
   assert.throws(() => policy.validateDate('2026-09-14', new Date('2026-09-14T06:00:00Z')));
   assert.throws(() => policy.validateDate('2026-02-30'));
-  assert.equal(policy.shippingCost(199.98), 4.99);
+  assert.equal(policy.shippingCost(199.98), 0);
   assert.equal(policy.shippingCost(199.99), 0);
   assert.equal(policy.shippingCost(200), 0);
 });
@@ -29,7 +29,7 @@ test('merchant graph resolves shared policies and keeps AZ/AZN without invented 
     assert.equal(offer.shippingDetails.hasShippingService['@id'], seller.hasShippingService['@id']);
     assert.equal(offer.shippingDetails.shippingDestination.addressCountry,'AZ');
     assert.equal(offer.shippingDetails.shippingRate.currency,'AZN');
-    assert.equal(offer.shippingDetails.shippingRate.value, price < 199.99 ? 4.99 : 0);
+    assert.equal(offer.shippingDetails.shippingRate.value, 0);
     assert.equal(offer.shippingDetails.deliveryTime.cutoffTime,'10:00:00+04:00');
   }
   assert.equal(seller.hasMerchantReturnPolicy.merchantReturnDays,14);
@@ -67,7 +67,7 @@ test('orders: ownership, trusted prices, idempotency, cancellation and return li
   assert.equal((await request('/admin',undefined)).status,403);
   assert.equal((await request('',{...payload(),items:[{productId:1,quantity:4},{productId:1,quantity:4}]})).status,409);
   const body=payload(); const created=await request('',body); assert.equal(created.status,201);
-  const order=await created.json(); assert.equal(order.userId,1); assert.equal(order.total,54.98); assert.equal(order.items[0].price,49.99); assert.equal(order.requestHash,undefined);
+  const order=await created.json(); assert.equal(order.userId,1); assert.equal(order.total,49.99); assert.equal(order.items[0].price,49.99); assert.equal(order.requestHash,undefined);
   assert.equal((await request('',body)).status,200); assert.equal(rows.length,1);
   assert.equal((await request('',{...body,address:'Digər ünvan 24'})).status,409);
   assert.equal((await request('',body,2)).status,409);

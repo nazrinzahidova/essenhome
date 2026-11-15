@@ -82,6 +82,7 @@
     const button = document.getElementById('checkoutButton'); button.disabled = true;
     try {
       items = Array.isArray(snapshot) ? snapshot : await fetchCart();
+      window.EssenAnalytics?.beginCheckout(items);
       if (!localStorage.getItem('token')) {
         if (!items.length) return;
         pendingLogin = items;
@@ -138,6 +139,7 @@
         throw Error(data.message || 'Sifariş saxlanmadı. Yenidən cəhd edin.');
       }
       pending = null; savePending(); form.hidden = true; success.hidden = false;
+      window.EssenAnalytics?.checkoutComplete();
       message.textContent = `Sifariş №${data.id} saxlanıldı. Cəmi: ${Number(data.total).toFixed(2)} AZN.`;
       const orders = document.createElement('a'); orders.href = '/orders.html'; orders.textContent = 'Sifarişlərimə bax'; success.append(orders);
     } catch (error) { message.textContent = error.message === 'Failed to fetch' ? 'Bağlantı alınmadı. Eyni sifarişi təhlükəsiz təkrar yoxlamaq üçün yenidən basın.' : error.message; }

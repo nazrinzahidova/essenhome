@@ -2,6 +2,7 @@ const express=require('express');
 const crypto=require('node:crypto');
 const auth=require('../middleware/auth');
 const admin=require('../middleware/adminCheck');
+const {createEventHandler,loadCommerceReport}=require('../lib/commerceAnalytics');
 const timezone='Asia/Baku';
 function today(){const parts=Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:timezone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).map(p=>[p.type,p.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
 function validDate(value){return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(value)&&Number.isFinite(Date.parse(value))&&new Date(value+'T00:00:00Z').toISOString().slice(0,10)===value;}
@@ -30,20 +31,22 @@ function createAnalyticsMiddleware(db){return (req,res,next)=>{
   next();
 };}
 function createAnalyticsRouter(db){
-  const router=express.Router();router.use(auth,admin);
+  const router=express.Router();router.post('/events',createEventHandler(db));router.use(auth,admin);
   router.get('/',async(req,res)=>{
     res.set('Cache-Control','no-store');let range;
     try{range=period(req.query);}catch(error){return res.status(400).json({message:error.message});}
     const {from,to}=range,q=String(req.query.q||'').trim().slice(0,100),pattern='%'+q+'%',page=Math.min(100000,Math.max(1,parseInt(req.query.page,10)||1)),pageSize=20,offset=(page-1)*pageSize;
     try{
-      const [summary,daily,items,total,started]=await Promise.all([
+      const [summary,daily,items,total,started,commerce]=await Promise.all([
         db.$queryRaw`SELECT COUNT(DISTINCT "visitorHash")::int AS visitors,COUNT(DISTINCT "sessionHash")::int AS sessions,COUNT(*)::int AS "pageViews",COUNT("productId")::int AS "productViews" FROM "AnalyticsVisit" WHERE "createdAt">=(${from}::date::timestamp AT TIME ZONE 'Asia/Baku') AND "createdAt"<(((${to}::date)+1)::timestamp AT TIME ZONE 'Asia/Baku')`,
         db.$queryRaw`WITH days AS (SELECT generate_series(${from}::date,${to}::date,'1 day'::interval) AS day), stats AS (SELECT ("createdAt" AT TIME ZONE 'Asia/Baku')::date AS day,COUNT(DISTINCT "visitorHash")::int AS visitors,COUNT(*)::int AS "pageViews",COUNT("productId")::int AS "productViews" FROM "AnalyticsVisit" WHERE "createdAt">=(${from}::date::timestamp AT TIME ZONE 'Asia/Baku') AND "createdAt"<(((${to}::date)+1)::timestamp AT TIME ZONE 'Asia/Baku') GROUP BY 1) SELECT to_char(days.day,'YYYY-MM-DD') AS date,COALESCE(stats.visitors,0)::int AS visitors,COALESCE(stats."pageViews",0)::int AS "pageViews",COALESCE(stats."productViews",0)::int AS "productViews" FROM days LEFT JOIN stats ON stats.day=days.day::date ORDER BY days.day`,
         db.$queryRaw`WITH stats AS (SELECT "productId",COUNT(*)::int AS views,COUNT(DISTINCT "visitorHash")::int AS visitors FROM "AnalyticsVisit" WHERE "productId" IS NOT NULL AND "createdAt">=(${from}::date::timestamp AT TIME ZONE 'Asia/Baku') AND "createdAt"<(((${to}::date)+1)::timestamp AT TIME ZONE 'Asia/Baku') GROUP BY "productId") SELECT p.id,p.name,p.image,COALESCE(s.views,0)::int AS views,COALESCE(s.visitors,0)::int AS visitors FROM "Product" p LEFT JOIN stats s ON s."productId"=p.id WHERE (${q}='' OR p.name ILIKE ${pattern} OR p.brand ILIKE ${pattern}) ORDER BY COALESCE(s.views,0) DESC,COALESCE(s.visitors,0) DESC,p.id DESC LIMIT ${pageSize} OFFSET ${offset}`,
         db.product.count({where:q?{OR:[{name:{contains:q,mode:'insensitive'}},{brand:{contains:q,mode:'insensitive'}}]}:{}}),
-        db.$queryRaw`SELECT "createdAt" FROM "AnalyticsStart" WHERE id=1`
+        db.$queryRaw`SELECT "createdAt" FROM "AnalyticsStart" WHERE id=1`,
+        loadCommerceReport(db,from,to)
       ]);
-      res.json({period:range,summary:summary[0]||{visitors:0,sessions:0,pageViews:0,productViews:0},daily,products:{items,total,page,pageSize},startedAt:started[0]?.createdAt||null});
+      const productMetrics=new Map(commerce.products.map(item=>[item.productId,item]));
+      res.json({period:range,summary:summary[0]||{visitors:0,sessions:0,pageViews:0,productViews:0},daily,products:{items:items.map(item=>({...item,commerce:productMetrics.get(item.id)||{cartAdds:0,cartQuantity:0,whatsappClicks:0,orders:0,unitsSold:0,revenue:0}})),total,page,pageSize},startedAt:started[0]?.createdAt||null,commerce:{summary:commerce.summary,daily:commerce.daily,startedAt:commerce.startedAt}});
     }catch(error){console.error('Analytics report failed:',error.code||error.name);res.status(503).json({message:'Analitika yüklənmədi. Yenidən cəhd edin.'});}
   });return router;
 }
