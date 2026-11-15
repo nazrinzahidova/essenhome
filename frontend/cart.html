@@ -650,8 +650,8 @@
 
   function updateSummary(cart) {
     const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const isFree = subtotal >= FREE_THRESHOLD;
     const delivery = EssenOrderPolicy.shippingCost(subtotal);
+    const isFree = delivery === 0;
     const total = subtotal + delivery;
 
     document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' ₼';
@@ -663,7 +663,7 @@
       document.getElementById('free-note').style.display = 'flex';
       document.getElementById('threshold-note').style.display = 'none';
     } else {
-      costEl.textContent = '4.99 ₼'; costEl.style.color = '#6b7280';
+      costEl.textContent = delivery.toFixed(2) + ' ₼'; costEl.style.color = '#6b7280';
       document.getElementById('free-note').style.display = 'none';
       document.getElementById('threshold-note').style.display = 'flex';
     }
