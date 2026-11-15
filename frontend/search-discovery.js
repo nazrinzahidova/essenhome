@@ -12,13 +12,13 @@
     let active=null,data=null,fetching=null,fetchedAt=0;
     const originalControls=new Map(inputs.map(input=>[input,input.getAttribute('aria-controls')]));
     function hide(){panel.hidden=true;if(active){const old=originalControls.get(active);if(old)active.setAttribute('aria-controls',old);else active.removeAttribute('aria-controls');active.setAttribute('aria-expanded','false');}active=null;}
-    function position(){if(!active)return;const rect=active.getBoundingClientRect();if(rect.bottom<0||rect.top>window.innerHeight){hide();return;}const width=Math.min(880,window.innerWidth-24),left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12)),top=rect.bottom+8;panel.style.left=left+'px';panel.style.top=top+'px';panel.style.maxHeight=Math.max(100,window.innerHeight-top-12)+'px';}
+    function position(){if(!active)return;const rect=active.getBoundingClientRect(),bottom=(window.visualViewport?.height||window.innerHeight)+(window.visualViewport?.offsetTop||0);if(rect.bottom<0||rect.top>bottom){hide();return;}const width=Math.min(880,window.innerWidth-24),left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12)),top=rect.bottom+8;panel.style.left=left+'px';panel.style.top=top+'px';panel.style.maxHeight=Math.max(100,bottom-top-12)+'px';}
     const catalog=query=>(ru?'/ru/catalog.html':'/catalog.html')+'?'+new URLSearchParams(query);
     function render(){
       if(!active||active.value.trim())return hide();
       panel.replaceChildren();
       if(!data){panel.append(el('p',words.loading));panel.hidden=false;position();return;}
-      if(!data.terms.length&&!data.products.length&&!data.categories.length)return hide();
+      if(!data.terms.length&&!data.products.length&&!data.categories.length){panel.hidden=true;active.setAttribute('aria-expanded','false');return;}
       const main=el('div');main.className='search-discovery-main';
       if(data.terms.length){const section=el('div');section.append(el('h2',words.terms));const list=el('ul');list.className='search-terms';for(const term of data.terms){const row=el('li'),link=el('a');link.className='search-term';link.href=catalog({search:term.query});const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('fill','none');icon.setAttribute('stroke','currentColor');icon.setAttribute('stroke-width','2');icon.setAttribute('aria-hidden','true');icon.innerHTML='<circle cx="10.5" cy="10.5" r="7.5"/><path d="m16 16 5 5"/>';link.append(icon,el('span',translate(term.text)));row.append(link);list.append(row);}section.append(list);main.append(section);}
       if(data.products.length){const section=el('div');section.append(el('h2',words.products));const list=el('div');list.className='search-featured';for(const product of data.products){const link=el('a');link.href=ru?'/ru/product.html?id='+encodeURIComponent(product.id):product.url||'/product.html?id='+encodeURIComponent(product.id);const image=el('img');image.src=product.image||'/img/popular-categories/category.svg';image.alt='';image.loading='lazy';const name=el('strong',ru&&product.nameRu?product.nameRu:translate(product.name));link.append(image,name);if(Number(product.oldPrice)>Number(product.price))link.append(el('del',Number(product.oldPrice).toFixed(2)+' ₼'));link.append(el('b',Number(product.price).toFixed(2)+' ₼'));list.append(link);}section.append(list);main.append(section);}
@@ -31,7 +31,7 @@
     panel.addEventListener('keydown',event=>{if(event.key==='Escape'){const input=active;hide();input?.focus();hide();}});
     document.addEventListener('pointerdown',event=>{if(active&&!active.contains(event.target)&&!panel.contains(event.target))hide();});
     document.addEventListener('focusin',event=>{if(active&&event.target!==active&&!panel.contains(event.target))hide();});
-    window.addEventListener('resize',position);document.addEventListener('scroll',position,true);
+    window.addEventListener('resize',position);window.visualViewport?.addEventListener('resize',position);window.visualViewport?.addEventListener('scroll',position);document.addEventListener('scroll',position,true);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
