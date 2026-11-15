@@ -14,9 +14,13 @@ async function migratePopularCategories(config=require('../backend/lib/dbConfig'
       if(!existed)for(const [position,card] of require('./popular-category-seeds.json').entries()) {
         await db.query('INSERT INTO "PopularCategory" (name,category,subcategory,image,position) VALUES ($1,$2,$3,$4,$5)',[card.name,card.category,card.subcategory,card.image,position]);
       }
+      await db.query(`CREATE TABLE IF NOT EXISTS "SearchDiscovery" ("id" INTEGER PRIMARY KEY CHECK ("id"=1),"terms" JSONB NOT NULL DEFAULT '[]',"categories" JSONB NOT NULL DEFAULT '[]',"version" INTEGER NOT NULL DEFAULT 0)`);
+      await db.query(`INSERT INTO "SearchDiscovery" ("id") VALUES (1) ON CONFLICT ("id") DO NOTHING`);
+      await db.query(`CREATE TABLE IF NOT EXISTS "SearchDiscoveryProduct" ("productId" INTEGER PRIMARY KEY REFERENCES "Product"("id") ON DELETE CASCADE,"position" INTEGER NOT NULL DEFAULT 1000)`);
       await db.query('COMMIT');console.log('Popular categories ready.');
     } catch(error) {await db.query('ROLLBACK');throw error;} finally {db.release();}
   } finally {await pool.end();}
 }
 module.exports={migratePopularCategories};
 if(require.main===module)migratePopularCategories().catch(error=>{console.error(error.code||error.name);process.exitCode=1;});
+
