@@ -13,6 +13,7 @@ async function migrateCreditApplications(config = require('../backend/lib/dbConf
       await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:credit-applications-migration', 0))");
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20260912_credit_applications/migration.sql'), 'utf8'));
       await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20260912_credit_numbers/migration.sql'), 'utf8'));
+      await db.query(fs.readFileSync(path.join(__dirname, '../backend/prisma/migrations/20261115_checkout_installments/migration.sql'), 'utf8'));
       await db.query('COMMIT');
       console.log('Credit applications schema ready (additive migration).');
     } catch (error) {
@@ -22,3 +23,4 @@ async function migrateCreditApplications(config = require('../backend/lib/dbConf
 }
 module.exports = { migrateCreditApplications };
 if (require.main === module) migrateCreditApplications().catch(error => { console.error('Migration failed', { code: error.code, message: error.message }); process.exitCode = 1; });
+
