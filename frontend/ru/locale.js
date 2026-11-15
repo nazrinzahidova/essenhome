@@ -7,6 +7,23 @@
   cyrillicFont.textContent = [[300,'Cs16Ew-'],[400,'Ctr6Ew-'],[500,'CtZ6Ew-'],[600,'Cu170w-'],[700,'CuM70w-']].map(([weight,file]) => `@font-face{font-family:'Poppins';font-style:normal;font-weight:${weight};font-display:swap;src:url('https://fonts.gstatic.com/s/montserrat/v31/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgp${file}.ttf') format('truetype');unicode-range:U+0400-052F,U+2DE0-2DFF,U+A640-A69F;}`).join('\n');
   document.head.appendChild(cyrillicFont);
 const dictionary = {
+"Qapıda ödə": "Оплатить при получении",
+"Hissə-hissə al": "Купить в рассрочку",
+"Ödəniş üsulu": "Способ оплаты",
+"İlkin ödəniş məbləği (₼)": "Первоначальный взнос (₼)",
+"Müddət seçin": "Выберите срок",
+"Kredit müraciətinə davam et": "Продолжить заявку на рассрочку",
+"Kredit məbləği": "Сумма кредита",
+"İlkin ödəniş": "Первоначальный взнос",
+"Kredit müddəti": "Срок рассрочки",
+"Aylıq ödəniş": "Ежемесячный платёж",
+"İllik faiz": "Годовая ставка",
+"Kartla (qapıda)": "Картой при получении",
+"Nağd (qapıda)": "Наличными при получении",
+"İlkin ödənişi məhsulların cəmindən aşağı, sıfır və ya müsbət məbləğ kimi daxil edin.": "Введите первоначальный взнос от нуля до суммы меньше стоимости товаров.",
+"Kredit müddəti və ilkin ödənişi düzgün seçin.": "Выберите корректный срок и первоначальный взнос.",
+"İlkin ödəniş məhsulların cəmindən aşağı olmalıdır.": "Первоначальный взнос должен быть меньше стоимости товаров.",
+"Kredit məbləği düzgün deyil.": "Некорректная сумма кредита.",
   "Everest Group MMC Azərbaycanda kiçik məişət avadanlıqlarının topdan və pərakəndə satışı sahəsində fəaliyyət göstərən şirkətdir. Fəaliyyətimizin əsas məqsədi müştərilərimizə keyfiyyətli məhsullar, sərfəli qiymətlər və etibarlı xidmət təqdim etməkdir.": "Everest Group MMC занимается оптовой и розничной продажей мелкой бытовой техники в Азербайджане. Наша главная цель — предлагать покупателям качественные товары, доступные цены и надёжный сервис.",
   "Şirkətimiz gündəlik həyatı daha rahat və funksional edən məişət avadanlıqlarının satışını həyata keçirir. Məhsul çeşidimizə mətbəx texnikaları, elektrik məişət avadanlıqları və ev istifadəsi üçün müxtəlif həllər daxildir. Müştərilərimizin ehtiyaclarını nəzərə alaraq, məhsul seçimində keyfiyyət, etibarlılıq və müasir tələblərə uyğunluğu əsas meyarlarımız hesab edirik.": "Мы продаём бытовую технику, которая делает повседневную жизнь удобнее. В ассортимент входят кухонная техника, электрические бытовые приборы и различные решения для дома. При выборе товаров мы учитываем потребности покупателей, качество, надёжность и соответствие современным требованиям.",
   "Everest Group MMC fəaliyyətində müştəri məmnuniyyətini, dürüst əməkdaşlığı və peşəkar xidməti prioritet hesab edir. Təcrübəli komandamız hər bir müştəriyə fərdi yanaşaraq, onların ehtiyaclarına uyğun məhsul və xidmətlərin təqdim edilməsini təmin edir.": "Для Everest Group MMC важны удовлетворённость клиентов, честное сотрудничество и профессиональное обслуживание. Наша опытная команда находит индивидуальный подход к каждому покупателю и помогает подобрать подходящие товары и услуги.",
@@ -1241,4 +1258,5 @@ if (el.closest(skip)) return;
     } catch { /* Guest cart remains usable when the API is unavailable. */ }
   });
 })();
+
 
