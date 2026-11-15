@@ -10,6 +10,11 @@ datasource db {
 }
 
 model CreditApplication {
+  creditMonths Int?
+  downPayment Float?
+  creditPrincipal Float?
+  monthlyPayment Float?
+  annualRate Float?
   orderId Int? @unique
   order Order? @relation(fields: [orderId], references: [id])
   number Int @unique @default(autoincrement())
@@ -378,3 +383,4 @@ model PopularCategory {
   @@unique([category, subcategory])
   @@index([active, position, id])
 }
+
