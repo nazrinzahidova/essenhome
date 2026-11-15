@@ -13,9 +13,51 @@
   function updateCreditOption() {
     const subtotal = creditSubtotal();
     const eligible = Number.isFinite(subtotal) && subtotal >= EssenOrderPolicy.creditMinimum;
-    creditButton.disabled = sending || !!pending || !eligible;
+    creditButton.disabled = sending || !!pending || !eligible || !financingPlan();
     creditNote.hidden = eligible || !!pending;
   }
+  const downPayment = document.getElementById('checkoutDownPayment');
+  const plans = document.getElementById('checkoutCreditPlans');
+  const financeSummary = document.getElementById('checkoutFinanceSummary');
+  const financeError = document.getElementById('checkoutFinanceError');
+  const monthsList = [3,6,9,12,15,18,24];
+  let selectedMonths = 12;
+  const money = value => Number(value).toFixed(2) + ' ₼';
+  function financingPlan() {
+    const subtotal = creditSubtotal(), initial = Number(downPayment.value);
+    if (downPayment.value.trim() === '' || !Number.isFinite(initial) || initial < 0 || initial >= subtotal || Math.abs(initial * 100 - Math.round(initial * 100)) > 0.00001) return null;
+    const principal = Math.round((subtotal - initial) * 100) / 100;
+    const result = calculateCredit(principal, selectedMonths);
+    return result ? {months:selectedMonths, downPayment:initial, principal, ...result} : null;
+  }
+  function renderPlans() {
+    const subtotal = creditSubtotal(), plan = financingPlan();
+    downPayment.max = Math.max(0, subtotal - 0.01).toFixed(2);
+    plans.replaceChildren();
+    for (const months of monthsList) {
+      const result = plan && calculateCredit(plan.principal, months);
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'installment-plan';
+      button.setAttribute('aria-pressed', String(months === selectedMonths)); button.disabled = !result;
+      const label = document.createElement('strong'); label.textContent = months + ' ay';
+      const monthly = document.createElement('span'); monthly.textContent = 'Aylıq';
+      const amount = document.createElement('b'); amount.textContent = result ? money(result.monthly) : '—';
+      button.append(label, monthly, amount); button.onclick = () => { selectedMonths = months; renderPlans(); };
+      plans.append(button);
+    }
+    financeError.hidden = !!plan;
+    financeError.textContent = plan ? '' : 'İlkin ödənişi məhsulların cəmindən aşağı, sıfır və ya müsbət məbləğ kimi daxil edin.';
+    financeSummary.textContent = plan ? 'Kredit məbləği: ' + money(plan.principal) + ' · ' + plan.months + ' ay · Aylıq: ' + money(plan.monthly) + ' · İllik faiz: ' + plan.annualRate + '%' : '';
+    updateCreditOption();
+  }
+  function updatePaymentType() {
+    const credit = form.elements.checkoutType.value === 'credit';
+    document.getElementById('doorPaymentOptions').hidden = credit;
+    document.getElementById('checkoutInstallments').hidden = !credit;
+    downPayment.disabled = !credit;
+    if (credit) renderPlans();
+  }
+  form.querySelectorAll('[name=checkoutType]').forEach(input => input.addEventListener('change', updatePaymentType));
+  downPayment.addEventListener('input', renderPlans);
   const storageKey = () => 'essen:pending-order:' + (localStorage.getItem('activeUser') || '');
   const savePending = () => { try { pending ? sessionStorage.setItem(storageKey(), JSON.stringify(pending)) : sessionStorage.removeItem(storageKey()); } catch {} };
   async function refreshDate() {
@@ -56,7 +98,8 @@
       address.value = pending?.address || address.value;
       await refreshDate();
       if (pending) message.textContent = 'Əvvəlki sorğunun nəticəsi alınmayıb. Eyni sifarişi təkrar yoxlamaq üçün ödəniş düyməsinə basın.';
-      updateCreditOption();
+      selectedMonths = 12; downPayment.value = '0';
+      form.elements.checkoutType.value = 'door'; updatePaymentType(); updateCreditOption();
       dialog.showModal();
     } catch (error) { alert(error.message); }
     finally { button.disabled = false; }
@@ -70,7 +113,9 @@
     if (!Number.isFinite(subtotal) || subtotal < EssenOrderPolicy.creditMinimum) { message.textContent = 'Kredit müraciəti üçün məhsulların cəmi minimum 199.99 AZN olmalıdır.'; return null; }
     try { await refreshDate(); } catch (e) { message.textContent = e.message; return null; }
     if (!form.reportValidity()) return null;
-    return { items, deliveryDate: date.value, address: address.value.trim() };
+    const financing = financingPlan();
+    if (!financing) { renderPlans(); downPayment.focus(); return null; }
+    return { items, deliveryDate: date.value, address: address.value.trim(), financing };
   }
   form.addEventListener('submit', async event => {
     event.preventDefault(); if (sending) return;
@@ -100,3 +145,4 @@
   });
   window.EssenCheckout = { open, creditContext };
 })();
+
