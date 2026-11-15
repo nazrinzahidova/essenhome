@@ -1,6 +1,41 @@
 // Category fields share the existing Product.specs and Product.brand storage.
 const APPLIANCE_SPEC_SCHEMAS = [
 {
+  "category": "İran sobaları",
+  "rows": 3,
+  "keys": [
+    "Brend",
+    "Məhsulun növü",
+    "Yanacaq",
+    "Korpusun materialı",
+    "Rəng"
+  ],
+  "title": "İran sobaları — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Əsas xüsusiyyətlər",
+      "fields": [
+        {
+          "key": "Məhsulun növü",
+          "placeholder": "məs: Kamin"
+        },
+        {
+          "key": "Yanacaq",
+          "placeholder": "məs: Qaz"
+        },
+        {
+          "key": "Korpusun materialı",
+          "placeholder": "məs: Metal"
+        },
+        {
+          "key": "Rəng",
+          "placeholder": "məs: Qara"
+        }
+      ]
+    }
+  ]
+},
+{
   "category": "Elektrik sobalar",
   "aliases": [
     "Mini sobalar"
@@ -3073,4 +3108,5 @@ function applianceSpecEntries(item) {
  const specs=item.specs && typeof item.specs==='object' && !Array.isArray(item.specs) ? item.specs : {};
  return schema.keys.map(key=>{const value=key==='Brend' ? (item.brand || specs[key]) : specs[key]; return [key,value!==null && value!==undefined && String(value).trim() ? value : '-'];});
 }
+
 
