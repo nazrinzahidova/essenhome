@@ -35,6 +35,7 @@ app.use('/api/auth', authRouter);
 app.use('/login-code', authRouter);
 app.use('/api/product-images', require('./routes/productImages'));
 app.use('/api/home-sections', require('./routes/homeSections').createHomeSectionsRouter(require('./lib/prisma')));
+app.use('/api/search-discovery', require('./routes/searchDiscovery').createSearchDiscoveryRouter(require('./lib/prisma')));
 app.use('/api/popular-categories', require('./routes/popularCategories').createPopularCategoriesRouter(require('./lib/prisma')));
 app.use('/api/brands', require('./routes/brands').createBrandsRouter(require('./lib/prisma')));
 app.use('/api/product-order', require('./routes/productOrder').createProductOrderRouter(require('./lib/prisma')));
@@ -96,3 +97,4 @@ async function shutdown(signal) {
 
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
