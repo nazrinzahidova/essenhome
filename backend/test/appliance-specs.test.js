@@ -6,6 +6,7 @@ for(const [file,category,fn,count,split] of [
 ["appliance","Tikiş maşınları","applianceSpecEntries",15,"Tikiş sürəti"],
 ["appliance","Buxarlı generatorlar","applianceSpecEntries",22,"Su qabının həcmi"],
 ["appliance","Yuyucu tozsoranlar","applianceSpecEntries",18,"Çıxış filtri"],
+["appliance","Robot tozsoranlar","applianceSpecEntries",22,"Döşəmə növü"],
 ["appliance","Mikrodalğalı sobalar","applianceSpecEntries",17,"İnverter"],
 ["appliance","Stasionar blenderlər","applianceSpecEntries",24,"Buz doğrama imkanı"],
 ["appliance","Doğrayıcı","applianceSpecEntries",13,"Korpusun materialı"],
@@ -27,9 +28,9 @@ for(const [file,category,fn,count,split] of [
  for(const f of ['washingmachine','fridge','freezer'])vm.runInContext(read(f+'-specs.js'),ctx);
  vm.runInContext(read('appliance-specs.js'),ctx);
  const admin=read('admin.js');vm.runInContext(admin.slice(admin.indexOf('function activeSpecificationTemplate()'),admin.indexOf('// ============== RƏNG SEÇİCİSİ')),ctx);
- ctx.renderCategorySpecs({});assert(visible);assert.equal((nodes.categorySpecsFields.innerHTML.match(/class="category-spec-input"/g)||[]).length,count-1);
+ ctx.renderCategorySpecs({});assert(visible);assert.equal((nodes.categorySpecsFields.innerHTML.match(/class="category-spec-input"/g)||[]).length,count-(category==='Robot tozsoranlar'?2:1));
  const [firstKey,secondKey]=ctx.activeSpecificationTemplate().groups[0].fields.slice(0,2).map(field=>field.key);
- inputs=[{dataset:{specKey:firstKey},value:'Ağ'},{dataset:{specKey:secondKey},value:'36 ay'}];let saved=ctx.mergeCategorySpecs();ctx.renderCategorySpecs(saved);assert(nodes.categorySpecsFields.innerHTML.includes('value="36 ay"'));
+ inputs=[{dataset:{specKey:firstKey},value:'Ağ'},{dataset:{specKey:secondKey},value:'36 ay'}];let saved=ctx.mergeCategorySpecs();if(category==='Robot tozsoranlar')assert.equal(saved.Növ,'Robot tozsoran');ctx.renderCategorySpecs(saved);assert(nodes.categorySpecsFields.innerHTML.includes('value="36 ay"'));
  ctx.preservedProductSpecs=saved;inputs[0].value='Boz';inputs[1].value='';const edited=ctx.mergeCategorySpecs();assert.equal(edited[firstKey],'Boz');assert(!(secondKey in edited));assert.equal(edited.SKU,'keep');
  const rows=ctx[fn]({subcategory:category,brand:'Bosch',specs:edited});assert.equal(rows.length,count);assert.equal(rows.find(row=>row[0]==='Brend')[1],'Bosch');assert.equal(rows[Math.ceil(count/2)][0],split);
  selected='Başqa';ctx.renderCategorySpecs({});assert.equal(visible,false);

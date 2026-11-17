@@ -3097,6 +3097,63 @@ const APPLIANCE_SPEC_SCHEMAS = [
       ]
     }
   ]
+},
+{
+  "category": "Robot tozsoranlar",
+  "rows": 11,
+  "keys": [
+    "Brend",
+    "İstehsalçı ölkə",
+    "Növ",
+    "Sovurma gücü",
+    "Enerji yığma müddəti",
+    "Təmizləmə sahəsi",
+    "Təmizləmə növü",
+    "Toz qabının həcmi",
+    "Su qabının həcmi",
+    "Maksimal işləmə müddəti",
+    "Smartfon ilə idarəolunma",
+    "Döşəmə növü",
+    "Kənarın hündürlüyü",
+    "Çıxış filtri",
+    "Sensorlar",
+    "Yan fırçaların sayı",
+    "Səs səviyyəsi",
+    "Rəng",
+    "Komplektasiya",
+    "Ölçülər (H × E × D)",
+    "Xüsusiyyətlər",
+    "Zəmanət"
+  ],
+  "title": "Robot tozsoran — xüsusiyyətlər",
+  "automaticType": "Robot tozsoran",
+  "groups": [
+    {
+      "title": "Ətraflı məlumat",
+      "fields": [
+        { "key": "İstehsalçı ölkə", "placeholder": "məs: Çin" },
+        { "key": "Sovurma gücü", "placeholder": "məs: 22000 Pa" },
+        { "key": "Enerji yığma müddəti", "placeholder": "məs: 2.5 saat" },
+        { "key": "Təmizləmə sahəsi", "placeholder": "məs: 130 m²" },
+        { "key": "Təmizləmə növü", "placeholder": "məs: Quru və nəm" },
+        { "key": "Toz qabının həcmi", "placeholder": "məs: 0.27; 2.7 lt" },
+        { "key": "Su qabının həcmi", "placeholder": "məs: 0.69; 4 lt" },
+        { "key": "Maksimal işləmə müddəti", "placeholder": "məs: 4 saatadək" },
+        { "key": "Smartfon ilə idarəolunma", "type": "boolean" },
+        { "key": "Döşəmə növü", "placeholder": "məs: Xalça, parket, laminat, plitə" },
+        { "key": "Kənarın hündürlüyü", "placeholder": "məs: 20 mm" },
+        { "key": "Çıxış filtri", "placeholder": "məs: HEPA" },
+        { "key": "Sensorlar", "placeholder": "məs: Maneə tanıma sistemi" },
+        { "key": "Yan fırçaların sayı", "placeholder": "məs: 1" },
+        { "key": "Səs səviyyəsi", "placeholder": "məs: 61 dB" },
+        { "key": "Rəng", "placeholder": "məs: Qara" },
+        { "key": "Komplektasiya", "placeholder": "məs: Toz qabı, filtr, salfet, əsas fırça, dok stansiyası, adapter" },
+        { "key": "Ölçülər (H × E × D)", "placeholder": "məs: 79.8 × 353 × 350 mm" },
+        { "key": "Xüsusiyyətlər", "placeholder": "məs: Səs ilə idarəolunma" },
+        { "key": "Zəmanət", "placeholder": "məs: 12 ay" }
+      ]
+    }
+  ]
 }
 ];
 function applianceSpecification(item) {
