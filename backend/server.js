@@ -78,7 +78,18 @@ app.get('/:page', (req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 
-require('../scripts/migrate-home-sections').migrateHomeSections().then(() => require('../scripts/migrate-product-seo').migrateProductSeo()).then(() => require('../scripts/migrate-credit-applications').migrateCreditApplications()).then(() => require('../scripts/migrate-order-policies').migrateOrderPolicies()).then(() => require('../scripts/migrate-brands').migrateBrands()).then(() => require('../scripts/migrate-vacancies').migrateVacancies()).then(() => require('../scripts/migrate-otp-timing').migrateOtpTiming()).then(() => require('../scripts/migrate-popular-categories').migratePopularCategories()).then(() => require('../scripts/migrate-analytics').migrateAnalytics()).then(() => require('./scripts/migrate-campaigns').migrateCampaigns()).then(() => {
+require('../scripts/migrate-home-sections').migrateHomeSections()
+  .then(() => require('../scripts/migrate-product-seo').migrateProductSeo())
+  .then(() => require('../scripts/backfill-product-seo').backfillProductSeo())
+  .then(() => require('../scripts/migrate-credit-applications').migrateCreditApplications())
+  .then(() => require('../scripts/migrate-order-policies').migrateOrderPolicies())
+  .then(() => require('../scripts/migrate-brands').migrateBrands())
+  .then(() => require('../scripts/migrate-vacancies').migrateVacancies())
+  .then(() => require('../scripts/migrate-otp-timing').migrateOtpTiming())
+  .then(() => require('../scripts/migrate-popular-categories').migratePopularCategories())
+  .then(() => require('../scripts/migrate-analytics').migrateAnalytics())
+  .then(() => require('./scripts/migrate-campaigns').migrateCampaigns())
+  .then(() => {
 server = app.listen(PORT, () => {
   console.log(`🚀 Server http://localhost:${PORT} ünvanında işləyir`);
 });

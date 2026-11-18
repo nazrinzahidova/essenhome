@@ -20,7 +20,10 @@ function productSearchHeading(item, specs) {
   const model = productModel(item, specs);
   const tvName = televisionSearchName(item, specs);
   const savedTitle = item.seoTitle?.trim();
-  const genericTitle = savedTitle?.startsWith(item.name) && /^\s*(?:-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*)?\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length));
+  const genericTitle = savedTitle?.startsWith(item.name) && (
+    /^\s*(?:-\s*\d+(?:[.,]\d+)?\s*(?:AZN|₼)?\s*)?\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length)) ||
+    /^\s*—\s*qiyməti və kreditlə satış\s*\|\s*Essen Home$/i.test(savedTitle.slice(item.name.length))
+  );
   const customTitle = genericTitle ? '' : savedTitle;
   const compact = value => value.toLocaleLowerCase('az').replace(/\s+/g, '');
   const words = value => value.toLocaleLowerCase('az').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
