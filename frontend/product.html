@@ -372,6 +372,8 @@
       }catch{card.hidden=true;}
     }
 
+    const displayCategoryName = name => name === 'İran sobaları' ? 'Sobalar' : name;
+
     function render(item) {
       const images = imageList(item);
       const specs = specEntries(item).filter(([key]) => key.trim().toLowerCase() !== 'sku');
@@ -393,7 +395,7 @@
       addCrumb('Ana səhifə', '/');
       const categoryParams = new URLSearchParams();
       if (item.category) { categoryParams.set('category', item.category); addCrumb(item.category, '/catalog.html?' + categoryParams); }
-      if (item.subcategory && item.subcategory !== item.category) { categoryParams.set('subcategory', item.subcategory); addCrumb(item.subcategory, '/catalog.html?' + categoryParams); }
+      if (item.subcategory && item.subcategory !== item.category) { categoryParams.set('subcategory', item.subcategory); addCrumb(displayCategoryName(item.subcategory), '/catalog.html?' + categoryParams); }
       addCrumb(item.name);
       const productHighlights = view.querySelector('#productHighlights');
       view.innerHTML = `

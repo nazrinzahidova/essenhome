@@ -10,6 +10,7 @@ const ORIGIN = 'https://essenhome.az';
 const ESSEN_CATALOG = '/catalog.html?brand=Essen';
 const ESSEN_HEADING = 'Essen məişət texnikası';
 const isEssenProduct = item => item.brand?.trim().toLowerCase() === 'essen';
+const displayCategoryName = name => name === 'İran sobaları' ? 'Sobalar' : name;
 const PAGE_SIZE = 45000;
 const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const productUrl = item => ORIGIN + productPath(item);
@@ -75,7 +76,7 @@ function renderProduct(template, product) {
   }
   if (item.subcategory && item.subcategory !== item.category) {
     params.set('subcategory', item.subcategory);
-    crumbs.push({ name: item.subcategory, item: ORIGIN + '/catalog.html?' + params.toString() });
+    crumbs.push({ name: displayCategoryName(item.subcategory), item: ORIGIN + '/catalog.html?' + params.toString() });
   }
   crumbs.push({ name: item.name, item: url });
   const breadcrumb = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs.map((crumb, i) => ({ '@type': 'ListItem', position: i + 1, ...crumb })) };
@@ -156,8 +157,8 @@ function createSeoRouter(prisma) {
     if (category) params.set('category', category);
     if (subcategory) params.set('subcategory', subcategory);
     const url = ORIGIN + (essenCatalog ? ESSEN_CATALOG : '/catalog.html' + (params.size ? '?' + params.toString() : ''));
-    const label = essenCatalog ? ESSEN_HEADING : subcategory || category || 'Məişət texnikası və elektronika';
-    const title = `${essenCatalog ? label : subcategory || category || 'Məhsul kataloqu'} — qiymətlər və kreditlə satış | Essen Home`;
+    const label = essenCatalog ? ESSEN_HEADING : displayCategoryName(subcategory || category) || 'Məişət texnikası və elektronika';
+    const title = `${essenCatalog ? label : displayCategoryName(subcategory || category) || 'Məhsul kataloqu'} — qiymətlər və kreditlə satış | Essen Home`;
     const description = essenCatalog
       ? 'Essen brendinin məişət texnikası modellərinə, qiymətlərinə və xüsusiyyətlərinə baxın. Essen Home mağazası Xırdalanda yerləşir.'
       : `${label}: modelləri, qiymətləri və xüsusiyyətləri müqayisə edin. Essen Home-da nağd və kreditlə əldə edin.`;
@@ -179,7 +180,7 @@ function createSeoRouter(prisma) {
     ).join('');
     const schema = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: label, url, description, mainEntity: { '@type': 'ItemList', numberOfItems: items.length, itemListElement: items.map((item,index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, url: productUrl(item) })) } };
     let html = fs.readFileSync(path.join(__dirname, '../../frontend/catalog.html'), 'utf8').replace(/<title>[\s\S]*?<\/title>/, () => tags);
-    html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(essenCatalog ? label : subcategory || category || 'Bütün məhsullar') + '</h1>');
+    html = html.replace(/(<h1[^>]*id="catalogTitle"[^>]*>)[\s\S]*?<\/h1>/, (_,open) => open + escape(essenCatalog ? label : displayCategoryName(subcategory || category) || 'Bütün məhsullar') + '</h1>');
     html = html.replace(/(<div id="productGrid" class=")hidden ([^"]*">)[\s\S]*?<\/div>/, (_,open,rest) => open + rest + links + '</div>');
     html = html.replace('</head>', () => '<script type="application/ld+json">' + JSON.stringify(schema).replace(/</g, '\\u003c') + '</script></head>');
     res.set('Cache-Control', 'no-store').type('html').send(html);

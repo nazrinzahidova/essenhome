@@ -269,7 +269,7 @@
   <script src="admin-categories.js?v=20260927-steam-1"></script>
   <script src="/sales-categories.js?v=20260912-1"></script>
   <script>
-    const categoryDisplayName = name => name === 'Yay sərinliyi' ? 'Kondisionerlər' : name;
+    const categoryDisplayName = name => ({ 'Yay sərinliyi': 'Kondisionerlər', 'İran sobaları': 'Sobalar' }[name] || name);
     const API = '';
     const params = new URLSearchParams(window.location.search);
     const timedCatalog = params.get('timed') === '1';
@@ -397,7 +397,7 @@
           const link = document.createElement('a');
           link.href = catalogUrl(selectedCategory, subcategory);
           link.className = `subcategory-link border border-gray-300 rounded-full px-3 py-1.5 text-sm hover:border-red-500 hover:text-red-600 ${selectedSubcategory === subcategory ? 'active' : ''}`;
-          link.textContent = subcategory;
+          link.textContent = categoryDisplayName(subcategory);
           target.appendChild(link);
         });
       });
