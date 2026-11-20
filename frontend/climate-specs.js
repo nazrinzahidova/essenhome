@@ -93,6 +93,71 @@ const FAN_SPEC_GROUPS = [
   }
 ];
 
+const BOILER_SPEC_GROUPS = [
+  {
+    title: 'Əsas xüsusiyyətlər',
+    fields: [
+      { key: 'Brend', placeholder: 'məs: DemirDöküm' },
+      { key: 'Növ', placeholder: 'məs: Yoğuşmalı' },
+      { key: 'Rəng', placeholder: 'məs: Ağ' },
+      { key: 'Zəmanət', placeholder: 'məs: 24 ay' },
+      { key: 'Quraşdırma', placeholder: 'məs: Divara vurulan' }
+    ]
+  },
+  {
+    title: 'İsitmə və isti su',
+    fields: [
+      { key: 'İsitmə gücü', placeholder: 'məs: 28 kVt' },
+      { key: 'Suyun maksimal temperaturu', placeholder: 'məs: 75 °C' },
+      { key: 'Maks. istilik dövrəsində su təzyiqi, bar', placeholder: 'məs: 3' },
+      { key: 'İstilik sisteminin temperaturu', placeholder: 'məs: 30–75 °C' },
+      { key: 'Maksimal isidilən sahə', placeholder: 'məs: 250 m²' }
+    ]
+  },
+  {
+    title: 'Yanma kamerası və eşenjor',
+    fields: [
+      { key: 'Yanma kamerasının növü', placeholder: 'məs: Bağlı' },
+      { key: 'Eşenjor sayı', placeholder: 'məs: 2' },
+      { key: 'Eşenjorun materialı', placeholder: 'məs: Paslanmayan polad' },
+      { key: 'Enerjidaşıyıcısının növü', placeholder: 'məs: Təbii qaz' }
+    ]
+  },
+  {
+    title: 'İdarəetmə və funksiyalar',
+    fields: [
+      { key: 'İdarəetmə növü', placeholder: 'məs: Mexaniki' },
+      { key: 'Displey', type: 'boolean' },
+      { key: 'Xüsusiyyətlər', placeholder: 'məs: Səssiz işləmə' },
+      { key: 'Alışqanın növü', placeholder: 'məs: Avtomatik' }
+    ]
+  },
+  {
+    title: 'Ölçü və komplektasiya',
+    fields: [
+      { key: 'Ölçülər (H × E × D)', placeholder: 'məs: 62.6 × 40 × 27 sm' },
+      { key: 'Komplektasiya', placeholder: 'məs: Kombi, naqil' }
+    ]
+  }
+];
+
+const INFRARED_HEATER_SPEC_GROUPS = [
+  {
+    title: 'Ətraflı məlumat',
+    fields: [
+      { key: 'Brend', placeholder: 'məs: Minisan' },
+      { key: 'Xidmət olunan sahə', placeholder: 'məs: 20 m²' },
+      { key: 'İsitmə rejimlərinin sayı', placeholder: 'məs: 3' },
+      { key: 'Güc', placeholder: 'məs: 1200 Vt' },
+      { key: 'Displey', type: 'boolean' },
+      { key: 'İdarəetmə növü', placeholder: 'məs: Mexaniki' },
+      { key: 'Xüsusiyyətlər', placeholder: 'məs: Aşmaya qarşı qorunma' },
+      { key: 'Ölçülər (H × E × D)', placeholder: 'məs: 65 × 30 × 20 sm' },
+      { key: 'Zəmanət', placeholder: 'məs: 12 ay' }
+    ]
+  }
+];
+
 const AIR_TREATMENT_SPEC_GROUPS = [
   {
     title: 'Ümumi məlumatlar',

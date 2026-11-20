@@ -778,6 +778,12 @@ function activeSpecificationTemplate() {
   if (subcategory === 'ventilyatorlar') {
     return { title: 'Ventilyator xüsusiyyətləri', groups: FAN_SPEC_GROUPS };
   }
+  if (subcategory === 'kombi sistemləri') {
+    return { title: 'Kombi sistemləri xüsusiyyətləri', groups: BOILER_SPEC_GROUPS };
+  }
+  if (subcategory === 'infraqırmızı qızdırıcılar') {
+    return { title: 'İnfraqırmızı qızdırıcı xüsusiyyətləri', groups: INFRARED_HEATER_SPEC_GROUPS };
+  }
   if (subcategory === 'dondurucular') {
     return { title: 'Dondurucu xüsusiyyətləri', groups: FREEZER_SPEC_GROUPS };
   }
