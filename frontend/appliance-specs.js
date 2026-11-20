@@ -3147,6 +3147,51 @@ const APPLIANCE_SPEC_SCHEMAS = [
   ]
 },
 {
+  "category": "Buxarlı təmizləyicilər",
+  "rows": 9,
+  "keys": [
+    "Brend",
+    "Növ",
+    "Güc",
+    "Maksimum buxar təzyiqi",
+    "Suyun isinmə vaxtı",
+    "Su çəninin həcmi",
+    "Su olmadıqda bloklanma",
+    "Buxar borusunun uzunluğu",
+    "Səthin növü",
+    "Təmizləmə sahəsi",
+    "Uşaq kilidi",
+    "Komplektasiya",
+    "Əlavə xüsusiyyətlər",
+    "Naqilin uzunluğu",
+    "Ölçülər (H × E × D)",
+    "Zəmanət"
+  ],
+  "title": "Buxarlı təmizləyici — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Ətraflı məlumat",
+      "fields": [
+        { "key": "Növ", "placeholder": "məs: Yerüstü, əl ilə" },
+        { "key": "Güc", "placeholder": "məs: 1500 Vt" },
+        { "key": "Maksimum buxar təzyiqi", "placeholder": "məs: 3.2 bar" },
+        { "key": "Suyun isinmə vaxtı", "placeholder": "məs: 6.5 dəq" },
+        { "key": "Su çəninin həcmi", "placeholder": "məs: 1 lt" },
+        { "key": "Su olmadıqda bloklanma", "type": "boolean" },
+        { "key": "Buxar borusunun uzunluğu", "placeholder": "məs: 2 m" },
+        { "key": "Səthin növü", "placeholder": "məs: Döşəmə, kafel, parket, yumşaq mebel" },
+        { "key": "Təmizləmə sahəsi", "placeholder": "məs: 75 m²" },
+        { "key": "Uşaq kilidi", "type": "boolean" },
+        { "key": "Komplektasiya", "placeholder": "məs: Döşəmə ucluğu, ləkə başlığı, mikrofiber örtük" },
+        { "key": "Əlavə xüsusiyyətlər", "placeholder": "məs: Kimyəvi vasitəsiz təmizləmə" },
+        { "key": "Naqilin uzunluğu", "placeholder": "məs: 4 m" },
+        { "key": "Ölçülər (H × E × D)", "placeholder": "məs: 26 × 25.4 × 38 sm" },
+        { "key": "Zəmanət", "placeholder": "məs: 24 ay" }
+      ]
+    }
+  ]
+},
+{
   "category": "Robot tozsoranlar",
   "rows": 11,
   "keys": [
