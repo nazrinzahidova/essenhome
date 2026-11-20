@@ -793,6 +793,9 @@ function activeSpecificationTemplate() {
   if (subcategory === 'tozsoranlar') {
     return { title: 'Tozsoran xüsusiyyətləri', groups: VACUUM_SPEC_GROUPS };
   }
+  if (subcategory === 'vertikal tozsoranlar') {
+    return { title: 'Vertikal tozsoran xüsusiyyətləri', groups: VERTICAL_VACUUM_SPEC_GROUPS };
+  }
   if (subcategory === 'oyun konsolları') {
     return { title: 'Oyun konsolu xüsusiyyətləri', groups: GAME_CONSOLE_SPEC_GROUPS };
   }
