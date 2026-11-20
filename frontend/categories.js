@@ -8,6 +8,8 @@ const CATEGORY_TREE = {
     { group: "Tövsiyə olunan otaq sahəsi", items: ["25-45 m²","45-100 m²","100-180 m²"] },
     { group: "Kondisionerin növü", items: ["Split sistemləri","Daxili bloklar","Xarici bloklar","Kolon tiplilər"] },
     { group: "Ventilyatorlar", items: ["Döşəməüstü","Masaüstü","Qüllə","Universal"] },
+    { group: "Qızdırıcılar", items: ["Konvektorlar","İnfraqırmızı qızdırıcılar","Yağ qızdırıcıları","Qızdırıcı ventilyatorlar"] },
+    { group: "Kombi sistemləri", items: [] },
     { group: "Uşaq üçün hava nəmləndiriciləri", items: [] },
     { group: "Hava təmizləyicilər və nəmləndiricilər", items: ["Hava nəmləndirici","Hava təmizləyici","Hava tərəvətləndirici","İqlim kompleksi (Hava təmizləyici və nəmləndirici)"] }
   ],

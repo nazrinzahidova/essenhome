@@ -21,6 +21,19 @@ const ADMIN_CATEGORY_TREE = {
     ]
   },
   {
+    group: "Qızdırıcılar",
+    items: [
+      "Konvektorlar",
+      "İnfraqırmızı qızdırıcılar",
+      "Yağ qızdırıcıları",
+      "Qızdırıcı ventilyatorlar"
+    ]
+  },
+  {
+    group: "Kombi sistemləri",
+    items: []
+  },
+  {
     group: "Hava təmizləyicilər və nəmləndiricilər",
     items: [
       "Hava nəmləndirici",
