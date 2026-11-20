@@ -2,8 +2,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '../backend/.en
 
 const { Pool } = require('pg');
 
-// This is deliberately a one-time backfill. Products saved with blank SEO fields
-// afterwards retain the automatic SEO fallback instead of being overwritten later.
+// It changes only blank fields, so hand-written SEO metadata always remains intact.
 async function backfillProductSeo(config = require('../backend/lib/dbConfig')()) {
   const pool = new Pool({ ...config, max: 1 });
   try {
@@ -12,11 +11,8 @@ async function backfillProductSeo(config = require('../backend/lib/dbConfig')())
       await db.query('BEGIN');
       await db.query("SET LOCAL lock_timeout = '5s'");
       await db.query("SET LOCAL statement_timeout = '20s'");
-      await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:product-seo-backfill-v1', 0))");
-      await db.query('CREATE TABLE IF NOT EXISTS "SeoBackfill" ("name" TEXT PRIMARY KEY, "completedAt" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP)');
-      const completed = await db.query('SELECT 1 FROM "SeoBackfill" WHERE "name" = $1', ['product-seo-v1']);
-      if (!completed.rowCount) {
-        const result = await db.query(`
+      await db.query("SELECT pg_advisory_xact_lock(hashtextextended('essen:product-seo-backfill-v2', 0))");
+      const result = await db.query(`
           UPDATE "Product"
           SET
             "seoTitle" = CASE
@@ -38,9 +34,7 @@ async function backfillProductSeo(config = require('../backend/lib/dbConfig')())
           WHERE COALESCE(BTRIM("seoTitle"), '') = ''
              OR COALESCE(BTRIM("seoDescription"), '') = ''
         `);
-        await db.query('INSERT INTO "SeoBackfill" ("name") VALUES ($1)', ['product-seo-v1']);
-        console.log(`Product SEO backfill completed for ${result.rowCount} products.`);
-      }
+      console.log(`Product SEO backfill updated ${result.rowCount} blank field sets.`);
       await db.query('COMMIT');
     } catch (error) {
       await db.query('ROLLBACK');

@@ -93,6 +93,17 @@ function parsePlacements(value, category, subcategory) {
   ).values()];
 }
 
+function defaultProductSeo({ name, category, subcategory, price }) {
+  const productName = String(name || '').trim();
+  const productType = String(subcategory || category || 'məişət texnikası').trim();
+  const amount = Number(price);
+  const priceText = Number.isFinite(amount) ? amount.toFixed(2) : '';
+  return {
+    seoTitle: `${productName} | Essen Home`.slice(0, 200),
+    seoDescription: `${productName} — ${productType}. ${priceText ? `Qiymət: ${priceText} AZN. ` : ''}Essen Home-dan nağd və kreditlə sifariş edin.`.slice(0, 500)
+  };
+}
+
 // Admin yoxlama middleware
 const adminCheck = (req, res, next) => {
   if (req.user.role !== 'admin') {
@@ -112,6 +123,9 @@ router.post('/products', authMiddleware, adminCheck, upload.array('images', 10),
         seo[key] = req.body[key].trim() || null;
       }
     }
+    const generatedSeo = defaultProductSeo({ name, category, subcategory, price });
+    seo.seoTitle ||= generatedSeo.seoTitle;
+    seo.seoDescription ||= generatedSeo.seoDescription;
     const placementRows = parsePlacements(placements, category, subcategory);
     const files = req.files || [];
     const newRows = imageRows(files, parseJsonArray(req.body.newImageKeys));
