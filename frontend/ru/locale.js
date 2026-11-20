@@ -184,6 +184,7 @@ const dictionary = {
   "Hesab yarat": "Создать аккаунт",
   "← Geri qayıt": "← Назад",
   "Kondisionerlər": "Кондиционеры",
+  "İqlim texnikası": "Климатическая техника",
   "Gamer zona": "Игровая зона",
   "Coffee": "Кофе",
   "Smartfonlar və aksesuarlar": "Смартфоны и аксессуары",
