@@ -3099,6 +3099,54 @@ const APPLIANCE_SPEC_SCHEMAS = [
   ]
 },
 {
+  "category": "Printerlər və çfq",
+  "aliases": ["Printerlər və cfq"],
+  "rows": 9,
+  "keys": [
+    "Brend",
+    "Display",
+    "Çapın maksimal keyfiyyəti",
+    "Skanın maksimal keyfiyyəti",
+    "Rəng sayı",
+    "Dəstəklənən vərəq formatı",
+    "Skanın maksimal ölçüsü",
+    "Sürətçıxarmanın maksimal keyfiyyəti",
+    "Kağız qabının tutumu",
+    "Dəstəklənən əməliyyat sistemləri",
+    "Ölçülər (H × E × D)",
+    "Çap texnologiyası",
+    "Çapın növü",
+    "Funksiyalar",
+    "Avtomatik ikitərəfli çap",
+    "Simsiz interfeyslər",
+    "Dəstəklənən kartriclər"
+  ],
+  "title": "Printerlər və çfq — xüsusiyyətlər",
+  "groups": [
+    {
+      "title": "Ətraflı məlumat",
+      "fields": [
+        { "key": "Display", "placeholder": "məs: Monoxrom" },
+        { "key": "Çapın maksimal keyfiyyəti", "placeholder": "məs: 1200 × 1200 dpi" },
+        { "key": "Skanın maksimal keyfiyyəti", "placeholder": "məs: 1200 × 1200 dpi" },
+        { "key": "Rəng sayı", "placeholder": "məs: 1" },
+        { "key": "Dəstəklənən vərəq formatı", "placeholder": "məs: A4" },
+        { "key": "Skanın maksimal ölçüsü", "placeholder": "məs: 216 × 356 mm" },
+        { "key": "Sürətçıxarmanın maksimal keyfiyyəti", "placeholder": "məs: 600 × 600 dpi" },
+        { "key": "Kağız qabının tutumu", "placeholder": "məs: 150 vərəq" },
+        { "key": "Dəstəklənən əməliyyat sistemləri", "placeholder": "məs: Windows, macOS" },
+        { "key": "Ölçülər (H × E × D)", "placeholder": "məs: 30.9 × 40.6 × 36 sm" },
+        { "key": "Çap texnologiyası", "placeholder": "məs: Lazer" },
+        { "key": "Çapın növü", "placeholder": "məs: Monoxrom" },
+        { "key": "Funksiyalar", "placeholder": "məs: Çap, skan, sürətçıxartma və faks" },
+        { "key": "Avtomatik ikitərəfli çap", "type": "boolean" },
+        { "key": "Simsiz interfeyslər", "placeholder": "məs: Wi‑Fi, Bluetooth" },
+        { "key": "Dəstəklənən kartriclər", "placeholder": "məs: HP Laser/37fnw" }
+      ]
+    }
+  ]
+},
+{
   "category": "Robot tozsoranlar",
   "rows": 11,
   "keys": [

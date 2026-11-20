@@ -7,6 +7,7 @@ for(const [file,category,fn,count,split] of [
 ["appliance","Buxarlı generatorlar","applianceSpecEntries",22,"Su qabının həcmi"],
 ["appliance","Yuyucu tozsoranlar","applianceSpecEntries",18,"Çıxış filtri"],
 ["appliance","Robot tozsoranlar","applianceSpecEntries",22,"Döşəmə növü"],
+["appliance","Printerlər və çfq","applianceSpecEntries",17,"Dəstəklənən əməliyyat sistemləri"],
 ["appliance","Mikrodalğalı sobalar","applianceSpecEntries",17,"İnverter"],
 ["appliance","Stasionar blenderlər","applianceSpecEntries",24,"Buz doğrama imkanı"],
 ["appliance","Doğrayıcı","applianceSpecEntries",13,"Korpusun materialı"],
